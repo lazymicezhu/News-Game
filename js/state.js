@@ -1,0 +1,165 @@
+/**
+ * 全局状态管理模块
+ * 负责管理游戏状态变量和玩家选择
+ */
+
+class GameState {
+    constructor() {
+        this.currentSceneId = null;
+        this.variables = {};
+        this.history = [];
+        this.decisions = [];
+        this.evidenceMarks = {};
+        this.assistantPool = [];
+    }
+
+    /**
+     * 初始化状态
+     * @param {string} startSceneId - 起始场景ID
+     */
+    init(startSceneId = 'intro') {
+        this.currentSceneId = startSceneId;
+        this.variables = {};
+        this.history = [];
+        this.decisions = [];
+        this.evidenceMarks = {};
+        this.assistantPool = [];
+    }
+
+    /**
+     * 获取当前状态
+     * @returns {Object} 当前状态对象
+     */
+    getState() {
+        return {
+            currentSceneId: this.currentSceneId,
+            variables: { ...this.variables },
+            history: [...this.history],
+            decisions: [...this.decisions],
+            evidenceMarks: { ...this.evidenceMarks }
+        };
+    }
+
+    /**
+     * 设置当前场景ID
+     * @param {string} sceneId - 场景ID
+     */
+    setCurrentScene(sceneId) {
+        this.currentSceneId = sceneId;
+    }
+
+    /**
+     * 设置变量
+     * @param {string} key - 变量名
+     * @param {*} value - 变量值
+     */
+    setVariable(key, value) {
+        this.variables[key] = value;
+    }
+
+    /**
+     * 获取变量
+     * @param {string} key - 变量名
+     * @returns {*} 变量值
+     */
+    getVariable(key) {
+        return this.variables[key];
+    }
+
+    /**
+     * 应用选择效果
+     * @param {Object} effect - 效果对象
+     */
+    applyEffect(effect) {
+        if (!effect) return;
+
+        for (const [key, value] of Object.entries(effect)) {
+            this.setVariable(key, value);
+        }
+    }
+
+    /**
+     * 记录一次决策
+     * @param {Object} entry - 包含场景、选项和影响描述
+     */
+    logDecision(entry) {
+        if (!entry) return;
+        this.decisions.push({
+            ...entry,
+            timestamp: Date.now()
+        });
+    }
+
+    /**
+     * 标记证据的可信度
+     * @param {string} evidenceId - 证据ID
+     * @param {string} status - trusted | doubtful | viewed
+     * @param {Object} meta - 额外信息
+     */
+    markEvidence(evidenceId, status, meta = {}) {
+        if (!evidenceId || !status) return;
+        this.evidenceMarks[evidenceId] = {
+            status,
+            ...meta,
+            timestamp: Date.now()
+        };
+    }
+
+    /**
+     * 获取决策记录
+     * @returns {Array} 决策列表
+     */
+    getDecisionLog() {
+        return [...this.decisions];
+    }
+
+    /**
+     * 获取证据标记
+     * @returns {Object} 证据标记映射
+     */
+    getEvidenceMarks() {
+        return { ...this.evidenceMarks };
+    }
+
+    /**
+     * 从助手语句池中取下一句，不重复用完再洗牌
+     * @param {Array<string>} sourceLines - 语料库
+     * @returns {string|null}
+     */
+    nextAssistantLine(sourceLines = []) {
+        if (!Array.isArray(sourceLines) || sourceLines.length === 0) return null;
+        if (!this.assistantPool || this.assistantPool.length === 0) {
+            this.assistantPool = this.shuffleArray([...sourceLines]);
+        }
+        return this.assistantPool.pop();
+    }
+
+    shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    /**
+     * 将历史记录截断到指定场景
+     * @param {string} sceneId - 场景ID
+     */
+    truncateHistory(sceneId) {
+        const index = this.history.lastIndexOf(sceneId);
+        if (index > -1) {
+            this.history = this.history.slice(0, index + 1);
+        }
+    }
+
+    /**
+     * 重置状态
+     */
+    reset() {
+        this.init();
+    }
+}
+
+// 导出单例
+export const gameState = new GameState();

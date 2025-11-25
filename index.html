@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsgame - Interactive Story Engine</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="game-wrapper">
+        <aside id="flowchart-container" class="flowchart-container"></aside>
+        <div class="container">
+            <header id="header">
+                <div class="header-top">
+                    <h1 class="game-title">Newsgame</h1>
+                    <button id="evidence-toggle-btn" class="btn btn-secondary" style="display: none;">证据与来源</button>
+                </div>
+                <div id="progress-bar" class="progress-bar" style="display: none;">
+                    <div class="progress-fill"></div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main id="app">
+                <div class="loading">加载中...</div>
+            </main>
+
+            <!-- Footer -->
+            <footer id="footer" style="display: none;">
+                <button id="restart-btn" class="btn btn-secondary">重新开始</button>
+            </footer>
+
+            <!-- Evidence Drawer -->
+            <aside id="evidence-drawer" class="evidence-drawer">
+                <div class="evidence-header">
+                    <h3>证据卡片</h3>
+                    <button id="evidence-close-btn">&times;</button>
+                </div>
+                <div id="evidence-content" class="evidence-content"></div>
+            </aside>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
