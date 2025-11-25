@@ -5,6 +5,7 @@
 
 import { scenes } from './scenes.js';
 import { gameRouter } from './router.js';
+import { newsBoard } from './newsBoard.js';
 
 /**
  * 初始化应用
@@ -13,11 +14,15 @@ function init() {
     // 初始化游戏路由
     gameRouter.init(scenes, 'intro');
 
+    // 初始化新闻看板
+    newsBoard.init();
+
     // 绑定重新开始按钮
     const restartBtn = document.getElementById('restart-btn');
     if (restartBtn) {
         restartBtn.addEventListener('click', () => {
             gameRouter.restart();
+            newsBoard.restart(); // 重启新闻看板
         });
     }
 
@@ -28,6 +33,7 @@ function init() {
             const footer = document.getElementById('footer');
             if (footer.style.display !== 'none') {
                 gameRouter.restart();
+                newsBoard.restart(); // 重启新闻看板
             }
         }
 

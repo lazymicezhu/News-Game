@@ -517,14 +517,14 @@ body {
             bottom: 20px;
             display: flex;
             flex-direction: row-reverse;
-            align-items: flex-end;
+            align-items: center;
             gap: 14px;
             z-index: 300;
         }
 
         .assistant-avatar {
-            width: 68px;
-            height: 68px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
             overflow: hidden;
             box-shadow: var(--shadow-hover);
@@ -583,8 +583,13 @@ body {
             color: var(--text-primary);
         }
 
+        .assistant-bubble--solo {
+            padding: 20px 24px;
+        }
+
         .assistant-bubble--solo .assistant-text {
             margin-bottom: 0;
+            font-size: 15px;
         }
 
         .assistant-minimize {
@@ -728,6 +733,13 @@ body {
             margin-bottom: 16px;
             padding-bottom: 12px;
             border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .news-board-header-left {
+            flex: 1;
         }
 
         .news-board-title {
@@ -742,6 +754,20 @@ body {
             font-size: 12px;
             color: var(--text-secondary);
             font-weight: 500;
+        }
+
+        .game-time {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            letter-spacing: 1px;
+            padding: 4px 8px;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-radius: 8px;
+            border: 1px solid var(--primary-color);
+            min-width: 72px;
+            text-align: center;
         }
 
         .news-board-list {
@@ -775,6 +801,42 @@ body {
             font-size: 13px;
             color: var(--text-primary);
             line-height: 1.5;
+        }
+
+        /* 新闻项动画 */
+        .news-item-enter {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        .news-item-active {
+            animation: newsSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .news-item-exit {
+            animation: newsSlideOut 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+
+        @keyframes newsSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes newsSlideOut {
+            from {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(10px) scale(0.95);
+            }
         }
 
         /* 助手历史记录面板 */

@@ -123,7 +123,7 @@ function renderEvidenceAssistant(evidenceList, sceneId, sceneTitle) {
                 <img src="arts/派蒙1.jpeg" alt="智能助理">
             </div>
             <div class="assistant-bubble">
-                <div class="assistant-text">这里有相关证据，要帮你判断吗？</div>
+                <div class="assistant-text">这里有证据，你的判断是？</div>
                 <div class="assistant-evidence"></div>
             </div>
         `;
@@ -146,7 +146,7 @@ function renderEvidenceAssistant(evidenceList, sceneId, sceneTitle) {
     }
 
     bubble.classList.remove('assistant-bubble--solo');
-    textEl.textContent = '这里有相关证据，要帮你判断吗？';
+    textEl.textContent = '这里有证据，你的判断是？';
     toggleMinimizeButton(bubble, true);
     const marks = gameState.getEvidenceMarks();
 
