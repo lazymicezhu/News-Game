@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Newsgame - Interactive Story Engine</title>
+    <title>灰烬中的城镇</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
         <div class="container">
             <header id="header">
                 <div class="header-top">
-                    <h1 class="game-title">Newsgame</h1>
+                    <h1 class="game-title">灰烬中的城镇</h1>
                     <button id="evidence-toggle-btn" class="btn btn-secondary" style="display: none;">证据与来源</button>
                 </div>
                 <div id="progress-bar" class="progress-bar" style="display: none;">
@@ -39,6 +39,30 @@
                 <div id="evidence-content" class="evidence-content"></div>
             </aside>
         </div>
+        <aside class="news-board">
+            <div class="news-board-header">
+                <div class="news-board-title">实时快报</div>
+                <div class="news-board-sub">加州野火 · 更新</div>
+            </div>
+            <div class="news-board-list">
+                <div class="news-item">
+                    <div class="news-time">10:15</div>
+                    <div class="news-text">Cal Fire：控制率维持 32%，风向预期东南转东。</div>
+                </div>
+                <div class="news-item">
+                    <div class="news-time">10:05</div>
+                    <div class="news-text">圣罗莎高中避难所补给车预计 40 分钟抵达。</div>
+                </div>
+                <div class="news-item">
+                    <div class="news-time">09:58</div>
+                    <div class="news-text">社交视频溯源：疑似 2017 年旧火场，待求证。</div>
+                </div>
+                <div class="news-item">
+                    <div class="news-time">09:45</div>
+                    <div class="news-text">北线直升机暂停 15 分钟加油，队员提醒切勿返家。</div>
+                </div>
+            </div>
+        </aside>
     </div>
 
     <script type="module" src="js/main.js"></script>
