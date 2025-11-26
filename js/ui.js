@@ -1,5 +1,6 @@
 import { gameState } from './state.js';
 import { assistantLines } from '../data/assistantLines.js';
+import { t, localize, getLanguage } from './i18n.js';
 
 const trustColorMap = {
     high: '#16a34a',
@@ -16,7 +17,7 @@ export function renderScene(scene, onChoice) {
     const appElement = document.getElementById('app');
 
     if (!scene) {
-        appElement.innerHTML = '<div class="loading">场景未找到</div>';
+        appElement.innerHTML = `<div class="loading">${t('sceneNotFound')}</div>`;
         return;
     }
 
@@ -27,7 +28,7 @@ export function renderScene(scene, onChoice) {
     if (scene.image) {
         const image = document.createElement('img');
         image.src = scene.image;
-        image.alt = scene.title || '场景图片';
+        image.alt = localize(scene.title) || 'scene';
         image.className = 'scene-image';
         sceneDiv.appendChild(image);
     }
@@ -36,7 +37,7 @@ export function renderScene(scene, onChoice) {
     if (scene.title) {
         const title = document.createElement('h2');
         title.className = 'scene-title';
-        title.textContent = scene.title;
+        title.textContent = localize(scene.title);
         sceneDiv.appendChild(title);
     }
 
@@ -49,7 +50,7 @@ export function renderScene(scene, onChoice) {
     if (scene.unverified) {
         const uncertain = document.createElement('div');
         uncertain.className = 'uncertainty-pill';
-        uncertain.textContent = '尚未证实 · 请谨慎';
+        uncertain.textContent = t('unverifiedWarning');
         sceneDiv.appendChild(uncertain);
     }
 
@@ -60,7 +61,7 @@ export function renderScene(scene, onChoice) {
         if (scene.unverified) {
             textDiv.classList.add('unverified-text');
         }
-        textDiv.textContent = scene.text;
+        textDiv.textContent = localize(scene.text);
         sceneDiv.appendChild(textDiv);
     }
     
@@ -72,9 +73,9 @@ export function renderScene(scene, onChoice) {
         scene.choices.forEach((choice, index) => {
             const button = document.createElement('button');
             button.className = 'btn btn-primary';
-            button.textContent = choice.text;
+            button.textContent = localize(choice.text);
             if (choice.hint) {
-                button.title = choice.hint;
+                button.title = localize(choice.hint);
             }
             button.onclick = () => onChoice(choice, index);
             choicesDiv.appendChild(button);
@@ -92,7 +93,7 @@ export function renderScene(scene, onChoice) {
     appElement.appendChild(sceneDiv);
 
     // 证据助手浮层逻辑
-    renderEvidenceAssistant(scene.evidence || [], scene.id, scene.title);
+    renderEvidenceAssistant(scene.evidence || [], scene.id, localize(scene.title), scene.title);
 }
 
 /**
@@ -101,8 +102,8 @@ export function renderScene(scene, onChoice) {
 function buildSourceBadge(source) {
     const badge = document.createElement('div');
     badge.className = 'source-badge';
-    badge.textContent = `[${source.label}]`;
-    badge.title = source.details || '信息来源';
+    badge.textContent = `[${localize(source.label)}]`;
+    badge.title = localize(source.details) || 'info source';
     if (source.credibility && trustColorMap[source.credibility]) {
         badge.style.color = trustColorMap[source.credibility];
         badge.style.borderColor = trustColorMap[source.credibility];
@@ -113,17 +114,17 @@ function buildSourceBadge(source) {
 /**
  * 证据助手浮层（派蒙）
  */
-function renderEvidenceAssistant(evidenceList, sceneId, sceneTitle) {
+function renderEvidenceAssistant(evidenceList, sceneId, sceneTitle, sceneTitleIntl) {
     let assistant = document.getElementById('assistant');
     if (!assistant) {
         assistant = document.createElement('div');
         assistant.id = 'assistant';
         assistant.innerHTML = `
             <div class="assistant-avatar">
-                <img src="arts/派蒙1.jpeg" alt="智能助理">
+                <img src="arts/派蒙1.jpeg" alt="assistant">
             </div>
             <div class="assistant-bubble">
-                <div class="assistant-text">这里有证据，你的判断是？</div>
+                <div class="assistant-text">${t('assistantPrompt')}</div>
                 <div class="assistant-evidence"></div>
             </div>
         `;
@@ -138,7 +139,8 @@ function renderEvidenceAssistant(evidenceList, sceneId, sceneTitle) {
     // 始终显示助手；如果无证据则提示等待
     assistant.style.display = 'flex';
     if (!evidenceList || evidenceList.length === 0) {
-        const line = gameState.nextAssistantLine(assistantLines) || '当前没有证据卡片，我会继续帮你关注。';
+        const pool = assistantLines[getLanguage()] || [];
+        const line = gameState.nextAssistantLine(pool) || t('assistantNoEvidence');
         textEl.textContent = line;
         bubble.classList.add('assistant-bubble--solo');
         toggleMinimizeButton(bubble, false);
@@ -146,7 +148,7 @@ function renderEvidenceAssistant(evidenceList, sceneId, sceneTitle) {
     }
 
     bubble.classList.remove('assistant-bubble--solo');
-    textEl.textContent = '这里有证据，你的判断是？';
+    textEl.textContent = t('assistantPrompt');
     toggleMinimizeButton(bubble, true);
     const marks = gameState.getEvidenceMarks();
 
@@ -156,17 +158,17 @@ function renderEvidenceAssistant(evidenceList, sceneId, sceneTitle) {
 
         const title = document.createElement('div');
         title.className = 'assistant-card-title';
-        title.textContent = item.title;
+        title.textContent = localize(item.title);
         card.appendChild(title);
 
         const desc = document.createElement('div');
         desc.className = 'assistant-card-desc';
-        desc.textContent = item.content;
+        desc.textContent = localize(item.content);
         card.appendChild(desc);
 
         const level = document.createElement('div');
         level.className = 'assistant-card-level';
-        level.textContent = item.credibility ? `来源可信度：${item.credibility}` : '来源可信度：未标注';
+        level.textContent = item.credibility ? `${t('credibilityLabel')}${localize(item.credibility)}` : t('credibilityUnknown');
         card.appendChild(level);
 
         const actions = document.createElement('div');
@@ -175,9 +177,15 @@ function renderEvidenceAssistant(evidenceList, sceneId, sceneTitle) {
         ['trusted', 'doubtful', 'viewed'].forEach(status => {
             const btn = document.createElement('button');
             btn.className = 'btn btn-secondary evidence-btn';
-            btn.textContent = status === 'trusted' ? '相信' : status === 'doubtful' ? '存疑' : '已阅';
+            btn.textContent = translateStatus(status);
             btn.onclick = () => {
-                gameState.markEvidence(item.id, status, { sceneId, sceneTitle, title: item.title });
+                gameState.markEvidence(item.id, status, {
+                    sceneId,
+                    sceneTitle,
+                    sceneTitleIntl,
+                    title: localize(item.title),
+                    titleIntl: item.title
+                });
                 renderAssistantStatus(card, item.id);
                 // 判断后隐藏选择框
                 const actionsContainer = card.querySelector('.assistant-actions');
@@ -210,18 +218,18 @@ function renderAssistantStatus(card, evidenceId, marksInput) {
     const statusDiv = document.createElement('div');
     statusDiv.className = 'assistant-status';
     if (statusData) {
-        statusDiv.textContent = `你的标记：${translateStatus(statusData.status)}`;
+        statusDiv.textContent = `${t('yourMark')}${translateStatus(statusData.status)}`;
         statusDiv.classList.add(`status-${statusData.status}`);
     } else {
-        statusDiv.textContent = '未标记';
+        statusDiv.textContent = t('unmarked');
     }
     card.appendChild(statusDiv);
 }
 
 function translateStatus(status) {
-    if (status === 'trusted') return '相信';
-    if (status === 'doubtful') return '存疑';
-    if (status === 'viewed') return '已阅';
+    if (status === 'trusted') return t('statusTrusted');
+    if (status === 'doubtful') return t('statusDoubtful');
+    if (status === 'viewed') return t('statusViewed');
     return status;
 }
 
@@ -229,7 +237,15 @@ function toggleHistoryPanel() {
     let panel = document.getElementById('assistant-history');
     const bubble = document.querySelector('#assistant .assistant-bubble');
     const avatar = document.querySelector('#assistant .assistant-avatar');
+    const syncHeader = (container) => {
+        if (!container) return;
+        const titleSpan = container.querySelector('.history-header span');
+        const closeBtn = container.querySelector('.history-close');
+        if (titleSpan) titleSpan.textContent = t('markedEvidence');
+        if (closeBtn) closeBtn.setAttribute('aria-label', t('close'));
+    };
     if (panel) {
+        syncHeader(panel);
         const isOpen = panel.classList.contains('open');
         panel.classList.toggle('open', !isOpen);
         if (!isOpen) {
@@ -245,8 +261,8 @@ function toggleHistoryPanel() {
     panel.id = 'assistant-history';
     panel.innerHTML = `
         <div class="history-header">
-            <span>已标记的证据</span>
-            <button class="history-close" aria-label="关闭">×</button>
+            <span>${t('markedEvidence')}</span>
+            <button class="history-close" aria-label="${t('close')}">×</button>
         </div>
         <div class="history-body"></div>
     `;
@@ -257,6 +273,7 @@ function toggleHistoryPanel() {
         if (bubble) bubble.style.display = '';
     };
 
+    syncHeader(panel);
     renderHistoryBody(panel);
     panel.classList.add('open');
     if (bubble) bubble.style.display = 'none';
@@ -268,19 +285,22 @@ function toggleMinimizeButton(bubble, show) {
     if (show) {
         if (existing) {
             existing.style.display = 'flex';
+            const minimized = bubble.classList.contains('assistant-minimized');
+            existing.title = minimized ? t('assistantExpand') : t('assistantMinimize');
+            existing.innerHTML = minimized ? '+' : '−';
             return;
         }
         const btn = document.createElement('button');
         btn.className = 'assistant-minimize';
-        btn.title = '最小化';
+        btn.title = t('assistantMinimize');
         btn.innerHTML = '−';
         btn.onclick = () => {
             const minimized = bubble.classList.toggle('assistant-minimized');
             if (minimized) {
-                btn.title = '展开';
+                btn.title = t('assistantExpand');
                 btn.innerHTML = '+';
             } else {
-                btn.title = '最小化';
+                btn.title = t('assistantMinimize');
                 btn.innerHTML = '−';
             }
         };
@@ -299,18 +319,21 @@ function renderHistoryBody(panel) {
     const entries = Object.entries(marks);
 
     if (!entries.length) {
-        body.textContent = '还没有标记过证据。';
+        body.textContent = t('noEvidenceMarks');
         return;
     }
 
     entries.forEach(([id, meta]) => {
         const row = document.createElement('div');
         row.className = 'history-row';
-        const title = meta.title || id;
-        const sceneLabel = meta.sceneTitle || meta.sceneId || '';
+        const title = meta.titleIntl ? localize(meta.titleIntl) : (meta.title || id);
+        const sceneLabelRaw = meta.sceneTitleIntl ? localize(meta.sceneTitleIntl) : (meta.sceneTitle || meta.sceneId || '');
+        const sceneLabel = sceneLabelRaw
+            ? (getLanguage() === 'zh' ? `（场景：${sceneLabelRaw}）` : `(Scene: ${sceneLabelRaw})`)
+            : '';
         row.innerHTML = `
             <div class="history-title">${title}</div>
-            <div class="history-scene">${sceneLabel ? `（场景：${sceneLabel}）` : ''}</div>
+            <div class="history-scene">${sceneLabel}</div>
             <div class="history-status status-${meta.status}">${translateStatus(meta.status)}</div>
         `;
         body.appendChild(row);
@@ -322,7 +345,7 @@ function renderHistoryBody(panel) {
  */
 export function showLoading() {
     const appElement = document.getElementById('app');
-    appElement.innerHTML = '<div class="loading">加载中...</div>';
+    appElement.innerHTML = `<div class="loading">${t('loading')}</div>`;
 }
 
 /**
@@ -331,7 +354,7 @@ export function showLoading() {
  */
 export function showError(message) {
     const appElement = document.getElementById('app');
-    appElement.innerHTML = `<div class="loading">错误: ${message}</div>`;
+    appElement.innerHTML = `<div class="loading">${t('errorPrefix')}: ${message}</div>`;
 }
 
 /**
@@ -378,7 +401,7 @@ export function renderFlowchart(scenes, currentState, onNodeClick) {
 
     const title = document.createElement('h3');
     title.className = 'flowchart-title';
-    title.textContent = '故事线';
+    title.textContent = t('storyLine');
     flowchartContainer.appendChild(title);
 
     currentState.history.forEach(sceneId => {
@@ -387,7 +410,7 @@ export function renderFlowchart(scenes, currentState, onNodeClick) {
 
         const node = document.createElement('div');
         node.className = 'flowchart-node';
-        node.textContent = scene.title || scene.id;
+        node.textContent = localize(scene.title) || scene.id;
         node.dataset.sceneId = scene.id;
 
         const isActive = currentState.currentSceneId === scene.id;
@@ -415,7 +438,7 @@ export function renderFlowchart(scenes, currentState, onNodeClick) {
 
                 const futureNode = document.createElement('div');
                 futureNode.className = 'flowchart-node future';
-                futureNode.textContent = futureScene.title || futureScene.id;
+                futureNode.textContent = localize(futureScene.title) || futureScene.id;
                 futureNode.style.marginLeft = '20px';
 
                 flowchartContainer.appendChild(futureNode);
@@ -432,7 +455,7 @@ function renderRecap(sceneContainer) {
     recap.className = 'recap-panel';
 
     const title = document.createElement('h3');
-    title.textContent = '你的报道摘要';
+    title.textContent = t('recapTitle');
     recap.appendChild(title);
 
     const state = gameState.getState();
@@ -445,33 +468,35 @@ function renderRecap(sceneContainer) {
     recap.appendChild(summary);
 
     const listTitle = document.createElement('h4');
-    listTitle.textContent = '关键决策回放';
+    listTitle.textContent = t('recapDecisions');
     recap.appendChild(listTitle);
 
     const list = document.createElement('ul');
     list.className = 'decision-list';
     decisions.forEach(entry => {
         const li = document.createElement('li');
-        li.textContent = `在【${entry.sceneTitle || entry.sceneId}】，你选择：${entry.choiceText}`;
+        const sceneLabel = entry.sceneTitleIntl ? localize(entry.sceneTitleIntl) : (entry.sceneTitle || entry.sceneId);
+        const choiceLabel = entry.choiceIntl ? localize(entry.choiceIntl) : entry.choiceText;
+        li.textContent = t('decisionEntry', sceneLabel, choiceLabel);
         list.appendChild(li);
     });
     recap.appendChild(list);
 
     const evidenceTitle = document.createElement('h4');
-    evidenceTitle.textContent = '证据标记';
+    evidenceTitle.textContent = t('evidenceMarks');
     recap.appendChild(evidenceTitle);
 
     const evidenceInfo = document.createElement('div');
     evidenceInfo.className = 'evidence-summary';
     const counters = countEvidenceMarks(marks);
-    evidenceInfo.textContent = `相信: ${counters.trusted} · 存疑: ${counters.doubtful} · 已阅: ${counters.viewed}`;
+    evidenceInfo.textContent = `${t('trustedCount')}: ${counters.trusted} · ${t('doubtfulCount')}: ${counters.doubtful} · ${t('viewedCount')}: ${counters.viewed}`;
     recap.appendChild(evidenceInfo);
 
     sceneContainer.appendChild(recap);
 }
 
 function buildSummary(decisions, marks) {
-    if (!decisions.length) return '你还没有做出任何选择。';
+    if (!decisions.length) return t('noDecisions');
 
     const unverifiedCount = decisions.filter(d => d.unverified).length;
     const leaningCount = {};
@@ -481,11 +506,11 @@ function buildSummary(decisions, marks) {
         }
     });
     const topAngle = Object.entries(leaningCount).sort((a, b) => b[1] - a[1])[0];
-    const angleText = topAngle ? translateAngle(topAngle[0]) : '尚未形成明显倾向';
+    const angleText = topAngle ? translateAngle(topAngle[0]) : t('angleUnknown');
 
     const trustScore = calculateTrustScore(decisions, marks);
 
-    return `报道倾向：${angleText}。未证实信息使用 ${unverifiedCount} 次。综合可信度预估：${trustScore} / 100（越高代表引用来源越充分、标注越清晰）。`;
+    return t('summaryText', angleText, unverifiedCount, trustScore);
 }
 
 function calculateTrustScore(decisions, marks) {
@@ -504,10 +529,10 @@ function calculateTrustScore(decisions, marks) {
 
 function translateAngle(angle) {
     const map = {
-        official: '偏官方信息框架',
-        community: '偏社区/人情叙事',
-        hype: '偏流量/刺激取向',
-        balanced: '平衡且求证'
+        official: t('angleOfficial'),
+        community: t('angleCommunity'),
+        hype: t('angleHype'),
+        balanced: t('angleBalanced')
     };
     return map[angle] || angle;
 }

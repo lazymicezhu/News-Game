@@ -6,11 +6,71 @@
 import { scenes } from './scenes.js';
 import { gameRouter } from './router.js';
 import { newsBoard } from './newsBoard.js';
+import { setLanguage, getLanguage, onLanguageChange, t } from './i18n.js';
+import { gameState } from './state.js';
+
+const LANGUAGE_STORAGE_KEY = 'newsgame-lang';
+
+function applyStaticText() {
+    const titleEl = document.querySelector('.game-title');
+    const evidenceBtn = document.getElementById('evidence-toggle-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const drawerTitle = document.querySelector('#evidence-drawer .evidence-header h3');
+    const boardTitle = document.querySelector('.news-board-title');
+    const boardSub = document.querySelector('.news-board-sub');
+    const languageLabel = document.querySelector('label[for=\"language-select\"]');
+    const loadingEl = document.querySelector('#app .loading');
+
+    document.title = t('gameTitle');
+    if (titleEl) titleEl.textContent = t('gameTitle');
+    if (evidenceBtn) evidenceBtn.textContent = t('evidenceToggle');
+    if (restartBtn) restartBtn.textContent = t('restart');
+    if (drawerTitle) drawerTitle.textContent = t('evidenceDrawerTitle');
+    if (boardTitle) boardTitle.textContent = t('liveBoardTitle');
+    if (boardSub) boardSub.textContent = t('liveBoardSub');
+    if (languageLabel) languageLabel.textContent = t('languageLabel');
+    if (loadingEl) loadingEl.textContent = t('loading');
+}
+
+function setupLanguage() {
+    const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    if (saved) {
+        setLanguage(saved);
+    }
+    gameState.resetAssistantLines();
+    applyStaticText();
+
+    const select = document.getElementById('language-select');
+    if (select) {
+        select.value = getLanguage();
+        select.addEventListener('change', (e) => {
+            const lang = e.target.value;
+            const previous = getLanguage();
+            setLanguage(lang);
+            localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+            if (lang === previous) {
+                gameState.resetAssistantLines();
+                applyStaticText();
+                gameRouter.rerenderCurrent();
+                newsBoard.refreshLanguage();
+            }
+        });
+    }
+
+    onLanguageChange(() => {
+        gameState.resetAssistantLines();
+        applyStaticText();
+        gameRouter.rerenderCurrent();
+        newsBoard.refreshLanguage();
+    });
+}
 
 /**
  * 初始化应用
  */
 function init() {
+    setupLanguage();
+
     // 初始化游戏路由
     gameRouter.init(scenes, 'intro');
 

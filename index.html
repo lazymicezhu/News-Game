@@ -13,7 +13,14 @@
             <header id="header">
                 <div class="header-top">
                     <h1 class="game-title">灰烬中的城镇</h1>
-                    <button id="evidence-toggle-btn" class="btn btn-secondary" style="display: none;">证据与来源</button>
+                    <div class="header-actions">
+                        <label for="language-select" class="lang-label">语言</label>
+                        <select id="language-select" class="lang-select">
+                            <option value="zh">中文</option>
+                            <option value="en">English</option>
+                        </select>
+                        <button id="evidence-toggle-btn" class="btn btn-secondary" style="display: none;">证据与来源</button>
+                    </div>
                 </div>
                 <div id="progress-bar" class="progress-bar" style="display: none;">
                     <div class="progress-fill"></div>

@@ -5,6 +5,7 @@
 
 import { gameState } from './state.js';
 import { renderScene, showError, hideFooter, renderFlowchart } from './ui.js';
+import { localize, t } from './i18n.js';
 
 class GameRouter {
     constructor() {
@@ -32,14 +33,14 @@ class GameRouter {
      */
     goTo(sceneId) {
         if (!this.scenes) {
-            showError('场景数据未加载');
+            showError(t('sceneNotFound'));
             return;
         }
 
         const scene = this.scenes[sceneId];
 
         if (!scene) {
-            showError(`场景 "${sceneId}" 不存在`);
+            showError(t('sceneNotFound'));
             return;
         }
 
@@ -70,9 +71,11 @@ class GameRouter {
         const currentScene = this.scenes[currentSceneId];
         gameState.logDecision({
             sceneId: currentSceneId,
-            sceneTitle: currentScene ? currentScene.title : currentSceneId,
-            choiceText: choice.text,
-            source: currentScene && currentScene.source ? currentScene.source.label : null,
+            sceneTitle: currentScene ? localize(currentScene.title) : currentSceneId,
+            sceneTitleIntl: currentScene ? currentScene.title : null,
+            choiceText: localize(choice.text),
+            choiceIntl: choice.text,
+            source: currentScene && currentScene.source ? localize(currentScene.source.label) : null,
             unverified: currentScene ? !!currentScene.unverified : false,
             effect: choice.effect || {},
             tags: choice.tags || []
@@ -105,6 +108,12 @@ class GameRouter {
     getCurrentScene() {
         const sceneId = gameState.currentSceneId;
         return this.scenes ? this.scenes[sceneId] : null;
+    }
+
+    rerenderCurrent() {
+        if (this.scenes && gameState.currentSceneId) {
+            this.goTo(gameState.currentSceneId);
+        }
     }
 }
 

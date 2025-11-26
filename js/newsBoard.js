@@ -1,5 +1,6 @@
 // 新闻看板管理模块
 import { newsItems } from '../data/newsData.js';
+import { localize, t } from './i18n.js';
 
 class NewsBoard {
     constructor() {
@@ -31,6 +32,8 @@ class NewsBoard {
         if (!this.timeDisplay) {
             console.warn('时间显示元素未找到');
         }
+
+        this.updateLabels();
 
         // 清空现有内容
         this.newsContainer.innerHTML = '';
@@ -133,7 +136,7 @@ class NewsBoard {
         // 遍历所有新闻，找到匹配当前时间且未显示的新闻
         newsItems.forEach((newsItem, index) => {
             if (newsItem.time === currentTimeStr && !this.displayedNewsIndices.has(index)) {
-                this.addNewsItem(newsItem);
+                this.addNewsItem(newsItem, index);
                 this.displayedNewsIndices.add(index);
                 this.removeExcessNews();
             }
@@ -144,10 +147,13 @@ class NewsBoard {
      * 添加新闻项到列表顶部
      * @param {Object} newsItem - 新闻数据 { time, text }
      */
-    addNewsItem(newsItem) {
+    addNewsItem(newsItem, index) {
         // 创建新闻元素
         const newsElement = document.createElement('div');
         newsElement.className = 'news-item news-item-enter';
+        if (typeof index === 'number') {
+            newsElement.dataset.index = index;
+        }
 
         const timeElement = document.createElement('div');
         timeElement.className = 'news-time';
@@ -155,7 +161,7 @@ class NewsBoard {
 
         const textElement = document.createElement('div');
         textElement.className = 'news-text';
-        textElement.textContent = newsItem.text;
+        textElement.textContent = localize(newsItem.text);
 
         newsElement.appendChild(timeElement);
         newsElement.appendChild(textElement);
@@ -212,6 +218,28 @@ class NewsBoard {
      */
     getCurrentTime() {
         return this.formatTime(this.gameTime.hour, this.gameTime.minute);
+    }
+
+    updateLabels() {
+        const titleEl = document.querySelector('.news-board-title');
+        const subEl = document.querySelector('.news-board-sub');
+        if (titleEl) titleEl.textContent = t('liveBoardTitle');
+        if (subEl) subEl.textContent = t('liveBoardSub');
+    }
+
+    refreshLanguage() {
+        this.updateLabels();
+        if (!this.newsContainer) return;
+        this.newsContainer.querySelectorAll('.news-item').forEach(item => {
+            const idx = parseInt(item.dataset.index, 10);
+            if (Number.isNaN(idx)) return;
+            const news = newsItems[idx];
+            if (!news) return;
+            const textEl = item.querySelector('.news-text');
+            if (textEl) {
+                textEl.textContent = localize(news.text);
+            }
+        });
     }
 }
 

@@ -134,6 +134,10 @@ class GameState {
         return this.assistantPool.pop();
     }
 
+    resetAssistantLines() {
+        this.assistantPool = [];
+    }
+
     shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i -= 1) {
             const j = Math.floor(Math.random() * (i + 1));
