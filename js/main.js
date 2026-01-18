@@ -13,9 +13,7 @@ const LANGUAGE_STORAGE_KEY = 'newsgame-lang';
 
 function applyStaticText() {
     const titleEl = document.querySelector('.game-title');
-    const evidenceBtn = document.getElementById('evidence-toggle-btn');
     const restartBtn = document.getElementById('restart-btn');
-    const drawerTitle = document.querySelector('#evidence-drawer .evidence-header h3');
     const boardTitle = document.querySelector('.news-board-title');
     const boardSub = document.querySelector('.news-board-sub');
     const languageLabel = document.querySelector('label[for=\"language-select\"]');
@@ -23,9 +21,7 @@ function applyStaticText() {
 
     document.title = t('gameTitle');
     if (titleEl) titleEl.textContent = t('gameTitle');
-    if (evidenceBtn) evidenceBtn.textContent = t('evidenceToggle');
     if (restartBtn) restartBtn.textContent = t('restart');
-    if (drawerTitle) drawerTitle.textContent = t('evidenceDrawerTitle');
     if (boardTitle) boardTitle.textContent = t('liveBoardTitle');
     if (boardSub) boardSub.textContent = t('liveBoardSub');
     if (languageLabel) languageLabel.textContent = t('languageLabel');

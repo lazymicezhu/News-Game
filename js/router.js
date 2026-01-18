@@ -75,8 +75,6 @@ class GameRouter {
             sceneTitleIntl: currentScene ? currentScene.title : null,
             choiceText: localize(choice.text),
             choiceIntl: choice.text,
-            source: currentScene && currentScene.source ? localize(currentScene.source.label) : null,
-            unverified: currentScene ? !!currentScene.unverified : false,
             effect: choice.effect || {},
             tags: choice.tags || []
         });

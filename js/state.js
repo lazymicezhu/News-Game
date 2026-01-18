@@ -9,7 +9,6 @@ class GameState {
         this.variables = {};
         this.history = [];
         this.decisions = [];
-        this.evidenceMarks = {};
         this.assistantPool = [];
     }
 
@@ -22,7 +21,6 @@ class GameState {
         this.variables = {};
         this.history = [];
         this.decisions = [];
-        this.evidenceMarks = {};
         this.assistantPool = [];
     }
 
@@ -35,8 +33,7 @@ class GameState {
             currentSceneId: this.currentSceneId,
             variables: { ...this.variables },
             history: [...this.history],
-            decisions: [...this.decisions],
-            evidenceMarks: { ...this.evidenceMarks }
+            decisions: [...this.decisions]
         };
     }
 
@@ -91,34 +88,11 @@ class GameState {
     }
 
     /**
-     * 标记证据的可信度
-     * @param {string} evidenceId - 证据ID
-     * @param {string} status - trusted | doubtful | viewed
-     * @param {Object} meta - 额外信息
-     */
-    markEvidence(evidenceId, status, meta = {}) {
-        if (!evidenceId || !status) return;
-        this.evidenceMarks[evidenceId] = {
-            status,
-            ...meta,
-            timestamp: Date.now()
-        };
-    }
-
-    /**
      * 获取决策记录
      * @returns {Array} 决策列表
      */
     getDecisionLog() {
         return [...this.decisions];
-    }
-
-    /**
-     * 获取证据标记
-     * @returns {Object} 证据标记映射
-     */
-    getEvidenceMarks() {
-        return { ...this.evidenceMarks };
     }
 
     /**
