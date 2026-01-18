@@ -75,3 +75,15 @@ export async function streamChat({ messages, onToken, signal }) {
         }
     }
 }
+
+export async function isAiConfigured() {
+    try {
+        const config = await loadConfig();
+        const key = (config.apiKey || '').trim();
+        if (!config.baseUrl) return false;
+        if (!key || key === 'REPLACE_WITH_YOUR_KEY') return false;
+        return true;
+    } catch {
+        return false;
+    }
+}

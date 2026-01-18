@@ -55,6 +55,7 @@ function renderRows() {
         }).join('');
         tr.innerHTML = `
             <td>${entry.name || '-'}</td>
+            <td>${entry.aiEnabled ? '是' : '否'}</td>
             <td>${formatDuration(entry.durationMs)}</td>
             <td>${entry.clicks ?? 0}</td>
             <td>${entry.distance ?? 0}</td>

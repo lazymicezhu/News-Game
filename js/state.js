@@ -18,6 +18,7 @@ class GameState {
         this.telemetryActive = false;
         this.sessionStart = null;
         this.aiLogs = [];
+        this.aiEnabled = false;
     }
 
     /**
@@ -38,6 +39,7 @@ class GameState {
         this.telemetryActive = false;
         this.sessionStart = null;
         this.aiLogs = [];
+        this.aiEnabled = false;
     }
 
     /**
@@ -56,7 +58,8 @@ class GameState {
             aiInteractions: this.aiInteractions,
             telemetryActive: this.telemetryActive,
             sessionStart: this.sessionStart,
-            aiLogs: [...this.aiLogs]
+            aiLogs: [...this.aiLogs],
+            aiEnabled: this.aiEnabled
         };
     }
 
@@ -100,6 +103,10 @@ class GameState {
             ...entry,
             timestamp: Date.now()
         });
+    }
+
+    setAiEnabled(enabled) {
+        this.aiEnabled = !!enabled;
     }
 
     setTelemetryActive(active) {

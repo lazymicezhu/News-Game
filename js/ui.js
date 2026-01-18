@@ -529,6 +529,7 @@ function buildStatsPayload() {
     const durationMs = Math.max(0, Date.now() - start);
     return {
         name: state.playerName || '',
+        aiEnabled: !!state.aiEnabled,
         clicks: state.clickCount || 0,
         distance: Math.round(state.mouseDistance || 0),
         aiInteractions: state.aiInteractions || 0,

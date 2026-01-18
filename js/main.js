@@ -9,6 +9,7 @@ import { newsBoard } from './newsBoard.js';
 import { setLanguage, getLanguage, onLanguageChange, t } from './i18n.js';
 import { gameState } from './state.js';
 import { updateStatsPanel, setStatsVisibility } from './ui.js';
+import { isAiConfigured } from './aiClient.js';
 
 const LANGUAGE_STORAGE_KEY = 'newsgame-lang';
 
@@ -127,7 +128,7 @@ function init() {
     const introInput = document.getElementById('player-name-input');
     const introBtn = document.getElementById('intro-start-btn');
 
-    const startGame = (playerName) => {
+    const startGame = async (playerName) => {
         if (introBtn) {
             introBtn.disabled = true;
         }
@@ -139,6 +140,7 @@ function init() {
         if (playerName) {
             gameState.setPlayerName(playerName);
         }
+        gameState.setAiEnabled(await isAiConfigured());
         gameState.startSession();
         gameState.setTelemetryActive(true);
         gameState.setLastMousePos(null);
@@ -147,10 +149,11 @@ function init() {
         // 初始化新闻看板
         newsBoard.init();
 
-        const restartGame = () => {
+        const restartGame = async () => {
             gameRouter.restart();
             newsBoard.restart(); // 重启新闻看板
             gameState.setPlayerName('');
+            gameState.setAiEnabled(await isAiConfigured());
             gameState.setTelemetryActive(false);
             gameState.setLastMousePos(null);
             setStatsVisibility(false);
@@ -163,7 +166,9 @@ function init() {
         // 绑定重新开始按钮
         const restartBtn = document.getElementById('restart-btn');
         if (restartBtn) {
-            restartBtn.addEventListener('click', restartGame);
+            restartBtn.addEventListener('click', () => {
+                restartGame();
+            });
         }
 
         // 添加键盘快捷键支持（可选）
