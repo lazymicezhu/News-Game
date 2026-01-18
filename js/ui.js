@@ -1,6 +1,8 @@
 import { gameState } from './state.js';
 import { assistantLines } from '../data/assistantLines.js';
 import { t, localize, getLanguage } from './i18n.js';
+import { streamChat } from './aiClient.js';
+import { followupQuestions } from '../data/followupQuestions.js';
 
 /**
  * 渲染场景
@@ -71,13 +73,13 @@ export function renderScene(scene, onChoice) {
     appElement.appendChild(sceneDiv);
 
     // 助手浮层
-    renderAssistant();
+    renderAssistant(scene);
 }
 
 /**
  * 助手浮层（派蒙）
  */
-function renderAssistant() {
+function renderAssistant(scene) {
     let assistant = document.getElementById('assistant');
     if (!assistant) {
         assistant = document.createElement('div');
@@ -88,6 +90,26 @@ function renderAssistant() {
             </div>
             <div class="assistant-bubble">
                 <div class="assistant-text">${t('assistantFallback')}</div>
+                <div class="assistant-controls">
+                    <button class="btn btn-secondary assistant-btn assistant-followup">${t('assistantFollowup')}</button>
+                    <button class="btn btn-secondary assistant-btn assistant-interview">${t('assistantInterview')}</button>
+                </div>
+                <div class="assistant-followup-list"></div>
+                <div class="assistant-panel">
+                    <label class="assistant-label">${t('assistantRoleLabel')}</label>
+                    <select class="assistant-role">
+                        <option value="fire">${t('roleFire')}</option>
+                        <option value="resident">${t('roleResident')}</option>
+                        <option value="volunteer">${t('roleVolunteer')}</option>
+                        <option value="reporter">${t('roleReporter')}</option>
+                    </select>
+                    <textarea class="assistant-input" rows="2" placeholder="${t('assistantQuestionPlaceholder')}"></textarea>
+                    <button class="btn btn-primary assistant-send">${t('assistantSend')}</button>
+                </div>
+                <div class="assistant-stream">
+                    <div class="assistant-stream-title">${t('assistantResponseTitle')}</div>
+                    <div class="assistant-stream-body"></div>
+                </div>
             </div>
         `;
         document.body.appendChild(assistant);
@@ -95,15 +117,214 @@ function renderAssistant() {
 
     const bubble = assistant.querySelector('.assistant-bubble');
     const textEl = assistant.querySelector('.assistant-text');
+    const followupBtn = assistant.querySelector('.assistant-followup');
+    const interviewBtn = assistant.querySelector('.assistant-interview');
+    const followupList = assistant.querySelector('.assistant-followup-list');
+    const panel = assistant.querySelector('.assistant-panel');
+    const roleSelect = assistant.querySelector('.assistant-role');
+    const inputEl = assistant.querySelector('.assistant-input');
+    const sendBtn = assistant.querySelector('.assistant-send');
+    const streamBody = assistant.querySelector('.assistant-stream-body');
+    const streamTitle = assistant.querySelector('.assistant-stream-title');
+    const controls = assistant.querySelector('.assistant-controls');
 
     // 始终显示助手：每个场景刷新一句
     assistant.style.display = 'flex';
     const pool = assistantLines[getLanguage()] || [];
     const line = gameState.nextAssistantLine(pool) || t('assistantFallback');
     textEl.textContent = line;
+    streamTitle.textContent = t('assistantResponseTitle');
+    streamTitle.style.display = 'block';
+    followupBtn.textContent = t('assistantFollowup');
+    interviewBtn.textContent = t('assistantInterview');
+    panel.querySelector('.assistant-label').textContent = t('assistantRoleLabel');
+    const roleOptions = roleSelect.querySelectorAll('option');
+    if (roleOptions[0]) roleOptions[0].textContent = t('roleFire');
+    if (roleOptions[1]) roleOptions[1].textContent = t('roleResident');
+    if (roleOptions[2]) roleOptions[2].textContent = t('roleVolunteer');
+    if (roleOptions[3]) roleOptions[3].textContent = t('roleReporter');
+    inputEl.placeholder = t('assistantQuestionPlaceholder');
+    sendBtn.textContent = t('assistantSend');
+    if (controls) controls.style.display = 'flex';
+    followupList.classList.remove('open');
+    panel.classList.remove('open');
+    streamBody.textContent = '';
+    if (assistant.aiAbort) {
+        assistant.aiAbort.abort();
+        assistant.aiAbort = null;
+    }
+
+    if (scene) {
+        assistant.dataset.sceneTitle = localize(scene.title) || '';
+        assistant.dataset.sceneText = localize(scene.text) || '';
+        assistant.dataset.sceneId = scene.id || '';
+        assistant.dataset.sceneChoices = JSON.stringify(
+            (scene.choices || []).map(choice => localize(choice.text))
+        );
+    } else {
+        assistant.dataset.sceneTitle = '';
+        assistant.dataset.sceneText = '';
+        assistant.dataset.sceneId = '';
+        assistant.dataset.sceneChoices = '[]';
+    }
+    renderFollowupButtons(assistant, followupList, assistant.dataset.sceneId);
 
     bubble.classList.add('assistant-pop');
     setTimeout(() => bubble.classList.remove('assistant-pop'), 300);
+
+    if (!assistant.dataset.bound) {
+        assistant.dataset.bound = 'true';
+
+        followupBtn.addEventListener('click', () => {
+            panel.classList.remove('open');
+            followupList.classList.toggle('open');
+            if (controls) controls.style.display = 'none';
+            if (streamTitle) {
+                streamTitle.textContent = t('assistantResponseTitle');
+                streamTitle.style.display = 'block';
+            }
+        });
+
+        interviewBtn.addEventListener('click', () => {
+            panel.classList.toggle('open');
+            if (controls) controls.style.display = 'none';
+            if (streamTitle) {
+                streamTitle.style.display = 'none';
+            }
+        });
+
+        sendBtn.addEventListener('click', async () => {
+            const question = inputEl.value.trim();
+            if (!question) return;
+            panel.classList.add('open');
+            inputEl.value = '';
+            await runInterview(assistant, streamBody, roleSelect.value, question);
+        });
+    }
+}
+
+function buildSceneContext(assistant) {
+    const title = assistant.dataset.sceneTitle || '';
+    const text = assistant.dataset.sceneText || '';
+    let choices = [];
+    try {
+        choices = JSON.parse(assistant.dataset.sceneChoices || '[]');
+    } catch {
+        choices = [];
+    }
+    return { title, text, choices };
+}
+
+function resetStream(streamBody, message) {
+    streamBody.textContent = message || '';
+}
+
+async function streamToElement(assistant, streamBody, messages) {
+    if (assistant.aiAbort) {
+        assistant.aiAbort.abort();
+    }
+    assistant.aiAbort = new AbortController();
+    resetStream(streamBody, t('assistantThinking'));
+
+    let hasToken = false;
+    try {
+        await streamChat({
+            messages,
+            signal: assistant.aiAbort.signal,
+            onToken: (token) => {
+                if (!hasToken) {
+                    streamBody.textContent = '';
+                    hasToken = true;
+                }
+                streamBody.textContent += token;
+            }
+        });
+    } catch (err) {
+        if (err?.name === 'AbortError') return;
+        if (err?.message === 'AI_CONFIG_MISSING' || err?.message === 'AI_CONFIG_LOAD_FAILED') {
+            streamBody.textContent = t('assistantConfigMissing');
+        } else {
+            streamBody.textContent = t('assistantRequestError');
+        }
+    }
+}
+
+function renderFollowupButtons(assistant, followupList, sceneId) {
+    followupList.innerHTML = '';
+    const set = followupQuestions[sceneId] || followupQuestions.default || [];
+    const list = set.slice(0, 3);
+    list.forEach((question) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-secondary assistant-followup-item';
+        btn.type = 'button';
+        btn.textContent = localize(question);
+        btn.onclick = async () => {
+            followupList.classList.remove('open');
+            await runFollowupAnswer(assistant, followupList, question);
+        };
+        followupList.appendChild(btn);
+    });
+}
+
+async function runFollowupAnswer(assistant, followupList, question) {
+    const { title, text } = buildSceneContext(assistant);
+    const lang = getLanguage();
+    const messages = [
+        {
+            role: 'system',
+            content: lang === 'zh'
+                ? '你是新闻编辑助理。基于场景内容回答追问，回答简洁、具体。'
+                : 'You are a newsroom assistant. Answer the follow-up question based on the scene, concise and specific.'
+        },
+        {
+            role: 'user',
+            content: [
+                `Scene: ${title || '-'}`,
+                `Context: ${text || '-'}`,
+                `${lang === 'zh' ? '追问' : 'Follow-up'}: ${localize(question)}`
+            ].join('\n')
+        }
+    ];
+    const streamBody = assistant.querySelector('.assistant-stream-body');
+    const streamTitle = assistant.querySelector('.assistant-stream-title');
+    if (streamTitle) {
+        streamTitle.textContent = t('assistantResponseTitle');
+        streamTitle.style.display = 'block';
+    }
+    await streamToElement(assistant, streamBody, messages);
+}
+
+async function runInterview(assistant, streamBody, role, question) {
+    const { title, text } = buildSceneContext(assistant);
+    const lang = getLanguage();
+    const roleMap = {
+        fire: t('roleFire'),
+        resident: t('roleResident'),
+        volunteer: t('roleVolunteer'),
+        reporter: t('roleReporter')
+    };
+    const roleLabel = roleMap[role] || role;
+    const messages = [
+        {
+            role: 'system',
+            content: lang === 'zh'
+                ? `你是${roleLabel}，正在接受记者采访。请基于场景背景作答，回答保持简短自然。`
+                : `You are a ${roleLabel} being interviewed. Answer based on the scene context in a concise, natural tone.`
+        },
+        {
+            role: 'user',
+            content: [
+                `Scene: ${title || '-'}`,
+                `Context: ${text || '-'}`,
+                `${lang === 'zh' ? '问题' : 'Question'}: ${question}`
+            ].join('\n')
+        }
+    ];
+    const streamTitle = assistant.querySelector('.assistant-stream-title');
+    if (streamTitle) {
+        streamTitle.style.display = 'none';
+    }
+    await streamToElement(assistant, streamBody, messages);
 }
 
 /**
