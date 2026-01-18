@@ -19,13 +19,17 @@ function loadStats() {
     }
 }
 
+function saveStats(list) {
+    localStorage.setItem('newsgame-stats', JSON.stringify(list));
+}
+
 function renderRows() {
     const tbody = document.getElementById('admin-rows');
     if (!tbody) return;
     const stats = loadStats();
     tbody.innerHTML = '';
 
-    stats.forEach((entry) => {
+    stats.forEach((entry, index) => {
         const tr = document.createElement('tr');
         const choices = Array.isArray(entry.choices) ? entry.choices : [];
         const logs = Array.isArray(entry.aiLogs) ? entry.aiLogs : [];
@@ -70,6 +74,9 @@ function renderRows() {
                     </div>
                 </div>
             </td>
+            <td>
+                <button class="btn btn-secondary admin-delete-btn" data-index="${index}" aria-label="删除">×</button>
+            </td>
             <td>${formatTime(entry.timestamp)}</td>
         `;
         tbody.appendChild(tr);
@@ -93,6 +100,18 @@ function renderRows() {
             });
             tooltip.addEventListener('mouseleave', () => {
                 tooltip.classList.remove('is-visible');
+            });
+        }
+
+        const deleteBtn = tr.querySelector('.admin-delete-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => {
+                const index = parseInt(deleteBtn.dataset.index, 10);
+                if (Number.isNaN(index)) return;
+                const list = loadStats();
+                list.splice(index, 1);
+                saveStats(list);
+                renderRows();
             });
         }
     });

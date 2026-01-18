@@ -565,6 +565,21 @@ body.admin-page {
     padding: 6px 10px;
 }
 
+.admin-delete-btn {
+    font-size: 16px;
+    line-height: 1;
+    padding: 4px 8px;
+    border-color: #fecdd3;
+    color: #be123c;
+    background: #fff1f2;
+}
+
+.admin-delete-btn:hover {
+    background: #ffe4e6;
+    border-color: #fda4af;
+    color: #9f1239;
+}
+
 .admin-heatmap-tooltip {
     position: fixed;
     top: 0;
