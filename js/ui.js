@@ -66,6 +66,7 @@ export function renderScene(scene, onChoice) {
         sceneDiv.classList.add('ending');
         showFooter();
         renderRecap(sceneDiv);
+        finalizeStats();
     }
 
     // 替换内容
@@ -73,13 +74,14 @@ export function renderScene(scene, onChoice) {
     appElement.appendChild(sceneDiv);
 
     // 助手浮层
-    renderAssistant(scene);
+    renderAssistant(scene, !(scene.choices && scene.choices.length === 0));
+    updateStatsPanel();
 }
 
 /**
  * 助手浮层（派蒙）
  */
-function renderAssistant(scene) {
+function renderAssistant(scene, showActions = true) {
     let assistant = document.getElementById('assistant');
     if (!assistant) {
         assistant = document.createElement('div');
@@ -145,7 +147,9 @@ function renderAssistant(scene) {
     if (roleOptions[3]) roleOptions[3].textContent = t('roleReporter');
     inputEl.placeholder = t('assistantQuestionPlaceholder');
     sendBtn.textContent = t('assistantSend');
-    if (controls) controls.style.display = 'flex';
+    if (controls) {
+        controls.style.display = showActions ? 'flex' : 'none';
+    }
     followupList.classList.remove('open');
     panel.classList.remove('open');
     streamBody.textContent = '';
@@ -219,14 +223,15 @@ function resetStream(streamBody, message) {
     streamBody.textContent = message || '';
 }
 
-async function streamToElement(assistant, streamBody, messages) {
+async function streamToElement(assistant, streamBody, messages, loadingText) {
     if (assistant.aiAbort) {
         assistant.aiAbort.abort();
     }
     assistant.aiAbort = new AbortController();
-    resetStream(streamBody, t('assistantThinking'));
+    resetStream(streamBody, loadingText || t('assistantThinking'));
 
     let hasToken = false;
+    let fullText = '';
     try {
         await streamChat({
             messages,
@@ -236,9 +241,11 @@ async function streamToElement(assistant, streamBody, messages) {
                     streamBody.textContent = '';
                     hasToken = true;
                 }
+                fullText += token;
                 streamBody.textContent += token;
             }
         });
+        return fullText;
     } catch (err) {
         if (err?.name === 'AbortError') return;
         if (err?.message === 'AI_CONFIG_MISSING' || err?.message === 'AI_CONFIG_LOAD_FAILED') {
@@ -246,6 +253,7 @@ async function streamToElement(assistant, streamBody, messages) {
         } else {
             streamBody.textContent = t('assistantRequestError');
         }
+        return '';
     }
 }
 
@@ -264,6 +272,19 @@ function renderFollowupButtons(assistant, followupList, sceneId) {
         };
         followupList.appendChild(btn);
     });
+}
+
+function pause(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function showFollowupStages(assistant, streamBody, requestId) {
+    const stages = [t('assistantGenerating'), t('assistantSearching'), t('assistantReasoning')];
+    for (const stage of stages) {
+        if (assistant.dataset.requestId !== requestId) return;
+        resetStream(streamBody, stage);
+        await pause(450);
+    }
 }
 
 async function runFollowupAnswer(assistant, followupList, question) {
@@ -291,7 +312,22 @@ async function runFollowupAnswer(assistant, followupList, question) {
         streamTitle.textContent = t('assistantResponseTitle');
         streamTitle.style.display = 'block';
     }
-    await streamToElement(assistant, streamBody, messages);
+    gameState.incrementAiInteractions();
+    updateStatsPanel();
+    const requestId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    assistant.dataset.requestId = requestId;
+    await showFollowupStages(assistant, streamBody, requestId);
+    if (assistant.dataset.requestId !== requestId) return;
+    const response = await streamToElement(assistant, streamBody, messages, t('assistantGenerating'));
+    if (response) {
+        gameState.addAiLog({
+            type: 'followup',
+            sceneId: assistant.dataset.sceneId || '',
+            sceneTitle: assistant.dataset.sceneTitle || '',
+            question: localize(question),
+            response
+        });
+    }
 }
 
 async function runInterview(assistant, streamBody, role, question) {
@@ -324,7 +360,19 @@ async function runInterview(assistant, streamBody, role, question) {
     if (streamTitle) {
         streamTitle.style.display = 'none';
     }
-    await streamToElement(assistant, streamBody, messages);
+    gameState.incrementAiInteractions();
+    updateStatsPanel();
+    const response = await streamToElement(assistant, streamBody, messages);
+    if (response) {
+        gameState.addAiLog({
+            type: 'interview',
+            sceneId: assistant.dataset.sceneId || '',
+            sceneTitle: assistant.dataset.sceneTitle || '',
+            role,
+            question,
+            response
+        });
+    }
 }
 
 /**
@@ -432,6 +480,82 @@ export function renderFlowchart(scenes, currentState, onNodeClick) {
             }
         });
     }
+}
+
+export function updateStatsPanel() {
+    const state = gameState.getState();
+    const nameEl = document.getElementById('stats-name');
+    const scoreEl = document.getElementById('stats-score');
+    const clicksEl = document.getElementById('stats-clicks');
+    const distanceEl = document.getElementById('stats-distance');
+    const aiEl = document.getElementById('stats-ai');
+    const choicesEl = document.getElementById('stats-choices');
+
+    if (nameEl) nameEl.textContent = state.playerName || '-';
+    if (clicksEl) clicksEl.textContent = `${state.clickCount || 0}`;
+    if (distanceEl) distanceEl.textContent = `${Math.round(state.mouseDistance || 0)} px`;
+    if (aiEl) aiEl.textContent = `${state.aiInteractions || 0}`;
+
+    const decisionCount = state.decisions.length;
+    const score = Math.min(
+        100,
+        decisionCount * 12
+            + Math.floor((state.aiInteractions || 0) * 8)
+            + Math.floor((state.clickCount || 0) / 10)
+            + Math.floor((state.mouseDistance || 0) / 800)
+    );
+    if (scoreEl) scoreEl.textContent = `${score} / 100`;
+
+    if (choicesEl) {
+        choicesEl.innerHTML = '';
+        state.decisions.forEach((entry) => {
+            const li = document.createElement('li');
+            const choiceLabel = entry.choiceIntl ? localize(entry.choiceIntl) : entry.choiceText;
+            li.textContent = choiceLabel || '-';
+            choicesEl.appendChild(li);
+        });
+    }
+}
+
+export function setStatsVisibility(visible) {
+    const panel = document.getElementById('stats-panel');
+    if (!panel) return;
+    panel.classList.toggle('is-visible', !!visible);
+}
+
+function buildStatsPayload() {
+    const state = gameState.getState();
+    const start = state.sessionStart || Date.now();
+    const durationMs = Math.max(0, Date.now() - start);
+    return {
+        name: state.playerName || '',
+        clicks: state.clickCount || 0,
+        distance: Math.round(state.mouseDistance || 0),
+        aiInteractions: state.aiInteractions || 0,
+        aiLogs: state.aiLogs || [],
+        choices: state.decisions.map((entry) => {
+            return {
+                sceneId: entry.sceneId,
+                text: entry.choiceIntl ? localize(entry.choiceIntl) : entry.choiceText
+            };
+        }),
+        durationMs,
+        timestamp: Date.now()
+    };
+}
+
+function saveStatsToLocal(payload) {
+    const key = 'newsgame-stats';
+    const list = JSON.parse(localStorage.getItem(key) || '[]');
+    list.push(payload);
+    localStorage.setItem(key, JSON.stringify(list));
+}
+
+function finalizeStats() {
+    gameState.setTelemetryActive(false);
+    updateStatsPanel();
+    const payload = buildStatsPayload();
+    saveStatsToLocal(payload);
 }
 
 /**

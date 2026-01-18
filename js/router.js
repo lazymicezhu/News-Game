@@ -4,7 +4,7 @@
  */
 
 import { gameState } from './state.js';
-import { renderScene, showError, hideFooter, renderFlowchart } from './ui.js';
+import { renderScene, showError, hideFooter, renderFlowchart, updateStatsPanel } from './ui.js';
 import { localize, t } from './i18n.js';
 
 class GameRouter {
@@ -78,6 +78,7 @@ class GameRouter {
             effect: choice.effect || {},
             tags: choice.tags || []
         });
+        updateStatsPanel();
 
         // 应用选择效果
         if (choice.effect) {

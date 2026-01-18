@@ -10,6 +10,14 @@ class GameState {
         this.history = [];
         this.decisions = [];
         this.assistantPool = [];
+        this.playerName = '';
+        this.clickCount = 0;
+        this.mouseDistance = 0;
+        this.aiInteractions = 0;
+        this.lastMousePos = null;
+        this.telemetryActive = false;
+        this.sessionStart = null;
+        this.aiLogs = [];
     }
 
     /**
@@ -22,6 +30,14 @@ class GameState {
         this.history = [];
         this.decisions = [];
         this.assistantPool = [];
+        this.playerName = '';
+        this.clickCount = 0;
+        this.mouseDistance = 0;
+        this.aiInteractions = 0;
+        this.lastMousePos = null;
+        this.telemetryActive = false;
+        this.sessionStart = null;
+        this.aiLogs = [];
     }
 
     /**
@@ -33,7 +49,14 @@ class GameState {
             currentSceneId: this.currentSceneId,
             variables: { ...this.variables },
             history: [...this.history],
-            decisions: [...this.decisions]
+            decisions: [...this.decisions],
+            playerName: this.playerName,
+            clickCount: this.clickCount,
+            mouseDistance: this.mouseDistance,
+            aiInteractions: this.aiInteractions,
+            telemetryActive: this.telemetryActive,
+            sessionStart: this.sessionStart,
+            aiLogs: [...this.aiLogs]
         };
     }
 
@@ -61,6 +84,55 @@ class GameState {
      */
     getVariable(key) {
         return this.variables[key];
+    }
+
+    startSession() {
+        this.sessionStart = Date.now();
+    }
+
+    getSessionStart() {
+        return this.sessionStart;
+    }
+
+    addAiLog(entry) {
+        if (!entry) return;
+        this.aiLogs.push({
+            ...entry,
+            timestamp: Date.now()
+        });
+    }
+
+    setTelemetryActive(active) {
+        this.telemetryActive = !!active;
+    }
+
+    isTelemetryActive() {
+        return this.telemetryActive;
+    }
+
+    setPlayerName(name) {
+        this.playerName = name || '';
+    }
+
+    incrementClick() {
+        this.clickCount += 1;
+    }
+
+    addMouseDistance(delta) {
+        if (typeof delta !== 'number' || Number.isNaN(delta)) return;
+        this.mouseDistance += Math.max(0, delta);
+    }
+
+    incrementAiInteractions() {
+        this.aiInteractions += 1;
+    }
+
+    setLastMousePos(pos) {
+        this.lastMousePos = pos;
+    }
+
+    getLastMousePos() {
+        return this.lastMousePos;
     }
 
     /**
