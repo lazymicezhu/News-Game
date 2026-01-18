@@ -445,32 +445,49 @@ body {
 }
 
 /* ===== 后台 ===== */
+body.admin-page {
+    background: radial-gradient(circle at top, #eef2ff 0%, #f8fafc 45%, #ffffff 100%);
+}
+
 .admin-wrapper {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 24px;
+    padding: 28px 24px 36px;
+    font-family: "Source Serif 4", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
 }
 
 .admin-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
 }
 
 .admin-title {
     margin: 0;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
-    color: var(--text-primary);
+    color: #0f172a;
+    letter-spacing: 0.2px;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .admin-content {
     background: #ffffff;
-    border: 1px solid var(--border-color);
-    border-radius: 14px;
-    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(100vh - 160px);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
 }
+
 
 .admin-table {
     width: 100%;
@@ -480,15 +497,40 @@ body {
 
 .admin-table th,
 .admin-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border-color);
+    padding: 12px 14px;
+    border-bottom: 1px solid #e2e8f0;
     text-align: left;
     vertical-align: top;
 }
 
 .admin-table th {
-    background: #f8fafc;
+    background: #f1f5f9;
     font-weight: 700;
+    color: #0f172a;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.admin-table tr:nth-child(even) td {
+    background: #fbfdff;
+}
+
+.admin-table tr:hover td {
+    background: #f8fafc;
+}
+
+.admin-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.admin-content::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.6);
+    border-radius: 999px;
+}
+
+.admin-content::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.6);
 }
 
 .admin-choices {
@@ -500,11 +542,44 @@ body {
 }
 
 .admin-ai-log {
-    margin-top: 4px;
-    padding-left: 10px;
-    color: #2563eb;
+    margin-top: 6px;
+    padding-left: 12px;
+    color: #1d4ed8;
     font-size: 12px;
-    line-height: 1.5;
+    line-height: 1.6;
+}
+
+.admin-heatmap-cell {
+    position: relative;
+}
+
+.admin-heatmap-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+}
+
+.admin-heatmap-tooltip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin-top: 0;
+    padding: 8px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 18px 30px rgba(15, 23, 42, 0.18);
+    z-index: 9999;
+    display: none;
+}
+
+.admin-heatmap-tooltip.is-visible {
+    display: block;
+}
+
+.admin-heatmap-tooltip canvas {
+    display: block;
+    border-radius: 10px;
+    background: #f1f5f9;
 }
 
 .stats-title {

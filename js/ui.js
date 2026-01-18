@@ -28,6 +28,7 @@ export function renderScene(scene, onChoice) {
         image.className = 'scene-image';
         sceneDiv.appendChild(image);
     }
+    gameState.setCurrentSceneImage(scene.image || '');
 
     // 标题
     if (scene.title) {
@@ -534,6 +535,8 @@ function buildStatsPayload() {
         distance: Math.round(state.mouseDistance || 0),
         aiInteractions: state.aiInteractions || 0,
         aiLogs: state.aiLogs || [],
+        clickPoints: state.clickPoints || [],
+        sceneImage: state.currentSceneImage || '',
         choices: state.decisions.map((entry) => {
             return {
                 sceneId: entry.sceneId,
@@ -552,11 +555,33 @@ function saveStatsToLocal(payload) {
     localStorage.setItem(key, JSON.stringify(list));
 }
 
+function captureSnapshot() {
+    if (typeof window.html2canvas !== 'function') {
+        return Promise.resolve('');
+    }
+    const target = document.documentElement;
+    return window.html2canvas(target, {
+        useCORS: true,
+        backgroundColor: null,
+        scale: 1
+    }).then((canvas) => {
+        return canvas.toDataURL('image/png');
+    }).catch(() => '');
+}
+
 function finalizeStats() {
     gameState.setTelemetryActive(false);
     updateStatsPanel();
-    const payload = buildStatsPayload();
-    saveStatsToLocal(payload);
+    const basePayload = buildStatsPayload();
+    captureSnapshot().then((snapshot) => {
+        const payload = {
+            ...basePayload,
+            pageSnapshot: snapshot
+        };
+        saveStatsToLocal(payload);
+    }).catch(() => {
+        saveStatsToLocal(basePayload);
+    });
 }
 
 /**

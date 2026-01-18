@@ -6,12 +6,15 @@
     <title>采访记录后台</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="admin-page">
     <div class="admin-wrapper">
         <header class="admin-header">
             <h1 class="admin-title">采访记录后台</h1>
-            <button id="admin-refresh" class="btn btn-secondary">刷新</button>
-            <button id="admin-clear" class="btn btn-secondary">清空</button>
+            <div class="admin-actions">
+                <button id="admin-refresh" class="btn btn-secondary">刷新</button>
+                <button id="admin-export" class="btn btn-secondary">导出</button>
+                <button id="admin-clear" class="btn btn-secondary">清空</button>
+            </div>
         </header>
         <main class="admin-content">
             <table class="admin-table">
@@ -24,6 +27,7 @@
                         <th>移动距离（px）</th>
                         <th>AI 互动次数</th>
                         <th>选择记录</th>
+                        <th>热图</th>
                         <th>完成时间</th>
                     </tr>
                 </thead>

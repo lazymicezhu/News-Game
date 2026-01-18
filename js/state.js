@@ -19,6 +19,8 @@ class GameState {
         this.sessionStart = null;
         this.aiLogs = [];
         this.aiEnabled = false;
+        this.clickPoints = [];
+        this.currentSceneImage = '';
     }
 
     /**
@@ -40,6 +42,8 @@ class GameState {
         this.sessionStart = null;
         this.aiLogs = [];
         this.aiEnabled = false;
+        this.clickPoints = [];
+        this.currentSceneImage = '';
     }
 
     /**
@@ -59,7 +63,9 @@ class GameState {
             telemetryActive: this.telemetryActive,
             sessionStart: this.sessionStart,
             aiLogs: [...this.aiLogs],
-            aiEnabled: this.aiEnabled
+            aiEnabled: this.aiEnabled,
+            clickPoints: [...this.clickPoints],
+            currentSceneImage: this.currentSceneImage
         };
     }
 
@@ -123,6 +129,17 @@ class GameState {
 
     incrementClick() {
         this.clickCount += 1;
+    }
+
+    addClickPoint(point) {
+        if (!point) return;
+        const { x, y } = point;
+        if (typeof x !== 'number' || typeof y !== 'number') return;
+        this.clickPoints.push({ x, y });
+    }
+
+    setCurrentSceneImage(image) {
+        this.currentSceneImage = image || '';
     }
 
     addMouseDistance(delta) {

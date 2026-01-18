@@ -98,6 +98,11 @@ function setupTelemetry() {
         if (isIntroVisible()) return;
         if (!gameState.isTelemetryActive()) return;
         gameState.incrementClick();
+        const width = window.innerWidth || 1;
+        const height = window.innerHeight || 1;
+        const x = Math.min(1, Math.max(0, event.clientX / width));
+        const y = Math.min(1, Math.max(0, event.clientY / height));
+        gameState.addClickPoint({ x, y });
         updateStatsPanel();
     });
 
