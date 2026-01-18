@@ -33,7 +33,14 @@ function renderRows() {
         const tr = document.createElement('tr');
         const choices = Array.isArray(entry.choices) ? entry.choices : [];
         const logs = Array.isArray(entry.aiLogs) ? entry.aiLogs : [];
+        const nonAiLogs = Array.isArray(entry.nonAiLogs) ? entry.nonAiLogs : [];
         const logsByScene = logs.reduce((acc, log) => {
+            const key = log.sceneId || '';
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(log);
+            return acc;
+        }, {});
+        const nonAiByScene = nonAiLogs.reduce((acc, log) => {
             const key = log.sceneId || '';
             if (!acc[key]) acc[key] = [];
             acc[key].push(log);
@@ -43,6 +50,7 @@ function renderRows() {
             const choiceText = typeof choice === 'string' ? choice : (choice.text || '-');
             const sceneId = typeof choice === 'string' ? '' : (choice.sceneId || '');
             const relatedLogs = sceneId ? (logsByScene[sceneId] || []) : [];
+            const relatedNonAi = sceneId ? (nonAiByScene[sceneId] || []) : [];
             const aiLines = relatedLogs.map((log) => {
                 const type = log.type === 'interview' ? '采访' : '追问';
                 const role = log.role ? `(${log.role})` : '';
@@ -50,15 +58,26 @@ function renderRows() {
                 const a = log.response ? `A: ${log.response}` : '';
                 return `<div class="admin-ai-log">${type}${role} ${q} ${a}</div>`;
             }).join('');
+            const hintLines = relatedNonAi.map((log) => {
+                const hint = log.hint ? `提示：${log.hint}` : '';
+                return hint ? `<div class="admin-hint-log">${hint}</div>` : '';
+            }).join('');
             return `
                 <div class="admin-choice-row">
                     <div>${index + 1}. ${choiceText}</div>
                     ${aiLines}
+                    ${hintLines}
                 </div>
             `;
         }).join('');
         tr.innerHTML = `
-            <td>${entry.name || '-'}</td>
+            <td class="admin-name-cell">
+                <span class="admin-name-cell-content">
+                    ${entry.name && entry.name !== 'AI' && entry.name !== 'NORMAL' ? entry.name : '-'}
+                    ${entry.name === 'AI' ? '<span class="admin-tag admin-tag-ai">AI</span>' : ''}
+                    ${entry.name === 'NORMAL' ? '<span class="admin-tag admin-tag-normal">NORMAL</span>' : ''}
+                </span>
+            </td>
             <td>${entry.aiEnabled ? '是' : '否'}</td>
             <td>${formatDuration(entry.durationMs)}</td>
             <td>${entry.clicks ?? 0}</td>
@@ -115,6 +134,7 @@ function renderRows() {
             });
         }
     });
+    renderSummary(stats);
 }
 
 function drawHeatPoint(ctx, x, y, radius) {
@@ -216,5 +236,85 @@ function exportData() {
     URL.revokeObjectURL(url);
 }
 
+function bindTabs() {
+    const tabs = document.querySelectorAll('.admin-tab');
+    const sections = document.querySelectorAll('.admin-section');
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+            const targetId = tab.dataset.target;
+            tabs.forEach(btn => btn.classList.remove('is-active'));
+            sections.forEach(section => section.classList.remove('is-active'));
+            document.querySelectorAll(`.admin-tab[data-target="${targetId}"]`)
+                .forEach(btn => btn.classList.add('is-active'));
+            const target = document.getElementById(targetId);
+            if (target) target.classList.add('is-active');
+        });
+    });
+}
+
+function isSameDay(a, b) {
+    return a.getFullYear() === b.getFullYear()
+        && a.getMonth() === b.getMonth()
+        && a.getDate() === b.getDate();
+}
+
+function renderSummary(stats) {
+    const now = new Date();
+    let todayAi = 0;
+    let todayNonAi = 0;
+    let totalAi = 0;
+    let totalNonAi = 0;
+    let durationSum = 0;
+    let durationCount = 0;
+
+    stats.forEach((entry) => {
+        const isAi = !!entry.aiEnabled;
+        if (isAi) totalAi += 1;
+        else totalNonAi += 1;
+
+        const ts = entry.timestamp ? new Date(entry.timestamp) : null;
+        if (ts && isSameDay(ts, now)) {
+            if (isAi) todayAi += 1;
+            else todayNonAi += 1;
+        }
+
+        if (typeof entry.durationMs === 'number' && !Number.isNaN(entry.durationMs)) {
+            durationSum += entry.durationMs;
+            durationCount += 1;
+        }
+    });
+
+    const avgSeconds = durationCount ? Math.round(durationSum / durationCount / 1000) : 0;
+    const totalCount = totalAi + totalNonAi;
+
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = String(value);
+    };
+
+    setText('stats-today-ai', todayAi);
+    setText('stats-today-nonai', todayNonAi);
+    setText('stats-today-total', todayAi + todayNonAi);
+    setText('stats-total-ai', totalAi);
+    setText('stats-total-nonai', totalNonAi);
+    setText('stats-total-total', totalAi + totalNonAi);
+    setText('stats-avg-duration', avgSeconds);
+
+    const setBar = (id, value) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const percent = totalCount ? Math.round((value / totalCount) * 100) : 0;
+        el.style.width = `${percent}%`;
+    };
+
+    setBar('chart-bar-ai', totalAi);
+    setBar('chart-bar-nonai', totalNonAi);
+    setBar('chart-bar-total', totalCount);
+    setText('chart-value-ai', totalAi);
+    setText('chart-value-nonai', totalNonAi);
+    setText('chart-value-total', totalCount);
+}
+
 renderRows();
 bindActions();
+bindTabs();

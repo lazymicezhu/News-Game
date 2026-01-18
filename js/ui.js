@@ -3,6 +3,7 @@ import { assistantLines } from '../data/assistantLines.js';
 import { t, localize, getLanguage } from './i18n.js';
 import { streamChat } from './aiClient.js';
 import { followupQuestions } from '../data/followupQuestions.js';
+import { nonAiHints } from '../data/nonAiHints.js';
 
 /**
  * 渲染场景
@@ -110,7 +111,10 @@ function renderAssistant(scene, showActions = true) {
                     <button class="btn btn-primary assistant-send">${t('assistantSend')}</button>
                 </div>
                 <div class="assistant-stream">
-                    <div class="assistant-stream-title">${t('assistantResponseTitle')}</div>
+                    <div class="assistant-stream-header">
+                        <div class="assistant-stream-title">${t('assistantResponseTitle')}</div>
+                        <div class="assistant-stream-status"></div>
+                    </div>
                     <div class="assistant-stream-body"></div>
                 </div>
             </div>
@@ -129,15 +133,45 @@ function renderAssistant(scene, showActions = true) {
     const sendBtn = assistant.querySelector('.assistant-send');
     const streamBody = assistant.querySelector('.assistant-stream-body');
     const streamTitle = assistant.querySelector('.assistant-stream-title');
+    const streamStatus = assistant.querySelector('.assistant-stream-status');
     const controls = assistant.querySelector('.assistant-controls');
 
     // 始终显示助手：每个场景刷新一句
     assistant.style.display = 'flex';
     const pool = assistantLines[getLanguage()] || [];
-    const line = gameState.nextAssistantLine(pool) || t('assistantFallback');
+    let line = gameState.nextAssistantLine(pool) || t('assistantFallback');
+
+    const isEnding = !(scene && scene.choices && scene.choices.length > 0);
+    const aiEnabled = gameState.getState().aiEnabled;
+    const aiConfigured = gameState.getState().aiConfigured;
+    if (!aiEnabled && scene && !isEnding) {
+        const storedHint = gameState.getNonAiHint(scene.id);
+        if (storedHint !== undefined) {
+            if (storedHint) {
+                line = storedHint;
+            }
+        } else {
+            const showHint = Math.random() < 0.8;
+            if (showHint) {
+                const hints = nonAiHints[scene.id] || nonAiHints.default || [];
+                const pick = hints[Math.floor(Math.random() * hints.length)];
+                const hintText = pick ? localize(pick) : '';
+                if (hintText) {
+                    gameState.setNonAiHint(scene.id, hintText);
+                    gameState.addNonAiLog({
+                        sceneId: scene.id,
+                        sceneTitle: localize(scene.title) || '',
+                        hint: hintText
+                    });
+                    line = hintText;
+                }
+            }
+        }
+    }
     textEl.textContent = line;
     streamTitle.textContent = t('assistantResponseTitle');
     streamTitle.style.display = 'block';
+    if (streamStatus) streamStatus.innerHTML = '';
     followupBtn.textContent = t('assistantFollowup');
     interviewBtn.textContent = t('assistantInterview');
     panel.querySelector('.assistant-label').textContent = t('assistantRoleLabel');
@@ -148,8 +182,13 @@ function renderAssistant(scene, showActions = true) {
     if (roleOptions[3]) roleOptions[3].textContent = t('roleReporter');
     inputEl.placeholder = t('assistantQuestionPlaceholder');
     sendBtn.textContent = t('assistantSend');
+    const allowActions = showActions && aiEnabled && aiConfigured;
     if (controls) {
-        controls.style.display = showActions ? 'flex' : 'none';
+        controls.style.display = allowActions ? 'flex' : 'none';
+    }
+    if (!aiEnabled && !aiConfigured) {
+        streamTitle.style.display = 'none';
+        if (streamStatus) streamStatus.innerHTML = '';
     }
     followupList.classList.remove('open');
     panel.classList.remove('open');
@@ -275,17 +314,13 @@ function renderFollowupButtons(assistant, followupList, sceneId) {
     });
 }
 
-function pause(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function showFollowupStages(assistant, streamBody, requestId) {
-    const stages = [t('assistantGenerating'), t('assistantSearching'), t('assistantReasoning')];
-    for (const stage of stages) {
-        if (assistant.dataset.requestId !== requestId) return;
-        resetStream(streamBody, stage);
-        await pause(450);
-    }
+function setStatusTags(assistant) {
+    const streamStatus = assistant.querySelector('.assistant-stream-status');
+    if (!streamStatus) return;
+    const tags = ['搜索最新消息', '核对信息完成', '思考中...'];
+    const count = Math.random() < 0.5 ? 1 : 2;
+    const picks = tags.sort(() => 0.5 - Math.random()).slice(0, count);
+    streamStatus.innerHTML = picks.map(tag => `<span class="assistant-status-tag">${tag}</span>`).join('');
 }
 
 async function runFollowupAnswer(assistant, followupList, question) {
@@ -313,12 +348,11 @@ async function runFollowupAnswer(assistant, followupList, question) {
         streamTitle.textContent = t('assistantResponseTitle');
         streamTitle.style.display = 'block';
     }
+    setStatusTags(assistant);
     gameState.incrementAiInteractions();
     updateStatsPanel();
     const requestId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     assistant.dataset.requestId = requestId;
-    await showFollowupStages(assistant, streamBody, requestId);
-    if (assistant.dataset.requestId !== requestId) return;
     const response = await streamToElement(assistant, streamBody, messages, t('assistantGenerating'));
     if (response) {
         gameState.addAiLog({
@@ -361,6 +395,8 @@ async function runInterview(assistant, streamBody, role, question) {
     if (streamTitle) {
         streamTitle.style.display = 'none';
     }
+    const streamStatus = assistant.querySelector('.assistant-stream-status');
+    if (streamStatus) streamStatus.innerHTML = '';
     gameState.incrementAiInteractions();
     updateStatsPanel();
     const response = await streamToElement(assistant, streamBody, messages);
@@ -537,6 +573,7 @@ function buildStatsPayload() {
         aiLogs: state.aiLogs || [],
         clickPoints: state.clickPoints || [],
         sceneImage: state.currentSceneImage || '',
+        nonAiLogs: state.nonAiLogs || [],
         choices: state.decisions.map((entry) => {
             return {
                 sceneId: entry.sceneId,

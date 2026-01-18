@@ -21,6 +21,9 @@ class GameState {
         this.aiEnabled = false;
         this.clickPoints = [];
         this.currentSceneImage = '';
+        this.aiConfigured = false;
+        this.nonAiHints = {};
+        this.nonAiLogs = [];
     }
 
     /**
@@ -44,6 +47,9 @@ class GameState {
         this.aiEnabled = false;
         this.clickPoints = [];
         this.currentSceneImage = '';
+        this.aiConfigured = false;
+        this.nonAiHints = {};
+        this.nonAiLogs = [];
     }
 
     /**
@@ -64,6 +70,8 @@ class GameState {
             sessionStart: this.sessionStart,
             aiLogs: [...this.aiLogs],
             aiEnabled: this.aiEnabled,
+            aiConfigured: this.aiConfigured,
+            nonAiLogs: [...this.nonAiLogs],
             clickPoints: [...this.clickPoints],
             currentSceneImage: this.currentSceneImage
         };
@@ -140,6 +148,32 @@ class GameState {
 
     setCurrentSceneImage(image) {
         this.currentSceneImage = image || '';
+    }
+
+    setAiConfigured(configured) {
+        this.aiConfigured = !!configured;
+    }
+
+    isAiConfigured() {
+        return this.aiConfigured;
+    }
+
+    setNonAiHint(sceneId, hintText) {
+        if (!sceneId) return;
+        this.nonAiHints[sceneId] = hintText || '';
+    }
+
+    getNonAiHint(sceneId) {
+        if (!sceneId) return undefined;
+        return this.nonAiHints[sceneId];
+    }
+
+    addNonAiLog(entry) {
+        if (!entry) return;
+        this.nonAiLogs.push({
+            ...entry,
+            timestamp: Date.now()
+        });
     }
 
     addMouseDistance(delta) {

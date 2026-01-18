@@ -8,33 +8,113 @@
 </head>
 <body class="admin-page">
     <div class="admin-wrapper">
-        <header class="admin-header">
-            <h1 class="admin-title">采访记录后台</h1>
-            <div class="admin-actions">
-                <button id="admin-refresh" class="btn btn-secondary">刷新</button>
-                <button id="admin-export" class="btn btn-secondary">导出</button>
-                <button id="admin-clear" class="btn btn-secondary">清空</button>
-            </div>
-        </header>
-        <main class="admin-content">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>姓名</th>
-                        <th>含 AI</th>
-                        <th>用时（秒）</th>
-                        <th>点击次数</th>
-                        <th>移动距离（px）</th>
-                        <th>AI 互动次数</th>
-                        <th>选择记录</th>
-                        <th>热图</th>
-                        <th>管理</th>
-                        <th>完成时间</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-rows"></tbody>
-            </table>
-        </main>
+        <div class="admin-main">
+            <header class="admin-header admin-header-tabs">
+                <div class="admin-tabs-bar">
+                    <div class="admin-tabs">
+                        <button class="admin-tab is-active" data-target="admin-tips">提示</button>
+                        <button class="admin-tab" data-target="admin-data">数据</button>
+                        <button class="admin-tab" data-target="admin-stats">统计</button>
+                    </div>
+                    <div class="admin-actions">
+                        <button id="admin-refresh" class="btn btn-secondary">刷新</button>
+                        <button id="admin-export" class="btn btn-secondary">导出</button>
+                        <button id="admin-clear" class="btn btn-secondary">清空</button>
+                    </div>
+                </div>
+            </header>
+            <section id="admin-tips" class="admin-section is-active">
+                <div class="admin-tips">
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">版本分配</div>
+                        <p>填写姓名并开始后，系统会在后台随机分配“含 AI / 不含 AI”版本（50% 概率），页面不显示分配结果。</p>
+                    </div>
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">含 AI 版本</div>
+                        <p>助手启用追问与采访功能，AI 回复会记录到后台，并计入 AI 互动次数。</p>
+                    </div>
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">不含 AI 版本</div>
+                        <p>助手不显示 AI 交互按钮；每个有选项的页面有 80% 概率提供固定提示语，并记录到数据里。</p>
+                    </div>
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">测试入口</div>
+                        <p>姓名输入 AI 强制进入含 AI 版本；输入 NORMAL 强制进入不含 AI 版本。后台“含 AI”列显示为红色标记。</p>
+                    </div>
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">数据说明</div>
+                        <p>用时为从开始到结局的总时长（秒）。点击次数与移动距离记录用户输入行为。选择记录按流程顺序展示，如有 AI 对话会显示在对应选择下方。热图基于结局时的页面截图与点击分布叠加。</p>
+                    </div>
+                </div>
+            </section>
+            <section id="admin-data" class="admin-section">
+                <main class="admin-content">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>含 AI</th>
+                                <th>用时（秒）</th>
+                                <th>点击次数</th>
+                                <th>移动距离（px）</th>
+                                <th>AI 互动次数</th>
+                                <th>选择记录</th>
+                                <th>热图</th>
+                                <th>管理</th>
+                                <th>完成时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-rows"></tbody>
+                    </table>
+                </main>
+            </section>
+            <section id="admin-stats" class="admin-section">
+                <div class="admin-stats">
+                    <div class="admin-stats-group">
+                        <div class="admin-stats-title">当日完成数</div>
+                        <div class="admin-stats-row">AI：<span id="stats-today-ai">0</span></div>
+                        <div class="admin-stats-row">非 AI：<span id="stats-today-nonai">0</span></div>
+                        <div class="admin-stats-row">总计：<span id="stats-today-total">0</span></div>
+                    </div>
+                    <div class="admin-stats-group">
+                        <div class="admin-stats-title">总共完成数</div>
+                        <div class="admin-stats-row">AI：<span id="stats-total-ai">0</span></div>
+                        <div class="admin-stats-row">非 AI：<span id="stats-total-nonai">0</span></div>
+                        <div class="admin-stats-row">总计：<span id="stats-total-total">0</span></div>
+                    </div>
+                    <div class="admin-stats-group">
+                        <div class="admin-stats-title">平均完成时间</div>
+                        <div class="admin-stats-row"><span id="stats-avg-duration">0</span> 秒</div>
+                    </div>
+                </div>
+                <div class="admin-chart">
+                    <div class="admin-chart-title">完成数分布</div>
+                    <div class="admin-chart-bars">
+                        <div class="admin-chart-bar">
+                            <div class="admin-chart-label">AI</div>
+                            <div class="admin-chart-track">
+                                <div id="chart-bar-ai" class="admin-chart-fill"></div>
+                            </div>
+                            <div id="chart-value-ai" class="admin-chart-value">0</div>
+                        </div>
+                        <div class="admin-chart-bar">
+                            <div class="admin-chart-label">非 AI</div>
+                            <div class="admin-chart-track">
+                                <div id="chart-bar-nonai" class="admin-chart-fill"></div>
+                            </div>
+                            <div id="chart-value-nonai" class="admin-chart-value">0</div>
+                        </div>
+                        <div class="admin-chart-bar">
+                            <div class="admin-chart-label">总计</div>
+                            <div class="admin-chart-track">
+                                <div id="chart-bar-total" class="admin-chart-fill"></div>
+                            </div>
+                            <div id="chart-value-total" class="admin-chart-value">0</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
     <script type="module" src="js/admin.js"></script>
 </body>

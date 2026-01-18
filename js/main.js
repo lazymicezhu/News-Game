@@ -133,7 +133,7 @@ function init() {
     const introInput = document.getElementById('player-name-input');
     const introBtn = document.getElementById('intro-start-btn');
 
-    const startGame = async (playerName) => {
+    const startGame = async (playerName, forcedVariant) => {
         if (introBtn) {
             introBtn.disabled = true;
         }
@@ -145,7 +145,14 @@ function init() {
         if (playerName) {
             gameState.setPlayerName(playerName);
         }
-        gameState.setAiEnabled(await isAiConfigured());
+        let aiAssigned = Math.random() < 0.5;
+        if (forcedVariant === 'AI') aiAssigned = true;
+        if (forcedVariant === 'NORMAL') aiAssigned = false;
+        gameState.setAiEnabled(aiAssigned);
+        if (forcedVariant) {
+            gameState.setPlayerName(forcedVariant);
+        }
+        gameState.setAiConfigured(await isAiConfigured());
         gameState.startSession();
         gameState.setTelemetryActive(true);
         gameState.setLastMousePos(null);
@@ -158,7 +165,8 @@ function init() {
             gameRouter.restart();
             newsBoard.restart(); // 重启新闻看板
             gameState.setPlayerName('');
-            gameState.setAiEnabled(await isAiConfigured());
+            gameState.setAiEnabled(false);
+            gameState.setAiConfigured(false);
             gameState.setTelemetryActive(false);
             gameState.setLastMousePos(null);
             setStatsVisibility(false);
@@ -200,8 +208,19 @@ function init() {
 
     if (introBtn) {
         introBtn.addEventListener('click', () => {
-            const name = introInput ? introInput.value.trim() : '';
-            startGame(name);
+            const rawName = introInput ? introInput.value.trim() : '';
+            if (!rawName) {
+                if (introInput) {
+                    introInput.focus();
+                }
+                return;
+            }
+            const upper = rawName.toUpperCase();
+            let forcedVariant = null;
+            if (upper === 'AI') forcedVariant = 'AI';
+            if (upper === 'NORMAL') forcedVariant = 'NORMAL';
+            const name = forcedVariant ? '' : rawName;
+            startGame(name, forcedVariant);
         });
     }
     if (introInput) {
