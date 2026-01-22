@@ -15,6 +15,9 @@
                         <button class="admin-tab is-active" data-target="admin-tips">提示</button>
                         <button class="admin-tab" data-target="admin-data">数据</button>
                         <button class="admin-tab" data-target="admin-stats">统计</button>
+                        <button class="admin-tab" data-target="admin-editor">修改</button>
+                        <button class="admin-tab" data-target="admin-ai">AI</button>
+                        <button class="admin-tab" data-target="admin-flow">流程</button>
                     </div>
                     <div class="admin-actions">
                         <button id="admin-refresh" class="btn btn-secondary">刷新</button>
@@ -44,6 +47,26 @@
                     <div class="admin-sidebar-section">
                         <div class="admin-sidebar-heading">数据说明</div>
                         <p>用时为从开始到结局的总时长（秒）。点击次数与移动距离记录用户输入行为。选择记录按流程顺序展示，如有 AI 对话会显示在对应选择下方。热图基于结局时的页面截图与点击分布叠加。</p>
+                    </div>
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">流程限制</div>
+                        <p>玩家至少完成 10 次选择后才会进入结局场景；若提前到结局节点，系统会自动引导到扩展内容。</p>
+                    </div>
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">修改语言</div>
+                        <p>修改面板仅编辑中文，保存时会自动补齐英文内容；未配置 AI 时将直接复制原文。</p>
+                    </div>
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">修改范围</div>
+                        <p>修改页面仅支持调整“标题、正文、选项文案”，并提示每个选项通向的页面；不支持改动图片或分支结构，也不提供追问问题编辑。</p>
+                    </div>
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">AI 背景</div>
+                        <p>AI 页面可修改整体背景与角色背景（中文），系统会自动同步英文内容。</p>
+                    </div>
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">流程页面</div>
+                        <p>流程页以流程图形式展示全部页面、选项去向与结局标题，便于检查剧情连线。</p>
                     </div>
                 </div>
             </section>
@@ -112,6 +135,74 @@
                             <div id="chart-value-total" class="admin-chart-value">0</div>
                         </div>
                     </div>
+                </div>
+            </section>
+            <section id="admin-editor" class="admin-section">
+                <div class="admin-editor">
+                    <div class="admin-editor-card">
+                        <div class="admin-editor-title">页面内容</div>
+                        <div class="admin-editor-row">
+                            <label for="editor-scene-select">页面</label>
+                            <select id="editor-scene-select" class="admin-editor-select"></select>
+                        </div>
+                        <div class="admin-editor-row" data-lang="zh">
+                            <label for="editor-title-zh">标题（中文）</label>
+                            <input id="editor-title-zh" class="admin-editor-input" type="text" data-lang="zh" />
+                        </div>
+                        <div class="admin-editor-row" data-lang="en">
+                            <label for="editor-title-en">标题（英文）</label>
+                            <input id="editor-title-en" class="admin-editor-input" type="text" data-lang="en" />
+                        </div>
+                        <div class="admin-editor-row" data-lang="zh">
+                            <label for="editor-text-zh">正文（中文）</label>
+                            <textarea id="editor-text-zh" class="admin-editor-textarea" rows="3" data-lang="zh"></textarea>
+                        </div>
+                        <div class="admin-editor-row" data-lang="en">
+                            <label for="editor-text-en">正文（英文）</label>
+                            <textarea id="editor-text-en" class="admin-editor-textarea" rows="3" data-lang="en"></textarea>
+                        </div>
+                        <div class="admin-editor-row admin-editor-row-multi">
+                            <label>选项</label>
+                            <div class="admin-editor-choices">
+                                <div id="editor-choices"></div>
+                            </div>
+                        </div>
+                        <div class="admin-editor-actions">
+                            <button id="editor-save-scene" class="btn btn-primary" type="button">保存页面</button>
+                            <button id="editor-reset-scene" class="btn btn-secondary" type="button">还原默认</button>
+                            <span id="editor-save-feedback" class="admin-editor-feedback" aria-live="polite"></span>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+            <section id="admin-ai" class="admin-section">
+                <div class="admin-editor">
+                    <div class="admin-editor-card">
+                        <div class="admin-editor-title">AI 背景</div>
+                        <div class="admin-editor-row">
+                            <label for="ai-background-zh">背景（中文）</label>
+                            <textarea id="ai-background-zh" class="admin-editor-textarea" rows="5"></textarea>
+                        </div>
+                        <div class="admin-editor-actions">
+                            <button id="ai-background-save" class="btn btn-primary" type="button">保存背景</button>
+                            <span id="ai-background-feedback" class="admin-editor-feedback" aria-live="polite"></span>
+                        </div>
+                    </div>
+                    <div class="admin-editor-card">
+                        <div class="admin-editor-title">采访角色背景</div>
+                        <div id="ai-role-backgrounds" class="admin-editor-roles"></div>
+                        <div class="admin-editor-actions">
+                            <button id="ai-role-save" class="btn btn-primary" type="button">保存角色背景</button>
+                            <span id="ai-role-feedback" class="admin-editor-feedback" aria-live="polite"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="admin-flow" class="admin-section">
+                <div class="admin-flow">
+                    <div class="admin-flow-title">剧情流程图</div>
+                    <div id="admin-flowchart" class="admin-flowchart"></div>
                 </div>
             </section>
         </div>

@@ -8,10 +8,94 @@ import { gameRouter } from './router.js';
 import { newsBoard } from './newsBoard.js';
 import { setLanguage, getLanguage, onLanguageChange, t } from './i18n.js';
 import { gameState } from './state.js';
-import { updateStatsPanel, setStatsVisibility } from './ui.js';
+import { updateStatsPanel, setStatsVisibility, setFollowupQuestions, setInterviewRoles } from './ui.js';
 import { isAiConfigured } from './aiClient.js';
+import { followupQuestions as baseFollowupQuestions } from '../data/followupQuestions.js';
 
 const LANGUAGE_STORAGE_KEY = 'newsgame-lang';
+const OVERRIDES_STORAGE_KEY = 'newsgame-overrides';
+
+function loadOverrides() {
+    try {
+        return JSON.parse(localStorage.getItem(OVERRIDES_STORAGE_KEY) || '{}');
+    } catch {
+        return {};
+    }
+}
+
+function mergeScenes(baseScenes, overrideScenes = {}) {
+    const merged = {};
+    Object.entries(baseScenes || {}).forEach(([sceneId, scene]) => {
+        const baseScene = scene || {};
+        const nextScene = {
+            ...baseScene,
+            title: baseScene.title ? { ...baseScene.title } : undefined,
+            text: baseScene.text ? { ...baseScene.text } : undefined,
+            choices: Array.isArray(baseScene.choices)
+                ? baseScene.choices.map((choice) => ({
+                    ...choice,
+                    text: choice.text ? { ...choice.text } : choice.text,
+                    hint: choice.hint ? { ...choice.hint } : choice.hint
+                }))
+                : []
+        };
+        const override = overrideScenes[sceneId];
+        if (override) {
+            if (override.title) {
+                nextScene.title = { ...(nextScene.title || {}), ...override.title };
+            }
+            if (override.text) {
+                nextScene.text = { ...(nextScene.text || {}), ...override.text };
+            }
+            if (Object.prototype.hasOwnProperty.call(override, 'image')) {
+                nextScene.image = override.image || '';
+            }
+            if (Array.isArray(override.choices)) {
+                nextScene.choices = override.choices.map((choice) => ({
+                    ...choice,
+                    text: choice.text ? { ...choice.text } : choice.text,
+                    hint: choice.hint ? { ...choice.hint } : choice.hint
+                }));
+            }
+        }
+        merged[sceneId] = nextScene;
+    });
+
+    Object.entries(overrideScenes || {}).forEach(([sceneId, override]) => {
+        if (!merged[sceneId]) {
+            merged[sceneId] = {
+                ...override,
+                title: override.title ? { ...override.title } : undefined,
+                text: override.text ? { ...override.text } : undefined,
+                choices: Array.isArray(override.choices)
+                    ? override.choices.map((choice) => ({
+                        ...choice,
+                        text: choice.text ? { ...choice.text } : choice.text,
+                        hint: choice.hint ? { ...choice.hint } : choice.hint
+                    }))
+                    : []
+            };
+        }
+    });
+    return merged;
+}
+
+function mergeFollowupQuestions(baseQuestions, overrideQuestions = {}) {
+    const merged = { ...(baseQuestions || {}) };
+    Object.entries(overrideQuestions || {}).forEach(([sceneId, questions]) => {
+        merged[sceneId] = questions;
+    });
+    return merged;
+}
+
+function prepareOverrides() {
+    const overrides = loadOverrides();
+    const mergedScenes = mergeScenes(scenes, overrides.scenes || {});
+    const mergedQuestions = mergeFollowupQuestions(baseFollowupQuestions, overrides.followupQuestions || {});
+    setFollowupQuestions(mergedQuestions);
+    setInterviewRoles(overrides.interviewRoles);
+    return mergedScenes;
+}
 
 function applyStaticText() {
     const titleEl = document.querySelector('.game-title');
@@ -140,8 +224,9 @@ function init() {
         if (introModal) introModal.style.display = 'none';
         setStatsVisibility(false);
 
+        const mergedScenes = prepareOverrides();
         // 初始化游戏路由
-        gameRouter.init(scenes, 'intro');
+        gameRouter.init(mergedScenes, 'intro');
         if (playerName) {
             gameState.setPlayerName(playerName);
         }
@@ -162,7 +247,8 @@ function init() {
         newsBoard.init();
 
         const restartGame = async () => {
-            gameRouter.restart();
+            const mergedScenes = prepareOverrides();
+            gameRouter.init(mergedScenes, 'intro');
             newsBoard.restart(); // 重启新闻看板
             gameState.setPlayerName('');
             gameState.setAiEnabled(false);

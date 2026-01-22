@@ -62,7 +62,7 @@ export const scenes = {
                     zh: '按官方口径发快讯，突出控制率与部署',
                     en: 'Publish quick update with official framing, highlight containment and deployments'
                 },
-                next: 'official_draft',
+                next: 'press_pool',
                 effect: { angle: 'official' }
             },
             {
@@ -95,6 +95,14 @@ export const scenes = {
                     en: 'Bring the data to the shelter and compare with residents'
                 },
                 next: 'evac_center',
+                effect: { angle: 'balanced' }
+            },
+            {
+                text: {
+                    zh: '跟随补给车队，记录物资调度',
+                    en: 'Follow the supply convoy and document logistics'
+                },
+                next: 'supply_convoy',
                 effect: { angle: 'balanced' }
             }
         ]
@@ -129,6 +137,14 @@ export const scenes = {
                 },
                 next: 'fact_check',
                 effect: { angle: 'balanced' }
+            },
+            {
+                text: {
+                    zh: '联系救援组织，了解资源缺口',
+                    en: 'Contact relief groups to understand resource gaps'
+                },
+                next: 'relief_org',
+                effect: { angle: 'community' }
             }
         ]
     },
@@ -152,6 +168,11 @@ export const scenes = {
                 text: { zh: '离开屏幕，去避难所现场', en: 'Leave the screen and go to the shelter' },
                 next: 'evac_center',
                 effect: { angle: 'community' }
+            },
+            {
+                text: { zh: '转向空气质量与健康风险', en: 'Shift to air quality and health risks' },
+                next: 'air_quality',
+                effect: { angle: 'balanced' }
             }
         ]
     },
@@ -227,6 +248,11 @@ export const scenes = {
                 text: { zh: '将延误放大成“严重失职”角度', en: 'Frame the delay as "serious negligence" for impact' },
                 next: 'clickbait_draft',
                 effect: { angle: 'hype' }
+            },
+            {
+                text: { zh: '转向热线核实撤离信息', en: 'Call the hotline to verify evacuation info' },
+                next: 'county_hotline',
+                effect: { angle: 'balanced' }
             }
         ]
     },
@@ -263,6 +289,137 @@ export const scenes = {
                 text: { zh: '以惊险视角写流量稿', en: 'Write a thrilling, click-driven piece' },
                 next: 'clickbait_draft',
                 effect: { angle: 'hype' }
+            }
+        ]
+    },
+
+    press_pool: {
+        id: 'press_pool',
+        title: { zh: '联合采访区', en: 'Press Pool' },
+        text: textDB.pressPool,
+        choices: [
+            {
+                text: { zh: '追问避难所与物资调度细节', en: 'Press for shelter and supply details' },
+                next: 'relief_org',
+                effect: { angle: 'community' }
+            },
+            {
+                text: { zh: '整理官方口径，准备快讯', en: 'Summarize official line and draft a brief' },
+                next: 'official_draft',
+                effect: { angle: 'official' }
+            },
+            {
+                text: { zh: '要求公开空气质量与健康风险', en: 'Request air-quality and health risk details' },
+                next: 'air_quality',
+                effect: { angle: 'balanced' }
+            }
+        ]
+    },
+
+    air_quality: {
+        id: 'air_quality',
+        title: { zh: '空气质量监测', en: 'Air Quality Monitoring' },
+        text: textDB.airQuality,
+        choices: [
+            {
+                text: { zh: '去医院采访烟尘影响', en: 'Visit a hospital to interview about smoke exposure' },
+                next: 'hospital_visit',
+                effect: { angle: 'community' }
+            },
+            {
+                text: { zh: '回数据台做扩散可视化', en: 'Go to the data desk for spread visualization' },
+                next: 'data_desk',
+                effect: { angle: 'balanced' }
+            }
+        ]
+    },
+
+    hospital_visit: {
+        id: 'hospital_visit',
+        title: { zh: '医院走访', en: 'Hospital Visit' },
+        text: textDB.hospitalVisit,
+        choices: [
+            {
+                text: { zh: '强调健康风险与应对措施', en: 'Highlight health risks and response measures' },
+                next: 'balanced_draft',
+                effect: { angle: 'balanced' }
+            },
+            {
+                text: { zh: '追问医疗资源缺口', en: 'Press on medical resource gaps' },
+                next: 'investigative_draft',
+                effect: { angle: 'balanced' }
+            }
+        ]
+    },
+
+    data_desk: {
+        id: 'data_desk',
+        title: { zh: '数据台', en: 'Data Desk' },
+        text: textDB.dataDesk,
+        choices: [
+            {
+                text: { zh: '发布扩散路线图并说明', en: 'Publish a spread map with explanation' },
+                next: 'balanced_draft',
+                effect: { angle: 'balanced' }
+            },
+            {
+                text: { zh: '深挖异常数据并继续调查', en: 'Dig into anomalies and keep investigating' },
+                next: 'investigative_draft',
+                effect: { angle: 'balanced' }
+            }
+        ]
+    },
+
+    relief_org: {
+        id: 'relief_org',
+        title: { zh: '救援组织', en: 'Relief Organization' },
+        text: textDB.reliefOrg,
+        choices: [
+            {
+                text: { zh: '跟进物资调度与缺口', en: 'Follow up on supply dispatch and gaps' },
+                next: 'logistics_check',
+                effect: { angle: 'balanced' }
+            },
+            {
+                text: { zh: '记录居民互助与情绪', en: 'Record mutual aid and public sentiment' },
+                next: 'community_voices',
+                effect: { angle: 'community' }
+            }
+        ]
+    },
+
+    supply_convoy: {
+        id: 'supply_convoy',
+        title: { zh: '补给车队', en: 'Supply Convoy' },
+        text: textDB.supplyConvoy,
+        choices: [
+            {
+                text: { zh: '随车跟拍补给抵达', en: 'Ride along and document supply arrival' },
+                next: 'logistics_check',
+                effect: { angle: 'balanced' }
+            },
+            {
+                text: { zh: '转回前线观察火线变化', en: 'Return to the frontline to observe changes' },
+                next: 'frontline_embed',
+                effect: { angle: 'balanced' }
+            }
+        ]
+    },
+
+    county_hotline: {
+        id: 'county_hotline',
+        title: { zh: '县府热线', en: 'County Hotline' },
+        text: textDB.countyHotline,
+        choices: [
+            {
+                text: { zh: '整理撤离路线与范围指引', en: 'Compile evacuation routes and zones' },
+                next: 'balanced_draft',
+                effect: { angle: 'official' }
+            },
+            {
+                text: { zh: '汇总疑问再追问官方', en: 'Bundle questions and press officials again' },
+                next: 'press_pool',
+                effect: { angle: 'official' }
             }
         ]
     },

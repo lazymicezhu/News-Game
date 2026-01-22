@@ -2,8 +2,29 @@ import { gameState } from './state.js';
 import { assistantLines } from '../data/assistantLines.js';
 import { t, localize, getLanguage } from './i18n.js';
 import { streamChat } from './aiClient.js';
-import { followupQuestions } from '../data/followupQuestions.js';
+import { getAiBackground, getRoleBackground } from './aiContext.js';
+import { followupQuestions as defaultFollowupQuestions } from '../data/followupQuestions.js';
 import { nonAiHints } from '../data/nonAiHints.js';
+import { interviewRoles as defaultInterviewRoles } from '../data/interviewRoles.js';
+
+let followupQuestions = defaultFollowupQuestions;
+let interviewRoles = defaultInterviewRoles;
+
+export function setFollowupQuestions(data) {
+    if (data && typeof data === 'object') {
+        followupQuestions = data;
+    } else {
+        followupQuestions = defaultFollowupQuestions;
+    }
+}
+
+export function setInterviewRoles(data) {
+    if (Array.isArray(data) && data.length) {
+        interviewRoles = data;
+    } else {
+        interviewRoles = defaultInterviewRoles;
+    }
+}
 
 /**
  * 渲染场景
@@ -67,7 +88,6 @@ export function renderScene(scene, onChoice) {
     } else {
         sceneDiv.classList.add('ending');
         showFooter();
-        renderRecap(sceneDiv);
         finalizeStats();
     }
 
@@ -101,12 +121,7 @@ function renderAssistant(scene, showActions = true) {
                 <div class="assistant-followup-list"></div>
                 <div class="assistant-panel">
                     <label class="assistant-label">${t('assistantRoleLabel')}</label>
-                    <select class="assistant-role">
-                        <option value="fire">${t('roleFire')}</option>
-                        <option value="resident">${t('roleResident')}</option>
-                        <option value="volunteer">${t('roleVolunteer')}</option>
-                        <option value="reporter">${t('roleReporter')}</option>
-                    </select>
+                    <select class="assistant-role"></select>
                     <textarea class="assistant-input" rows="2" placeholder="${t('assistantQuestionPlaceholder')}"></textarea>
                     <button class="btn btn-primary assistant-send">${t('assistantSend')}</button>
                 </div>
@@ -175,11 +190,7 @@ function renderAssistant(scene, showActions = true) {
     followupBtn.textContent = t('assistantFollowup');
     interviewBtn.textContent = t('assistantInterview');
     panel.querySelector('.assistant-label').textContent = t('assistantRoleLabel');
-    const roleOptions = roleSelect.querySelectorAll('option');
-    if (roleOptions[0]) roleOptions[0].textContent = t('roleFire');
-    if (roleOptions[1]) roleOptions[1].textContent = t('roleResident');
-    if (roleOptions[2]) roleOptions[2].textContent = t('roleVolunteer');
-    if (roleOptions[3]) roleOptions[3].textContent = t('roleReporter');
+    renderInterviewRoles(roleSelect);
     inputEl.placeholder = t('assistantQuestionPlaceholder');
     sendBtn.textContent = t('assistantSend');
     const allowActions = showActions && aiEnabled && aiConfigured;
@@ -323,9 +334,24 @@ function setStatusTags(assistant) {
     streamStatus.innerHTML = picks.map(tag => `<span class="assistant-status-tag">${tag}</span>`).join('');
 }
 
+function renderInterviewRoles(selectEl) {
+    if (!selectEl) return;
+    const current = selectEl.value;
+    selectEl.innerHTML = '';
+    interviewRoles.forEach((role) => {
+        const option = document.createElement('option');
+        option.value = role.id;
+        option.textContent = localize(role.label);
+        selectEl.appendChild(option);
+    });
+    if (current) {
+        selectEl.value = current;
+    }
+}
+
 async function runFollowupAnswer(assistant, followupList, question) {
-    const { title, text } = buildSceneContext(assistant);
     const lang = getLanguage();
+    const background = await getAiBackground();
     const messages = [
         {
             role: 'system',
@@ -336,8 +362,7 @@ async function runFollowupAnswer(assistant, followupList, question) {
         {
             role: 'user',
             content: [
-                `Scene: ${title || '-'}`,
-                `Context: ${text || '-'}`,
+                `${lang === 'zh' ? '背景' : 'Background'}: ${background || '-'}`,
                 `${lang === 'zh' ? '追问' : 'Follow-up'}: ${localize(question)}`
             ].join('\n')
         }
@@ -366,27 +391,21 @@ async function runFollowupAnswer(assistant, followupList, question) {
 }
 
 async function runInterview(assistant, streamBody, role, question) {
-    const { title, text } = buildSceneContext(assistant);
     const lang = getLanguage();
-    const roleMap = {
-        fire: t('roleFire'),
-        resident: t('roleResident'),
-        volunteer: t('roleVolunteer'),
-        reporter: t('roleReporter')
-    };
-    const roleLabel = roleMap[role] || role;
+    const roleItem = interviewRoles.find((item) => item.id === role);
+    const roleLabel = roleItem ? localize(roleItem.label) : role;
+    const roleBackground = await getRoleBackground(role);
     const messages = [
         {
             role: 'system',
             content: lang === 'zh'
-                ? `你是${roleLabel}，正在接受记者采访。请基于场景背景作答，回答保持简短自然。`
-                : `You are a ${roleLabel} being interviewed. Answer based on the scene context in a concise, natural tone.`
+                ? `你是${roleLabel}，正在接受记者采访。请根据角色背景作答，回答保持简短自然。`
+                : `You are a ${roleLabel} being interviewed. Answer based on the role background in a concise, natural tone.`
         },
         {
             role: 'user',
             content: [
-                `Scene: ${title || '-'}`,
-                `Context: ${text || '-'}`,
+                `${lang === 'zh' ? '角色背景' : 'Role background'}: ${roleBackground || '-'}`,
                 `${lang === 'zh' ? '问题' : 'Question'}: ${question}`
             ].join('\n')
         }
@@ -405,7 +424,7 @@ async function runInterview(assistant, streamBody, role, question) {
             type: 'interview',
             sceneId: assistant.dataset.sceneId || '',
             sceneTitle: assistant.dataset.sceneTitle || '',
-            role,
+            role: roleLabel,
             question,
             response
         });
@@ -619,66 +638,4 @@ function finalizeStats() {
     }).catch(() => {
         saveStatsToLocal(basePayload);
     });
-}
-
-/**
- * 结局回顾：生成报道摘要与决策清单
- */
-function renderRecap(sceneContainer) {
-    const recap = document.createElement('div');
-    recap.className = 'recap-panel';
-
-    const title = document.createElement('h3');
-    title.textContent = t('recapTitle');
-    recap.appendChild(title);
-
-    const state = gameState.getState();
-    const decisions = state.decisions || [];
-
-    const summary = document.createElement('div');
-    summary.className = 'recap-summary';
-    summary.innerHTML = buildSummary(decisions);
-    recap.appendChild(summary);
-
-    const listTitle = document.createElement('h4');
-    listTitle.textContent = t('recapDecisions');
-    recap.appendChild(listTitle);
-
-    const list = document.createElement('ul');
-    list.className = 'decision-list';
-    decisions.forEach(entry => {
-        const li = document.createElement('li');
-        const sceneLabel = entry.sceneTitleIntl ? localize(entry.sceneTitleIntl) : (entry.sceneTitle || entry.sceneId);
-        const choiceLabel = entry.choiceIntl ? localize(entry.choiceIntl) : entry.choiceText;
-        li.textContent = t('decisionEntry', sceneLabel, choiceLabel);
-        list.appendChild(li);
-    });
-    recap.appendChild(list);
-
-    sceneContainer.appendChild(recap);
-}
-
-function buildSummary(decisions) {
-    if (!decisions.length) return t('noDecisions');
-
-    const leaningCount = {};
-    decisions.forEach(d => {
-        if (d.effect && d.effect.angle) {
-            leaningCount[d.effect.angle] = (leaningCount[d.effect.angle] || 0) + 1;
-        }
-    });
-    const topAngle = Object.entries(leaningCount).sort((a, b) => b[1] - a[1])[0];
-    const angleText = topAngle ? translateAngle(topAngle[0]) : t('angleUnknown');
-
-    return t('summaryText', angleText, decisions.length);
-}
-
-function translateAngle(angle) {
-    const map = {
-        official: t('angleOfficial'),
-        community: t('angleCommunity'),
-        hype: t('angleHype'),
-        balanced: t('angleBalanced')
-    };
-    return map[angle] || angle;
 }

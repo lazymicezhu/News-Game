@@ -54,6 +54,41 @@ export const nonAiHints = {
     { zh: '强调对居民的提醒与撤离指引。', en: 'Highlight public safety advice and evacuation guidance.' },
     { zh: '用前线细节支撑叙事，避免空泛。', en: 'Use frontline detail to anchor the story, not vague claims.' }
   ],
+  press_pool: [
+    { zh: '把官方口径拆成几个关键点，逐项追问遗漏部分。', en: 'Break the official line into key points and press on what is missing.' },
+    { zh: '标注未回应的问题，并写清楚信息限制。', en: 'Note unanswered questions and document information limits.' },
+    { zh: '对照多家媒体的问题，看哪些角度被忽略。', en: 'Compare questions from multiple outlets to spot overlooked angles.' }
+  ],
+  air_quality: [
+    { zh: '明确空气质量指标与健康风险之间的对应关系。', en: 'Make the link between air quality metrics and health risk explicit.' },
+    { zh: '说明防护建议的具体执行方式。', en: 'Explain how safety recommendations can be put into practice.' },
+    { zh: '给出可核查的数据来源与更新时间。', en: 'Provide verifiable data sources and update times.' }
+  ],
+  hospital_visit: [
+    { zh: '记录病例变化趋势，避免只写个案。', en: 'Track trends in cases instead of focusing on a single story.' },
+    { zh: '询问医疗资源的紧张点与应对方式。', en: 'Ask about resource bottlenecks and how the hospital responds.' },
+    { zh: '提醒读者如何自我防护与就医指引。', en: 'Remind readers about self-protection and when to seek care.' }
+  ],
+  data_desk: [
+    { zh: '在图表中标明数据来源与更新时间。', en: 'Annotate sources and update times in charts.' },
+    { zh: '解释数据与现场观察的对应关系。', en: 'Explain how data aligns with on-the-ground observations.' },
+    { zh: '避免过度解读异常值，给出保守结论。', en: 'Avoid over-interpreting outliers and keep conclusions cautious.' }
+  ],
+  relief_org: [
+    { zh: '区分“紧缺物资”与“可替代物资”。', en: 'Separate critical shortages from items with substitutes.' },
+    { zh: '记录救援组织的资源来源与调度方式。', en: 'Document how relief groups source and allocate resources.' },
+    { zh: '说明公众可参与的具体行动。', en: 'State concrete actions the public can take.' }
+  ],
+  supply_convoy: [
+    { zh: '核对车队路线与延误原因，避免猜测。', en: 'Verify routes and delays to avoid speculation.' },
+    { zh: '记录补给品类与覆盖范围。', en: 'Note supply categories and coverage areas.' },
+    { zh: '关注物资抵达后如何分配。', en: 'Track how supplies are distributed after arrival.' }
+  ],
+  county_hotline: [
+    { zh: '把最新撤离范围与道路信息写清楚。', en: 'Clearly document evacuation zones and road closures.' },
+    { zh: '标注仍在等待通知的社区，避免误导。', en: 'Note communities still awaiting notices to avoid misleading updates.' },
+    { zh: '说明热线提供的官方链接或联系方式。', en: 'Share official links or contact points from the hotline.' }
+  ],
   official_draft: [
     { zh: '确保数字准确且可追溯，并标明更新时间。', en: 'Ensure numbers are accurate, traceable, and include update time.' },
     { zh: '标注信息来源，保持表述一致。', en: 'Label sources clearly and keep phrasing consistent.' },

@@ -54,6 +54,41 @@ export const followupQuestions = {
     { zh: '救援人员当前面临的最大困难？', en: 'What is the biggest challenge responders face?' },
     { zh: '对周边居民的即时建议是什么？', en: 'What immediate advice is there for nearby residents?' }
   ],
+  press_pool: [
+    { zh: '官方对于物资和医疗压力的回应是什么？', en: 'What is the official response on supplies and medical strain?' },
+    { zh: '接下来还有哪些信息会在公开发布中更新？', en: 'What information will be updated publicly next?' },
+    { zh: '有哪些问题仍未获得明确回答？', en: 'Which questions are still unanswered?' }
+  ],
+  air_quality: [
+    { zh: '空气质量的关键指标目前是多少？', en: 'What are the current key air-quality indicators?' },
+    { zh: '哪些人群需要优先防护？', en: 'Which groups need priority protection?' },
+    { zh: '是否有可用的清洁空气点或避险建议？', en: 'Are there clean-air shelters or safety guidance available?' }
+  ],
+  hospital_visit: [
+    { zh: '医院目前的接诊量是否上升？', en: 'Is the hospital seeing increased patient volume?' },
+    { zh: '哪些物资或药品最紧缺？', en: 'Which supplies or medications are most scarce?' },
+    { zh: '院方对居民有什么具体提醒？', en: 'What specific advice does the hospital give residents?' }
+  ],
+  data_desk: [
+    { zh: '火线推进最快的区域在哪里？', en: 'Which areas show the fastest fireline advance?' },
+    { zh: '数据中有哪些异常或不确定性？', en: 'What anomalies or uncertainties appear in the data?' },
+    { zh: '可视化应该强调哪些关键信息？', en: 'What key points should the visualization emphasize?' }
+  ],
+  relief_org: [
+    { zh: '救援组织当前的最大压力点是什么？', en: 'What is the biggest pressure point for relief groups?' },
+    { zh: '还有哪些资源缺口尚未填补？', en: 'Which resource gaps are still unfilled?' },
+    { zh: '公众能做哪些具体支持？', en: 'What concrete support can the public provide?' }
+  ],
+  supply_convoy: [
+    { zh: '车队预计何时抵达？', en: 'When is the convoy expected to arrive?' },
+    { zh: '补给物资将优先分配给哪些区域？', en: 'Which areas will receive supplies first?' },
+    { zh: '目前最大的运输阻碍是什么？', en: 'What are the biggest transport obstacles right now?' }
+  ],
+  county_hotline: [
+    { zh: '最新的撤离范围和路线是什么？', en: 'What are the latest evacuation zones and routes?' },
+    { zh: '热线收到最多的疑问是什么？', en: 'What questions are most common on the hotline?' },
+    { zh: '哪些信息仍需要官方进一步确认？', en: 'Which information still needs official confirmation?' }
+  ],
   official_draft: [
     { zh: '官方数据中最关键的结论是什么？', en: 'What is the key takeaway from official data?' },
     { zh: '还需要补充哪些公众关心的细节？', en: 'What public concerns still need detail?' },

@@ -7,6 +7,27 @@ import { gameState } from './state.js';
 import { renderScene, showError, hideFooter, renderFlowchart, updateStatsPanel } from './ui.js';
 import { localize, t } from './i18n.js';
 
+const MIN_DECISIONS_TO_END = 10;
+const EXTENDED_SCENES = [
+    'press_pool',
+    'air_quality',
+    'relief_org',
+    'supply_convoy',
+    'data_desk',
+    'county_hotline',
+    'hospital_visit'
+];
+
+function isEndingScene(scene) {
+    return !(scene && Array.isArray(scene.choices) && scene.choices.length > 0);
+}
+
+function getExtendedSceneId(decisionCount) {
+    if (!EXTENDED_SCENES.length) return null;
+    const index = Math.max(0, decisionCount) % EXTENDED_SCENES.length;
+    return EXTENDED_SCENES[index];
+}
+
 class GameRouter {
     constructor() {
         this.scenes = null;
@@ -87,9 +108,17 @@ class GameRouter {
 
         // 跳转到下一个场景
         if (choice.next) {
+            let nextSceneId = choice.next;
+            const targetScene = this.scenes ? this.scenes[nextSceneId] : null;
+            if (targetScene && isEndingScene(targetScene) && gameState.decisions.length < MIN_DECISIONS_TO_END) {
+                const extendedSceneId = getExtendedSceneId(gameState.decisions.length);
+                if (extendedSceneId && this.scenes[extendedSceneId]) {
+                    nextSceneId = extendedSceneId;
+                }
+            }
             // 将新场景加入历史
-            gameState.history.push(choice.next);
-            this.goTo(choice.next);
+            gameState.history.push(nextSceneId);
+            this.goTo(nextSceneId);
         }
     }
 

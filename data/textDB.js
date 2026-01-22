@@ -49,6 +49,41 @@ export const textDB = {
     en: 'You ride a firefighter helicopter to the north drop zone and see wind push flames toward homes. The crew chief urges, "Please tell media to stress the danger of going back," and hands you a thermal screenshot showing remaining hotspots.'
   },
 
+  pressPool: {
+    zh: '媒体被安排在体育馆入口的联合采访区。官方发言人反复强调控制率与增援部署，但对避难所物资与医疗压力回应较谨慎。你看到多家媒体开始转向空气质量与健康风险。',
+    en: 'Media are staged at a gym entrance press pool. The spokesperson repeats containment and reinforcements, but is cautious about shelter supplies and medical strain. Several outlets pivot to air-quality and health risks.'
+  },
+
+  airQuality: {
+    zh: '空气质量监测站显示 PM2.5 快速上升，学校发布室内避险建议。卫生官员提醒孕妇与老人减少外出，并建议社区准备临时清洁空气点。',
+    en: 'Air-monitoring stations show PM2.5 rising fast, and schools issue indoor shelter guidance. Health officials warn pregnant people and seniors to stay inside and urge communities to prepare clean-air shelters.'
+  },
+
+  hospitalVisit: {
+    zh: '急诊室里有多名咳嗽和胸闷患者，护士提到吸入器与口罩库存紧张。院方希望媒体提醒慢性病患者按时备药。',
+    en: 'In the ER, several patients report cough and chest tightness. Nurses say inhalers and masks are running low. The hospital asks media to remind chronic patients to refill medications.'
+  },
+
+  dataDesk: {
+    zh: '你回到数据台，将火线、风向和撤离范围叠加，发现北线推进速度异常。编辑提醒你在图表中标注数据来源与更新时间。',
+    en: 'Back at the data desk, you overlay firelines, wind, and evacuation zones and spot unusually fast movement on the north flank. Your editor reminds you to annotate sources and update times in the chart.'
+  },
+
+  reliefOrg: {
+    zh: '救援组织负责人介绍当前最缺的是婴儿用品与基础药品，并提到临时收容点已接近满员。志愿者请求媒体帮忙呼吁捐赠。',
+    en: 'A relief coordinator says the biggest gaps are baby supplies and basic medicine, and temporary shelters are near capacity. Volunteers ask media to call for donations.'
+  },
+
+  supplyConvoy: {
+    zh: '补给车队正沿 101 高速驶来，车上装着饮用水与医疗物资。司机说由于道路管制，车队被迫绕行，预计延后抵达。',
+    en: 'A supply convoy is traveling along Highway 101 with water and medical supplies. Drivers say detours caused by road closures will delay arrival.'
+  },
+
+  countyHotline: {
+    zh: '县府热线收到大量关于撤离路线和健康风险的咨询。客服提供了最新的道路管制清单，但承认部分社区仍在等待明确通知。',
+    en: 'The county hotline fields a surge of calls about evacuation routes and health risks. Operators provide the latest road-closure list but admit some neighborhoods still await clear notices.'
+  },
+
   balancedDraft: {
     zh: '你的稿件并列官方数据与居民忧虑，标注社交视频“经查为旧视频”，解释风向、控制线与补给进度。标题强调“信息核实中”。读者评论称透明且有用。',
     en: 'Your story pairs official data with residents\' worries, labels the social video "verified as old," and explains wind, control lines, and supply progress. The headline stresses "verification in progress." Readers call it transparent and useful.'
