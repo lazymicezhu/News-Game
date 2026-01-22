@@ -340,13 +340,20 @@ function bindActions() {
     const exportBtn = document.getElementById('admin-export');
     const clearBtn = document.getElementById('admin-clear');
     if (refreshBtn) {
-        refreshBtn.addEventListener('click', renderRows);
+        refreshBtn.addEventListener('click', () => {
+            if (!window.confirm('确认刷新数据吗？')) return;
+            renderRows();
+        });
     }
     if (exportBtn) {
-        exportBtn.addEventListener('click', exportData);
+        exportBtn.addEventListener('click', () => {
+            if (!window.confirm('确认导出数据吗？')) return;
+            exportData();
+        });
     }
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
+            if (!window.confirm('确认清空数据吗？此操作不可撤销。')) return;
             localStorage.removeItem('newsgame-stats');
             renderRows();
         });
@@ -370,6 +377,7 @@ function exportData() {
 function bindTabs() {
     const tabs = document.querySelectorAll('.admin-tab');
     const sections = document.querySelectorAll('.admin-section');
+    const actions = document.querySelector('.admin-actions');
     tabs.forEach((tab) => {
         tab.addEventListener('click', () => {
             const targetId = tab.dataset.target;
@@ -379,6 +387,9 @@ function bindTabs() {
                 .forEach(btn => btn.classList.add('is-active'));
             const target = document.getElementById(targetId);
             if (target) target.classList.add('is-active');
+            if (actions) {
+                actions.style.display = targetId === 'admin-editor' ? 'flex' : 'none';
+            }
             if (targetId === 'admin-flow') {
                 renderAdminFlow();
             }
@@ -864,3 +875,5 @@ bindActions();
 bindTabs();
 initEditor();
 initAiEditor();
+const actions = document.querySelector('.admin-actions');
+if (actions) actions.style.display = 'none';

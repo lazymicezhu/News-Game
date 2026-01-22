@@ -44,33 +44,13 @@
                         <div class="admin-sidebar-heading">测试入口</div>
                         <p>姓名输入 AI 强制进入含 AI 版本；输入 NORMAL 强制进入不含 AI 版本。后台“含 AI”列显示为红色标记。</p>
                     </div>
-                    <div class="admin-sidebar-section">
-                        <div class="admin-sidebar-heading">数据说明</div>
-                        <p>用时为从开始到结局的总时长（秒）。点击次数与移动距离记录用户输入行为。选择记录按流程顺序展示，如有 AI 对话会显示在对应选择下方。热图基于结局时的页面截图与点击分布叠加。</p>
-                    </div>
-                    <div class="admin-sidebar-section">
-                        <div class="admin-sidebar-heading">流程限制</div>
-                        <p>玩家至少完成 10 次选择后才会进入结局场景；若提前到结局节点，系统会自动引导到扩展内容。</p>
-                    </div>
-                    <div class="admin-sidebar-section">
-                        <div class="admin-sidebar-heading">修改语言</div>
-                        <p>修改面板仅编辑中文，保存时会自动补齐英文内容；未配置 AI 时将直接复制原文。</p>
-                    </div>
-                    <div class="admin-sidebar-section">
-                        <div class="admin-sidebar-heading">修改范围</div>
-                        <p>修改页面仅支持调整“标题、正文、选项文案”，并提示每个选项通向的页面；不支持改动图片或分支结构，也不提供追问问题编辑。</p>
-                    </div>
-                    <div class="admin-sidebar-section">
-                        <div class="admin-sidebar-heading">AI 背景</div>
-                        <p>AI 页面可修改整体背景与角色背景（中文），系统会自动同步英文内容。</p>
-                    </div>
-                    <div class="admin-sidebar-section">
-                        <div class="admin-sidebar-heading">流程页面</div>
-                        <p>流程页以流程图形式展示全部页面、选项去向与结局标题，便于检查剧情连线。</p>
-                    </div>
                 </div>
             </section>
             <section id="admin-data" class="admin-section">
+                <div class="admin-section-note">
+                    <div class="admin-section-note-title">数据说明</div>
+                    <p>用时为从开始到结局的总时长（秒）。点击次数与移动距离记录用户输入行为。选择记录按流程顺序展示，如有 AI 对话会显示在对应选择下方。热图基于结局时的页面截图与点击分布叠加。</p>
+                </div>
                 <main class="admin-content">
                     <table class="admin-table">
                         <thead>
@@ -138,6 +118,12 @@
                 </div>
             </section>
             <section id="admin-editor" class="admin-section">
+                <div class="admin-section-note">
+                    <div class="admin-section-note-title">修改语言</div>
+                    <p>修改面板仅编辑中文，保存时会自动补齐英文内容；未配置 AI 时将直接复制原文。</p>
+                    <div class="admin-section-note-title">修改范围</div>
+                    <p>修改页面仅支持调整“标题、正文、选项文案”，并提示每个选项通向的页面；不支持改动图片或分支结构。</p>
+                </div>
                 <div class="admin-editor">
                     <div class="admin-editor-card">
                         <div class="admin-editor-title">页面内容</div>
@@ -177,6 +163,10 @@
                 </div>
             </section>
             <section id="admin-ai" class="admin-section">
+                <div class="admin-section-note">
+                    <div class="admin-section-note-title">AI 背景</div>
+                    <p>AI 页面可修改整体背景与角色背景（中文），系统会自动同步英文内容。</p>
+                </div>
                 <div class="admin-editor">
                     <div class="admin-editor-card">
                         <div class="admin-editor-title">AI 背景</div>
@@ -200,6 +190,10 @@
                 </div>
             </section>
             <section id="admin-flow" class="admin-section">
+                <div class="admin-section-note">
+                    <div class="admin-section-note-title">流程页面</div>
+                    <p>流程页以树状流程图展示全部页面、选项去向与结局标题，便于检查剧情连线。</p>
+                </div>
                 <div class="admin-flow">
                     <div class="admin-flow-title">剧情流程图</div>
                     <div id="admin-flowchart" class="admin-flowchart"></div>

@@ -552,6 +552,27 @@ body.admin-page {
     max-width: none;
 }
 
+.admin-section-note {
+    max-width: none;
+    margin: 8px 0 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-section-note-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 6px;
+}
+
+.admin-section-note p {
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.6;
+    margin: 0 0 10px;
+}
+
 .admin-stats {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
