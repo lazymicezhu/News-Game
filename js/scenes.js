@@ -1,27 +1,27 @@
 import { textDB } from '../data/textDB.js';
 
 /**
- * 线性场景数据（加州野火版）
+ * 线性主线 + 分支汇合的剧情结构
  */
 export const scenes = {
     intro: {
         id: 'intro',
-        title: { zh: '序章：2025 加州野火蔓延', en: 'Prologue: 2025 California Wildfire Spreads' },
+        title: { zh: '序章：不确定的第一小时', en: 'Prologue: The First Uncertain Hour' },
         image: 'arts/大纪元-加州野火1.jpg',
         text: textDB.intro,
         choices: [
             {
-                text: { zh: '先梳理事件时间线', en: 'Outline the timeline first' },
+                text: { zh: '先建立事实清单', en: 'Build a fact list first' },
                 next: 'briefing',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '先确认信息来源', en: 'Verify sources first' },
+                text: { zh: '先锁定权威来源', en: 'Prioritize authoritative sources' },
                 next: 'briefing',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先观察社交舆情', en: 'Scan social chatter first' },
+                text: { zh: '先跟踪传播路径', en: 'Track the spread path first' },
                 next: 'briefing',
                 effect: { newsValueDelta: -2 }
             }
@@ -30,45 +30,45 @@ export const scenes = {
 
     briefing: {
         id: 'briefing',
-        title: { zh: '官方简报', en: 'Official Briefing' },
+        title: { zh: '官方简报与信息落差', en: 'Briefing and Gaps' },
         text: textDB.briefing,
         choices: [
             {
-                text: { zh: '记录核心数据与时间点', en: 'Log key numbers and timestamps' },
-                next: 'field_route',
+                text: { zh: '记录可核实事实', en: 'Log verifiable facts' },
+                next: 'route_choice',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '补充撤离与安全提醒', en: 'Add evacuation and safety notes' },
-                next: 'field_route',
+                text: { zh: '标注待确认要点', en: 'Flag items to verify' },
+                next: 'route_choice',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先整理已有信息', en: 'Organize what we already have' },
-                next: 'field_route',
+                text: { zh: '先整理时间线', en: 'Draft a timeline first' },
+                next: 'route_choice',
                 effect: { newsValueDelta: -2 }
             }
         ]
     },
 
-    field_route: {
-        id: 'field_route',
-        title: { zh: '前线路线规划', en: 'Field Route Planning' },
-        text: textDB.fieldRoute,
+    route_choice: {
+        id: 'route_choice',
+        title: { zh: '路线选择', en: 'Route Choice' },
+        text: textDB.routeChoice,
         choices: [
             {
-                text: { zh: '优先去避难所', en: 'Prioritize the shelter' },
+                text: { zh: '先去避难所', en: 'Go to the shelter first' },
                 next: 'shelter',
                 effect: { newsValueDelta: 2 }
             },
             {
-                text: { zh: '优先去医院', en: 'Prioritize the hospital' },
-                next: 'shelter',
+                text: { zh: '先去医院', en: 'Go to the hospital first' },
+                next: 'hospital',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先做远程核查', en: 'Start with remote verification' },
-                next: 'shelter',
+                text: { zh: '先去物流点', en: 'Go to the logistics hub first' },
+                next: 'logistics',
                 effect: { newsValueDelta: -2 }
             }
         ]
@@ -76,22 +76,22 @@ export const scenes = {
 
     shelter: {
         id: 'shelter',
-        title: { zh: '避难所走访', en: 'Shelter Visit' },
+        title: { zh: '避难所的多重叙述', en: 'Shelter Narratives' },
         text: textDB.shelter,
         choices: [
             {
-                text: { zh: '记录物资与需求变化', en: 'Record supplies and needs' },
-                next: 'hospital',
+                text: { zh: '核对物资流向', en: 'Verify supply distribution' },
+                next: 'data_room',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '记录情绪与互助情况', en: 'Record emotions and mutual aid' },
-                next: 'hospital',
+                text: { zh: '记录不同证言差异', en: 'Log differences across testimonies' },
+                next: 'data_room',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先整理采访要点', en: 'Outline interview focus' },
-                next: 'hospital',
+                text: { zh: '先写情绪速记', en: 'Draft an emotional snapshot' },
+                next: 'data_room',
                 effect: { newsValueDelta: -2 }
             }
         ]
@@ -99,22 +99,22 @@ export const scenes = {
 
     hospital: {
         id: 'hospital',
-        title: { zh: '医院走访', en: 'Hospital Visit' },
+        title: { zh: '医院里的风险提醒', en: 'Hospital Risk Notes' },
         text: textDB.hospital,
         choices: [
             {
-                text: { zh: '记录就诊趋势与风险', en: 'Record trends and risks' },
-                next: 'logistics',
+                text: { zh: '补充健康风险信息', en: 'Add health risk details' },
+                next: 'data_room',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '补充防护建议', en: 'Add protection advice' },
-                next: 'logistics',
+                text: { zh: '核对统计口径', en: 'Verify reporting criteria' },
+                next: 'data_room',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先核对已有说法', en: 'Cross-check existing claims' },
-                next: 'logistics',
+                text: { zh: '先整理现场描述', en: 'Organize on-site descriptions' },
+                next: 'data_room',
                 effect: { newsValueDelta: -2 }
             }
         ]
@@ -122,21 +122,21 @@ export const scenes = {
 
     logistics: {
         id: 'logistics',
-        title: { zh: '物资与物流', en: 'Supplies and Logistics' },
+        title: { zh: '物资调度与质疑', en: 'Supplies and Doubts' },
         text: textDB.logistics,
         choices: [
             {
-                text: { zh: '记录补给进度', en: 'Record supply progress' },
+                text: { zh: '验证供应链节点', en: 'Verify supply chain nodes' },
                 next: 'data_room',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '确认短缺类型', en: 'Confirm shortage types' },
+                text: { zh: '记录官方调度', en: 'Record official dispatch info' },
                 next: 'data_room',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '整理可用数据', en: 'Catalog available data' },
+                text: { zh: '比对民间反馈', en: 'Compare grassroots feedback' },
                 next: 'data_room',
                 effect: { newsValueDelta: -2 }
             }
@@ -145,21 +145,21 @@ export const scenes = {
 
     data_room: {
         id: 'data_room',
-        title: { zh: '数据台', en: 'Data Desk' },
+        title: { zh: '数据整合', en: 'Data Consolidation' },
         text: textDB.dataRoom,
         choices: [
             {
-                text: { zh: '标注数据来源', en: 'Label data sources' },
+                text: { zh: '标注来源可信度', en: 'Label source credibility' },
                 next: 'rumor_trace',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '整理地图与趋势', en: 'Organize maps and trends' },
+                text: { zh: '整合多源数据', en: 'Merge multi-source data' },
                 next: 'rumor_trace',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '快速生成图表', en: 'Generate quick charts' },
+                text: { zh: '暂留证据缺口', en: 'Leave evidence gaps open' },
                 next: 'rumor_trace',
                 effect: { newsValueDelta: -2 }
             }
@@ -168,21 +168,67 @@ export const scenes = {
 
     rumor_trace: {
         id: 'rumor_trace',
-        title: { zh: '传闻追踪', en: 'Rumor Tracking' },
+        title: { zh: '传闻追踪', en: 'Rumor Trace' },
         text: textDB.rumorTrace,
         choices: [
             {
-                text: { zh: '核对传播路径', en: 'Track spread path' },
+                text: { zh: '追踪原始发布者', en: 'Trace the original poster' },
+                next: 'official_response',
+                effect: { newsValueDelta: 3 }
+            },
+            {
+                text: { zh: '寻找现场证言', en: 'Seek on-site testimony' },
+                next: 'community_hearings',
+                effect: { newsValueDelta: 1 }
+            },
+            {
+                text: { zh: '先搭建证据链', en: 'Build an evidence chain first' },
+                next: 'verification',
+                effect: { newsValueDelta: -2 }
+            }
+        ]
+    },
+
+    official_response: {
+        id: 'official_response',
+        title: { zh: '官方回应', en: 'Official Response' },
+        text: textDB.officialResponse,
+        choices: [
+            {
+                text: { zh: '记录官方措辞边界', en: 'Record official wording limits' },
                 next: 'verification',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '核对视频来源', en: 'Verify video source' },
+                text: { zh: '对比媒体说法', en: 'Compare media narratives' },
                 next: 'verification',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '记录讨论焦点', en: 'Note discussion focus' },
+                text: { zh: '先保留官方立场', en: 'Hold the official stance' },
+                next: 'verification',
+                effect: { newsValueDelta: -2 }
+            }
+        ]
+    },
+
+    community_hearings: {
+        id: 'community_hearings',
+        title: { zh: '社区证言', en: 'Community Testimony' },
+        text: textDB.communityHearings,
+        choices: [
+            {
+                text: { zh: '标注证言层级', en: 'Label testimony levels' },
+                next: 'verification',
+                effect: { newsValueDelta: 3 }
+            },
+            {
+                text: { zh: '整理可核实细节', en: 'Extract verifiable details' },
+                next: 'verification',
+                effect: { newsValueDelta: 1 }
+            },
+            {
+                text: { zh: '先呈现情绪叙述', en: 'Present emotional accounts first' },
                 next: 'verification',
                 effect: { newsValueDelta: -2 }
             }
@@ -195,40 +241,17 @@ export const scenes = {
         text: textDB.verification,
         choices: [
             {
-                text: { zh: '补充官方确认信息', en: 'Add official confirmations' },
-                next: 'community_update',
-                effect: { newsValueDelta: 3 }
-            },
-            {
-                text: { zh: '标注不确定性', en: 'Flag uncertainties' },
-                next: 'community_update',
-                effect: { newsValueDelta: 1 }
-            },
-            {
-                text: { zh: '暂存待核清单', en: 'Save open questions' },
-                next: 'community_update',
-                effect: { newsValueDelta: -2 }
-            }
-        ]
-    },
-
-    community_update: {
-        id: 'community_update',
-        title: { zh: '社区更新', en: 'Community Update' },
-        text: textDB.communityUpdate,
-        choices: [
-            {
-                text: { zh: '补充居民关切点', en: 'Add resident concerns' },
+                text: { zh: '明确已核实事实', en: 'Clarify verified facts' },
                 next: 'drafting',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '平衡官方与民间信息', en: 'Balance official and community info' },
+                text: { zh: '标注不确定范围', en: 'Mark uncertainty ranges' },
                 next: 'drafting',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '总结关键信息', en: 'Summarize key points' },
+                text: { zh: '先汇总要点', en: 'Summarize key points first' },
                 next: 'drafting',
                 effect: { newsValueDelta: -2 }
             }
@@ -237,21 +260,21 @@ export const scenes = {
 
     drafting: {
         id: 'drafting',
-        title: { zh: '稿件整合', en: 'Draft Assembly' },
+        title: { zh: '稿件结构', en: 'Draft Structure' },
         text: textDB.drafting,
         choices: [
             {
-                text: { zh: '强调核实与透明', en: 'Emphasize verification and transparency' },
+                text: { zh: '透明标注证据边界', en: 'Be transparent about evidence limits' },
                 next: 'final_decision',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '平衡信息与可读性', en: 'Balance clarity and detail' },
+                text: { zh: '平衡情绪与事实', en: 'Balance emotion and facts' },
                 next: 'final_decision',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先整理结构框架', en: 'Outline the structure' },
+                text: { zh: '先发布简版', en: 'Publish a brief version first' },
                 next: 'final_decision',
                 effect: { newsValueDelta: -2 }
             }
@@ -260,21 +283,21 @@ export const scenes = {
 
     final_decision: {
         id: 'final_decision',
-        title: { zh: '发布前确认', en: 'Final Check' },
+        title: { zh: '发布前抉择', en: 'Pre-Publish Decision' },
         text: textDB.finalDecision,
         choices: [
             {
-                text: { zh: '再次核对关键事实', en: 'Recheck key facts' },
+                text: { zh: '再次核实关键点', en: 'Recheck key facts' },
                 next: 'ending_final',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '完善风险提示', en: 'Refine risk notes' },
+                text: { zh: '补足不确定声明', en: 'Add uncertainty notes' },
                 next: 'ending_final',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '确认发布内容', en: 'Confirm publish version' },
+                text: { zh: '先发布再更新', en: 'Publish now and update later' },
                 next: 'ending_final',
                 effect: { newsValueDelta: -2 }
             }
@@ -283,14 +306,14 @@ export const scenes = {
 
     ending_good: {
         id: 'ending_good',
-        title: { zh: '结局：高价值报道', en: 'Ending: High-value Reporting' },
+        title: { zh: '结局：可信与有用', en: 'Ending: Credible and Useful' },
         text: textDB.endingGood,
         choices: []
     },
 
     ending_bad: {
         id: 'ending_bad',
-        title: { zh: '结局：价值不足', en: 'Ending: Value Falls Short' },
+        title: { zh: '结局：可信度不足', en: 'Ending: Credibility Falls Short' },
         text: textDB.endingBad,
         choices: []
     }

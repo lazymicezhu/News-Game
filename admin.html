@@ -72,7 +72,7 @@
                                 <th>移动距离（px）</th>
                                 <th>AI 互动次数</th>
                                 <th>选择记录</th>
-                                <th>热图</th>
+                                <th>点击热图</th>
                                 <th>管理</th>
                                 <th>备注</th>
                                 <th>完成时间</th>
@@ -162,6 +162,8 @@
                     <p>修改面板仅编辑中文，保存时会自动补齐英文内容；未配置 AI 时将直接复制原文。</p>
                     <div class="admin-section-note-title">修改范围</div>
                     <p>仅支持调整“标题、正文、选项文案”。选项下方提示通向的页面标题，分支走向与新闻价值加减不在此处修改。</p>
+                    <div class="admin-section-note-title">研究指向</div>
+                    <p>剧情与选项围绕“可信度判断与情绪反应”设计，强调证据冲突与不确定性呈现。选项主要在“核实优先/叙事优先/时效优先”之间拉开差异，用于观察玩家在 AI 介入下对可信度与情绪的取舍。</p>
                 </div>
                 <div class="admin-editor">
                     <div class="admin-editor-card">
@@ -266,6 +268,13 @@
                     </div>
                 </div>
             </section>
+        </div>
+    </div>
+    <div id="admin-save-overlay" class="admin-loading-overlay" aria-live="polite" aria-busy="true">
+        <div class="admin-loading-card">
+            <div class="admin-loading-title">正在保存...</div>
+            <div class="admin-loading-sub">保存会进行 AI 翻译处理，请稍候。</div>
+            <div class="admin-loading-sub">修改后请导出配置给 Lazymice 写入代码；本站无后端，数据不会跨设备同步。</div>
         </div>
     </div>
     <script type="module" src="js/admin.js"></script>

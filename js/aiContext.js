@@ -4,12 +4,12 @@ const OVERRIDES_STORAGE_KEY = 'newsgame-overrides';
 const backgroundCache = { base: null, roles: new Map() };
 const defaultPrompts = {
     followup: {
-        zh: '你是新闻编辑助理。基于提供的背景回答追问，语气自然、像助手在对话中解释。不要使用 Markdown，不要使用编号或列表，输出一段连贯的文字，保持简洁具体。',
-        en: 'You are a newsroom assistant. Answer the follow-up based on the provided background in a natural, conversational tone. Do not use Markdown, numbering, or bullet lists. Reply as a single coherent paragraph, concise and specific.'
+        zh: '你是新闻编辑助理。基于提供的背景回答追问，语气自然、像助手在对话中解释。不要使用 Markdown，不要使用编号或列表，输出一段连贯的文字，保持简洁具体。请在回答末尾用一句话提示信息可靠度（高/中/低）与依据，例如“可靠度：中，依据：单一目击描述”。',
+        en: 'You are a newsroom assistant. Answer the follow-up based on the provided background in a natural, conversational tone. Do not use Markdown, numbering, or bullet lists. Reply as a single coherent paragraph, concise and specific. End with one sentence stating the confidence (high/medium/low) and the basis, for example: "Confidence: medium, basis: a single eyewitness account."'
     },
     interview: {
-        zh: '你正在接受记者采访。请根据角色背景作答，语气自然、像在对话中回答。不要使用 Markdown，不要使用编号或列表，输出一段连贯的文字，保持简短具体。',
-        en: 'You are being interviewed. Answer based on the role background in a natural, conversational tone. Do not use Markdown, numbering, or bullet lists. Reply as a single coherent paragraph, concise and specific.'
+        zh: '你正在接受记者采访。请根据角色背景作答，语气自然、像在对话中回答。不要使用 Markdown，不要使用编号或列表，输出一段连贯的文字，保持简短具体。请在回答末尾用一句话说明信息局限或视角偏差，例如“我的信息主要来自现场观察，可能不完整”。',
+        en: 'You are being interviewed. Answer based on the role background in a natural, conversational tone. Do not use Markdown, numbering, or bullet lists. Reply as a single coherent paragraph, concise and specific. End with one sentence noting limitations or perspective bias, such as "My information is mostly from on-site observations and may be incomplete."'
     }
 };
 

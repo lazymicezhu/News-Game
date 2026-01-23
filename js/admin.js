@@ -783,6 +783,7 @@ function initEditor() {
     const saveSceneBtn = document.getElementById('editor-save-scene');
     const resetSceneBtn = document.getElementById('editor-reset-scene');
     const saveFeedback = document.getElementById('editor-save-feedback');
+    const saveOverlay = document.getElementById('admin-save-overlay');
 
     if (!sceneSelect || !choiceContainer || !saveSceneBtn || !resetSceneBtn) {
         return;
@@ -860,6 +861,8 @@ function initEditor() {
     saveSceneBtn.addEventListener('click', async () => {
         const sceneId = sceneSelect.value;
         if (!sceneId) return;
+        if (saveOverlay) saveOverlay.classList.add('is-visible');
+        document.body.classList.add('is-loading');
         saveSceneBtn.disabled = true;
         if (saveFeedback) saveFeedback.textContent = '';
         try {
@@ -927,6 +930,8 @@ function initEditor() {
             }
         } finally {
             saveSceneBtn.disabled = false;
+            if (saveOverlay) saveOverlay.classList.remove('is-visible');
+            document.body.classList.remove('is-loading');
         }
     });
 
