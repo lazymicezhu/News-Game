@@ -25,6 +25,7 @@ class GameState {
         this.nonAiHints = {};
         this.nonAiLogs = [];
         this.newsValue = 60;
+        this.wildfireFamiliarity = '';
     }
 
     /**
@@ -52,6 +53,7 @@ class GameState {
         this.nonAiHints = {};
         this.nonAiLogs = [];
         this.newsValue = 60;
+        this.wildfireFamiliarity = '';
     }
 
     /**
@@ -76,7 +78,8 @@ class GameState {
             nonAiLogs: [...this.nonAiLogs],
             clickPoints: [...this.clickPoints],
             currentSceneImage: this.currentSceneImage,
-            newsValue: this.newsValue
+            newsValue: this.newsValue,
+            wildfireFamiliarity: this.wildfireFamiliarity
         };
     }
 
@@ -136,6 +139,10 @@ class GameState {
 
     setPlayerName(name) {
         this.playerName = name || '';
+    }
+
+    setWildfireFamiliarity(value) {
+        this.wildfireFamiliarity = value || '';
     }
 
     incrementClick() {

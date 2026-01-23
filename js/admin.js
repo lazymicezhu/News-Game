@@ -291,20 +291,36 @@ function renderRows() {
             `;
         }).join('');
         const score = typeof entry.newsValue === 'number' ? entry.newsValue : 60;
+        const familiarity = entry.wildfireFamiliarity === 'yes'
+            ? '了解'
+            : entry.wildfireFamiliarity === 'no'
+                ? '不了解'
+                : '';
+        const variantTag = entry.aiEnabled ? 'AI版' : '非AI';
         tr.innerHTML = `
             <td>${index + 1}</td>
             <td class="admin-name-cell">
                 <span class="admin-name-cell-content">
                     ${entry.name && entry.name !== 'AI' && entry.name !== 'NORMAL' ? entry.name : '-'} (${score})
+                    <span class="admin-tag ${entry.aiEnabled ? 'admin-tag-variant' : 'admin-tag-nonvariant'}">${variantTag}</span>
+                    ${familiarity ? `<span class="admin-tag admin-tag-familiarity">${familiarity}</span>` : ''}
                     ${entry.name === 'AI' ? '<span class="admin-tag admin-tag-ai">AI</span>' : ''}
                     ${entry.name === 'NORMAL' ? '<span class="admin-tag admin-tag-normal">NORMAL</span>' : ''}
                 </span>
             </td>
-            <td>${entry.aiEnabled ? '是' : '否'}</td>
-            <td>${formatDuration(entry.durationMs)}</td>
-            <td>${entry.clicks ?? 0}</td>
-            <td>${entry.distance ?? 0}</td>
-            <td>${entry.aiInteractions ?? 0}</td>
+            <td>
+                <div class="admin-metrics">
+                    <div>${formatDuration(entry.durationMs)}</div>
+                    <div>${formatTime(entry.timestamp)}</div>
+                </div>
+            </td>
+            <td>
+                <div class="admin-metrics">
+                    <div>点击：${entry.clicks ?? 0}</div>
+                    <div>距离：${entry.distance ?? 0}px</div>
+                    <div>AI：${entry.aiInteractions ?? 0}</div>
+                </div>
+            </td>
             <td class="admin-choices">${choiceLines || '-'}</td>
             <td>
                 <div class="admin-heatmap-cell">
@@ -321,7 +337,6 @@ function renderRows() {
             <td>
                 <input class="admin-note-input" data-index="${index}" type="text" value="${notes[index] || ''}" />
             </td>
-            <td>${formatTime(entry.timestamp)}</td>
         `;
         tbody.appendChild(tr);
 

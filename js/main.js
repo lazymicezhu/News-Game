@@ -108,6 +108,10 @@ function applyStaticText() {
     const introText = document.querySelector('.intro-text');
     const introLabel = document.querySelector('.intro-label');
     const introInput = document.getElementById('player-name-input');
+    const introFamiliarityLabel = document.querySelector('label[for="intro-familiarity"]');
+    const introFamiliaritySelect = document.getElementById('intro-familiarity');
+    const introFamiliarityYes = introFamiliaritySelect?.querySelector('option[value="yes"]');
+    const introFamiliarityNo = introFamiliaritySelect?.querySelector('option[value="no"]');
     const introBtn = document.getElementById('intro-start-btn');
     const statsTitle = document.querySelector('.stats-title');
     const statsReporter = document.getElementById('stats-label-reporter');
@@ -129,6 +133,9 @@ function applyStaticText() {
     if (introText) introText.textContent = t('introBody');
     if (introLabel) introLabel.textContent = t('introNameLabel');
     if (introInput) introInput.placeholder = t('introNamePlaceholder');
+    if (introFamiliarityLabel) introFamiliarityLabel.textContent = t('introFamiliarityLabel');
+    if (introFamiliarityYes) introFamiliarityYes.textContent = t('introFamiliarityYes');
+    if (introFamiliarityNo) introFamiliarityNo.textContent = t('introFamiliarityNo');
     if (introBtn) introBtn.textContent = t('introStart');
     if (statsTitle) statsTitle.textContent = t('statsTitle');
     if (statsReporter) statsReporter.textContent = t('statsReporter');
@@ -218,8 +225,9 @@ function init() {
     const introModal = document.getElementById('intro-modal');
     const introInput = document.getElementById('player-name-input');
     const introBtn = document.getElementById('intro-start-btn');
+    const introFamiliaritySelect = document.getElementById('intro-familiarity');
 
-    const startGame = async (playerName, forcedVariant) => {
+        const startGame = async (playerName, forcedVariant, familiarity) => {
         if (introBtn) {
             introBtn.disabled = true;
         }
@@ -231,6 +239,11 @@ function init() {
         gameRouter.init(mergedScenes, 'intro');
         if (playerName) {
             gameState.setPlayerName(playerName);
+        }
+        if (familiarity) {
+            gameState.setWildfireFamiliarity(familiarity);
+        } else {
+            gameState.setWildfireFamiliarity('');
         }
         let aiAssigned = Math.random() < 0.5;
         if (forcedVariant === 'AI') aiAssigned = true;
@@ -257,10 +270,12 @@ function init() {
             gameState.setAiConfigured(false);
             gameState.setTelemetryActive(false);
             gameState.setLastMousePos(null);
+            gameState.setWildfireFamiliarity('');
             setStatsVisibility(false);
             updateStatsPanel();
             if (introModal) introModal.style.display = 'flex';
             if (introInput) introInput.value = '';
+            if (introFamiliaritySelect) introFamiliaritySelect.value = 'no';
             if (introBtn) introBtn.disabled = false;
         };
 
@@ -308,7 +323,8 @@ function init() {
             if (upper === 'AI') forcedVariant = 'AI';
             if (upper === 'NORMAL') forcedVariant = 'NORMAL';
             const name = forcedVariant ? '' : rawName;
-            startGame(name, forcedVariant);
+            const familiarity = introFamiliaritySelect?.value || '';
+            startGame(name, forcedVariant, familiarity);
         });
     }
     if (introInput) {

@@ -14,10 +14,15 @@
                 <div class="intro-card">
                     <h2 class="intro-title">开场任务</h2>
                     <p class="intro-text">
-                        你是一名采访记者，需要跟踪报道本次山火事件。你需要不断收集数据以增加新闻价值（满分 100 分）。
+                        你是一名采访记者，需要在信息不确定的情况下持续追踪山火事件，并在核实与时效之间做出取舍。
                     </p>
                     <label class="intro-label" for="player-name-input">你的名字</label>
                     <input id="player-name-input" class="intro-input" type="text" placeholder="请输入姓名" />
+                    <label class="intro-label" for="intro-familiarity">是否了解加州山火事件</label>
+                    <select id="intro-familiarity" class="intro-select">
+                        <option value="no" selected>不了解</option>
+                        <option value="yes">了解</option>
+                    </select>
                     <button id="intro-start-btn" class="btn btn-primary">开始报道</button>
                 </div>
             </div>

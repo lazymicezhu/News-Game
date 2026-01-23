@@ -279,6 +279,31 @@ function resetStream(streamBody, message) {
     streamBody.textContent = message || '';
 }
 
+function formatAiResponse(raw) {
+    if (!raw) return '';
+    const escapeHtml = (value) => value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    const pattern = /（[^）]+）|\([^)\n]+\)/g;
+    let lastIndex = 0;
+    let result = '';
+    let match;
+    while ((match = pattern.exec(raw)) !== null) {
+        const start = match.index;
+        const end = pattern.lastIndex;
+        const before = raw.slice(lastIndex, start);
+        const content = match[0].slice(1, -1).trim();
+        result += escapeHtml(before);
+        if (content) {
+            result += `<span class="assistant-annotation">${escapeHtml(content)}</span>`;
+        }
+        lastIndex = end;
+    }
+    result += escapeHtml(raw.slice(lastIndex));
+    return result;
+}
+
 async function streamToElement(assistant, streamBody, messages, loadingText) {
     if (assistant.aiAbort) {
         assistant.aiAbort.abort();
@@ -301,6 +326,7 @@ async function streamToElement(assistant, streamBody, messages, loadingText) {
                 streamBody.textContent += token;
             }
         });
+        streamBody.innerHTML = formatAiResponse(fullText);
         return fullText;
     } catch (err) {
         if (err?.name === 'AbortError') return;
@@ -600,6 +626,7 @@ function buildStatsPayload() {
             };
         }),
         newsValue: typeof state.newsValue === 'number' ? state.newsValue : 60,
+        wildfireFamiliarity: state.wildfireFamiliarity || '',
         durationMs,
         timestamp: Date.now()
     };
