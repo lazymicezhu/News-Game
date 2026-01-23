@@ -2,7 +2,7 @@ import { gameState } from './state.js';
 import { assistantLines } from '../data/assistantLines.js';
 import { t, localize, getLanguage } from './i18n.js';
 import { streamChat } from './aiClient.js';
-import { getAiBackground, getRoleBackground } from './aiContext.js';
+import { getAiBackground, getRoleBackground, getAiPrompts } from './aiContext.js';
 import { followupQuestions as defaultFollowupQuestions } from '../data/followupQuestions.js';
 import { nonAiHints } from '../data/nonAiHints.js';
 import { interviewRoles as defaultInterviewRoles } from '../data/interviewRoles.js';
@@ -87,6 +87,11 @@ export function renderScene(scene, onChoice) {
         sceneDiv.appendChild(choicesDiv);
     } else {
         sceneDiv.classList.add('ending');
+        const score = typeof gameState.newsValue === 'number' ? gameState.newsValue : 60;
+        const scoreDiv = document.createElement('div');
+        scoreDiv.className = 'ending-score';
+        scoreDiv.textContent = `${t('statsScore')}：${score} / 100`;
+        sceneDiv.appendChild(scoreDiv);
         showFooter();
         finalizeStats();
     }
@@ -352,12 +357,11 @@ function renderInterviewRoles(selectEl) {
 async function runFollowupAnswer(assistant, followupList, question) {
     const lang = getLanguage();
     const background = await getAiBackground();
+    const prompts = getAiPrompts();
     const messages = [
         {
             role: 'system',
-            content: lang === 'zh'
-                ? '你是新闻编辑助理。基于场景内容回答追问，回答简洁、具体。'
-                : 'You are a newsroom assistant. Answer the follow-up question based on the scene, concise and specific.'
+            content: lang === 'zh' ? prompts.followup.zh : prompts.followup.en
         },
         {
             role: 'user',
@@ -395,12 +399,13 @@ async function runInterview(assistant, streamBody, role, question) {
     const roleItem = interviewRoles.find((item) => item.id === role);
     const roleLabel = roleItem ? localize(roleItem.label) : role;
     const roleBackground = await getRoleBackground(role);
+    const prompts = getAiPrompts();
     const messages = [
         {
             role: 'system',
             content: lang === 'zh'
-                ? `你是${roleLabel}，正在接受记者采访。请根据角色背景作答，回答保持简短自然。`
-                : `You are a ${roleLabel} being interviewed. Answer based on the role background in a concise, natural tone.`
+                ? `${roleLabel}。${prompts.interview.zh}`
+                : `${roleLabel}. ${prompts.interview.en}`
         },
         {
             role: 'user',
@@ -542,6 +547,7 @@ export function updateStatsPanel() {
     const state = gameState.getState();
     const nameEl = document.getElementById('stats-name');
     const scoreEl = document.getElementById('stats-score');
+    const liveScoreEl = document.getElementById('live-score-value');
     const clicksEl = document.getElementById('stats-clicks');
     const distanceEl = document.getElementById('stats-distance');
     const aiEl = document.getElementById('stats-ai');
@@ -552,15 +558,9 @@ export function updateStatsPanel() {
     if (distanceEl) distanceEl.textContent = `${Math.round(state.mouseDistance || 0)} px`;
     if (aiEl) aiEl.textContent = `${state.aiInteractions || 0}`;
 
-    const decisionCount = state.decisions.length;
-    const score = Math.min(
-        100,
-        decisionCount * 12
-            + Math.floor((state.aiInteractions || 0) * 8)
-            + Math.floor((state.clickCount || 0) / 10)
-            + Math.floor((state.mouseDistance || 0) / 800)
-    );
+    const score = typeof state.newsValue === 'number' ? state.newsValue : 60;
     if (scoreEl) scoreEl.textContent = `${score} / 100`;
+    if (liveScoreEl) liveScoreEl.textContent = `${score} / 100`;
 
     if (choicesEl) {
         choicesEl.innerHTML = '';
@@ -599,6 +599,7 @@ function buildStatsPayload() {
                 text: entry.choiceIntl ? localize(entry.choiceIntl) : entry.choiceText
             };
         }),
+        newsValue: typeof state.newsValue === 'number' ? state.newsValue : 60,
         durationMs,
         timestamp: Date.now()
     };

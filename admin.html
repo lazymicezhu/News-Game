@@ -18,6 +18,7 @@
                         <button class="admin-tab" data-target="admin-editor">修改</button>
                         <button class="admin-tab" data-target="admin-ai">AI</button>
                         <button class="admin-tab" data-target="admin-flow">流程</button>
+                        <button class="admin-tab" data-target="admin-config">配置</button>
                     </div>
                     <div class="admin-actions">
                         <button id="admin-refresh" class="btn btn-secondary">刷新</button>
@@ -34,27 +35,36 @@
                     </div>
                     <div class="admin-sidebar-section">
                         <div class="admin-sidebar-heading">含 AI 版本</div>
-                        <p>助手启用追问与采访功能，AI 回复会记录到后台，并计入 AI 互动次数。</p>
+                        <p>助手启用追问与采访功能。AI 回复会记录到后台，并计入 AI 互动次数。</p>
                     </div>
                     <div class="admin-sidebar-section">
                         <div class="admin-sidebar-heading">不含 AI 版本</div>
-                        <p>助手不显示 AI 交互按钮；每个有选项的页面有 80% 概率提供固定提示语，并记录到数据里。</p>
+                        <p>助手不显示 AI 交互按钮；每个有选项的页面有 80% 概率出现固定提示语，并记录到数据里。</p>
                     </div>
                     <div class="admin-sidebar-section">
                         <div class="admin-sidebar-heading">测试入口</div>
-                        <p>姓名输入 AI 强制进入含 AI 版本；输入 NORMAL 强制进入不含 AI 版本。后台“含 AI”列显示为红色标记。</p>
+                        <p class="admin-note-danger">
+                            姓名输入 <span class="admin-inline-code">AI</span> 强制进入含 AI 版本；
+                            输入 <span class="admin-inline-code">NORMAL</span> 强制进入不含 AI 版本。
+                            后台“含 AI”列显示为红色标记。
+                        </p>
+                    </div>
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">流程说明</div>
+                        <p>当前为线性流程（10-15 个页面），每页 3 个开放选项。新闻价值初始 60 分，选项会加减分；最终 90 分及以上为好结局，低于 90 为坏结局。</p>
                     </div>
                 </div>
             </section>
             <section id="admin-data" class="admin-section">
                 <div class="admin-section-note">
                     <div class="admin-section-note-title">数据说明</div>
-                    <p>用时为从开始到结局的总时长（秒）。点击次数与移动距离记录用户输入行为。选择记录按流程顺序展示，如有 AI 对话会显示在对应选择下方。热图基于结局时的页面截图与点击分布叠加。</p>
+                    <p>姓名后括号为本局新闻价值得分。用时为从开始到结局的总时长（秒）。点击次数与移动距离记录用户输入行为。选择记录按流程顺序展示，如有 AI 对话或非 AI 提示会显示在对应选择下方。热图基于结局时的页面截图与点击分布叠加。备注可手动填写。</p>
                 </div>
                 <main class="admin-content">
                     <table class="admin-table">
                         <thead>
                             <tr>
+                                <th>序号</th>
                                 <th>姓名</th>
                                 <th>含 AI</th>
                                 <th>用时（秒）</th>
@@ -64,6 +74,7 @@
                                 <th>选择记录</th>
                                 <th>热图</th>
                                 <th>管理</th>
+                                <th>备注</th>
                                 <th>完成时间</th>
                             </tr>
                         </thead>
@@ -72,6 +83,10 @@
                 </main>
             </section>
             <section id="admin-stats" class="admin-section">
+                <div class="admin-section-note">
+                    <div class="admin-section-note-title">统计说明</div>
+                    <p>统计基于本地记录数据，包含当日与累计完成数、平均完成时间，以及 AI/非 AI 的平均新闻价值得分与分布图表。</p>
+                </div>
                 <div class="admin-stats">
                     <div class="admin-stats-group">
                         <div class="admin-stats-title">当日完成数</div>
@@ -88,6 +103,11 @@
                     <div class="admin-stats-group">
                         <div class="admin-stats-title">平均完成时间</div>
                         <div class="admin-stats-row"><span id="stats-avg-duration">0</span> 秒</div>
+                    </div>
+                    <div class="admin-stats-group">
+                        <div class="admin-stats-title">平均新闻价值</div>
+                        <div class="admin-stats-row">AI：<span id="stats-score-ai">0</span></div>
+                        <div class="admin-stats-row">非 AI：<span id="stats-score-nonai">0</span></div>
                     </div>
                 </div>
                 <div class="admin-chart">
@@ -116,13 +136,32 @@
                         </div>
                     </div>
                 </div>
+                <div class="admin-chart">
+                    <div class="admin-chart-title">新闻价值均值</div>
+                    <div class="admin-chart-bars">
+                        <div class="admin-chart-bar">
+                            <div class="admin-chart-label">AI</div>
+                            <div class="admin-chart-track">
+                                <div id="score-bar-ai" class="admin-chart-fill"></div>
+                            </div>
+                            <div id="score-value-ai" class="admin-chart-value">0</div>
+                        </div>
+                        <div class="admin-chart-bar">
+                            <div class="admin-chart-label">非 AI</div>
+                            <div class="admin-chart-track">
+                                <div id="score-bar-nonai" class="admin-chart-fill"></div>
+                            </div>
+                            <div id="score-value-nonai" class="admin-chart-value">0</div>
+                        </div>
+                    </div>
+                </div>
             </section>
             <section id="admin-editor" class="admin-section">
                 <div class="admin-section-note">
                     <div class="admin-section-note-title">修改语言</div>
                     <p>修改面板仅编辑中文，保存时会自动补齐英文内容；未配置 AI 时将直接复制原文。</p>
                     <div class="admin-section-note-title">修改范围</div>
-                    <p>修改页面仅支持调整“标题、正文、选项文案”，并提示每个选项通向的页面；不支持改动图片或分支结构。</p>
+                    <p>仅支持调整“标题、正文、选项文案”。选项下方提示通向的页面标题，分支走向与新闻价值加减不在此处修改。</p>
                 </div>
                 <div class="admin-editor">
                     <div class="admin-editor-card">
@@ -132,7 +171,7 @@
                             <select id="editor-scene-select" class="admin-editor-select"></select>
                         </div>
                         <div class="admin-editor-row" data-lang="zh">
-                            <label for="editor-title-zh">标题（中文）</label>
+                            <label for="editor-title-zh">标题</label>
                             <input id="editor-title-zh" class="admin-editor-input" type="text" data-lang="zh" />
                         </div>
                         <div class="admin-editor-row" data-lang="en">
@@ -140,7 +179,7 @@
                             <input id="editor-title-en" class="admin-editor-input" type="text" data-lang="en" />
                         </div>
                         <div class="admin-editor-row" data-lang="zh">
-                            <label for="editor-text-zh">正文（中文）</label>
+                            <label for="editor-text-zh">正文</label>
                             <textarea id="editor-text-zh" class="admin-editor-textarea" rows="3" data-lang="zh"></textarea>
                         </div>
                         <div class="admin-editor-row" data-lang="en">
@@ -165,9 +204,26 @@
             <section id="admin-ai" class="admin-section">
                 <div class="admin-section-note">
                     <div class="admin-section-note-title">AI 背景</div>
-                    <p>AI 页面可修改整体背景与角色背景（中文），系统会自动同步英文内容。</p>
+                    <p>AI 页面可修改整体背景、角色背景与提示词（中文），系统会自动同步英文内容。</p>
+                    <p>调用模型读取 config/ai.json（默认 gpt-4o-mini），游戏内使用流式回复。</p>
+                    <p>调用结构：追问 = system(追问提示词) + user(整体背景 + 追问问题)；采访 = system(角色名 + 采访提示词) + user(角色背景 + 采访问题)。</p>
                 </div>
                 <div class="admin-editor">
+                    <div class="admin-editor-card">
+                        <div class="admin-editor-title">AI 提示词</div>
+                        <div class="admin-editor-row">
+                            <label for="ai-followup-prompt-zh">追问提示词</label>
+                            <textarea id="ai-followup-prompt-zh" class="admin-editor-textarea" rows="4"></textarea>
+                        </div>
+                        <div class="admin-editor-row">
+                            <label for="ai-interview-prompt-zh">采访提示词</label>
+                            <textarea id="ai-interview-prompt-zh" class="admin-editor-textarea" rows="4"></textarea>
+                        </div>
+                        <div class="admin-editor-actions">
+                            <button id="ai-prompts-save" class="btn btn-primary" type="button">保存提示词</button>
+                            <span id="ai-prompts-feedback" class="admin-editor-feedback" aria-live="polite"></span>
+                        </div>
+                    </div>
                     <div class="admin-editor-card">
                         <div class="admin-editor-title">AI 背景</div>
                         <div class="admin-editor-row">
@@ -192,11 +248,22 @@
             <section id="admin-flow" class="admin-section">
                 <div class="admin-section-note">
                     <div class="admin-section-note-title">流程页面</div>
-                    <p>流程页以树状流程图展示全部页面、选项去向与结局标题，便于检查剧情连线。</p>
+                    <p>流程页以树状流程图展示页面顺序与结局走向，当前为线性流程，结局分为好结局与坏结局。</p>
                 </div>
                 <div class="admin-flow">
                     <div class="admin-flow-title">剧情流程图</div>
                     <div id="admin-flowchart" class="admin-flowchart"></div>
+                </div>
+            </section>
+            <section id="admin-config" class="admin-section">
+                <div class="admin-section-note">
+                    <div class="admin-section-note-title">配置导入导出</div>
+                    <p>导出内容包含全部页面配置与 AI 配置（整体背景、角色背景、提示词）。导入会覆盖本地配置并立即生效，适合跨设备传递修改结果。</p>
+                    <div class="admin-section-actions">
+                        <button id="admin-config-export" class="btn btn-secondary" type="button">导出配置</button>
+                        <button id="admin-config-import" class="btn btn-secondary" type="button">导入配置</button>
+                        <input id="admin-config-file" type="file" accept="application/json" hidden />
+                    </div>
                 </div>
             </section>
         </div>

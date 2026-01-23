@@ -24,6 +24,7 @@ class GameState {
         this.aiConfigured = false;
         this.nonAiHints = {};
         this.nonAiLogs = [];
+        this.newsValue = 60;
     }
 
     /**
@@ -50,6 +51,7 @@ class GameState {
         this.aiConfigured = false;
         this.nonAiHints = {};
         this.nonAiLogs = [];
+        this.newsValue = 60;
     }
 
     /**
@@ -73,7 +75,8 @@ class GameState {
             aiConfigured: this.aiConfigured,
             nonAiLogs: [...this.nonAiLogs],
             clickPoints: [...this.clickPoints],
-            currentSceneImage: this.currentSceneImage
+            currentSceneImage: this.currentSceneImage,
+            newsValue: this.newsValue
         };
     }
 
@@ -202,6 +205,10 @@ class GameState {
 
         for (const [key, value] of Object.entries(effect)) {
             this.setVariable(key, value);
+        }
+        if (typeof effect.newsValueDelta === 'number' && !Number.isNaN(effect.newsValueDelta)) {
+            const nextValue = this.newsValue + effect.newsValueDelta;
+            this.newsValue = Math.max(0, Math.min(100, Math.round(nextValue)));
         }
     }
 

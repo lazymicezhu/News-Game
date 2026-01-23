@@ -1,6 +1,7 @@
 import { scenes as baseScenes } from './scenes.js';
 import { interviewRoles as baseInterviewRoles } from '../data/interviewRoles.js';
 import { streamChat, isAiConfigured } from './aiClient.js';
+import { getAiPrompts } from './aiContext.js';
 
 const OVERRIDES_STORAGE_KEY = 'newsgame-overrides';
 let editorLang = 'zh';
@@ -28,6 +29,18 @@ function loadStats() {
     }
 }
 
+function loadNotes() {
+    try {
+        return JSON.parse(localStorage.getItem('newsgame-admin-notes') || '{}');
+    } catch {
+        return {};
+    }
+}
+
+function saveNotes(notes) {
+    localStorage.setItem('newsgame-admin-notes', JSON.stringify(notes));
+}
+
 function saveStats(list) {
     localStorage.setItem('newsgame-stats', JSON.stringify(list));
 }
@@ -42,6 +55,81 @@ function loadOverrides() {
 
 function saveOverrides(data) {
     localStorage.setItem(OVERRIDES_STORAGE_KEY, JSON.stringify(data));
+}
+
+async function exportOverrides() {
+    const overrides = loadOverrides();
+    const mergedScenes = mergeScenes(baseScenes, overrides.scenes || {});
+    const baseBackground = await loadAiBackgroundDefault();
+    const prompts = getAiPrompts();
+    const aiBackground = {
+        zh: overrides.aiBackground?.zh ?? baseBackground?.zh ?? '',
+        en: overrides.aiBackground?.en ?? baseBackground?.en ?? ''
+    };
+    const aiPrompts = {
+        followup: {
+            zh: prompts.followup.zh || '',
+            en: prompts.followup.en || ''
+        },
+        interview: {
+            zh: prompts.interview.zh || '',
+            en: prompts.interview.en || ''
+        }
+    };
+    const interviewRoleBackgrounds = {};
+    for (const role of baseInterviewRoles) {
+        const roleId = role.id;
+        const baseRole = await loadRoleBackgroundDefault(roleId);
+        const overrideRole = overrides.interviewRoleBackgrounds?.[roleId];
+        interviewRoleBackgrounds[roleId] = {
+            zh: overrideRole?.zh ?? baseRole?.zh ?? '',
+            en: overrideRole?.en ?? baseRole?.en ?? ''
+        };
+    }
+    const data = {
+        scenes: mergedScenes,
+        aiBackground,
+        aiPrompts,
+        interviewRoleBackgrounds
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    a.href = url;
+    a.download = `newsgame-overrides-${ts}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
+function bindConfigTransfer() {
+    const exportBtn = document.getElementById('admin-config-export');
+    const importBtn = document.getElementById('admin-config-import');
+    const fileInput = document.getElementById('admin-config-file');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            exportOverrides();
+        });
+    }
+    if (importBtn && fileInput) {
+        importBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', async () => {
+            const file = fileInput.files && fileInput.files[0];
+            if (!file) return;
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                saveOverrides(data || {});
+                window.location.reload();
+            } catch {
+                window.alert('导入失败：文件格式不正确。');
+            } finally {
+                fileInput.value = '';
+            }
+        });
+    }
 }
 
 function mergeScenes(base, overrides = {}) {
@@ -160,6 +248,7 @@ function renderRows() {
     const stats = loadStats();
     tbody.innerHTML = '';
 
+    const notes = loadNotes();
     stats.forEach((entry, index) => {
         const tr = document.createElement('tr');
         const choices = Array.isArray(entry.choices) ? entry.choices : [];
@@ -201,10 +290,12 @@ function renderRows() {
                 </div>
             `;
         }).join('');
+        const score = typeof entry.newsValue === 'number' ? entry.newsValue : 60;
         tr.innerHTML = `
+            <td>${index + 1}</td>
             <td class="admin-name-cell">
                 <span class="admin-name-cell-content">
-                    ${entry.name && entry.name !== 'AI' && entry.name !== 'NORMAL' ? entry.name : '-'}
+                    ${entry.name && entry.name !== 'AI' && entry.name !== 'NORMAL' ? entry.name : '-'} (${score})
                     ${entry.name === 'AI' ? '<span class="admin-tag admin-tag-ai">AI</span>' : ''}
                     ${entry.name === 'NORMAL' ? '<span class="admin-tag admin-tag-normal">NORMAL</span>' : ''}
                 </span>
@@ -226,6 +317,9 @@ function renderRows() {
             </td>
             <td>
                 <button class="btn btn-secondary admin-delete-btn" data-index="${index}" aria-label="删除">×</button>
+            </td>
+            <td>
+                <input class="admin-note-input" data-index="${index}" type="text" value="${notes[index] || ''}" />
             </td>
             <td>${formatTime(entry.timestamp)}</td>
         `;
@@ -256,12 +350,32 @@ function renderRows() {
         const deleteBtn = tr.querySelector('.admin-delete-btn');
         if (deleteBtn) {
             deleteBtn.addEventListener('click', () => {
+                if (!window.confirm('确认删除该条数据吗？')) return;
                 const index = parseInt(deleteBtn.dataset.index, 10);
                 if (Number.isNaN(index)) return;
                 const list = loadStats();
                 list.splice(index, 1);
                 saveStats(list);
+                const noteList = loadNotes();
+                const nextNotes = {};
+                Object.keys(noteList).forEach((key) => {
+                    const idx = parseInt(key, 10);
+                    if (Number.isNaN(idx) || idx === index) return;
+                    nextNotes[idx > index ? idx - 1 : idx] = noteList[key];
+                });
+                saveNotes(nextNotes);
                 renderRows();
+            });
+        }
+
+        const noteInput = tr.querySelector('.admin-note-input');
+        if (noteInput) {
+            noteInput.addEventListener('input', () => {
+                const idx = parseInt(noteInput.dataset.index, 10);
+                if (Number.isNaN(idx)) return;
+                const nextNotes = loadNotes();
+                nextNotes[idx] = noteInput.value;
+                saveNotes(nextNotes);
             });
         }
     });
@@ -388,7 +502,7 @@ function bindTabs() {
             const target = document.getElementById(targetId);
             if (target) target.classList.add('is-active');
             if (actions) {
-                actions.style.display = targetId === 'admin-editor' ? 'flex' : 'none';
+                actions.style.display = targetId === 'admin-data' ? 'flex' : 'none';
             }
             if (targetId === 'admin-flow') {
                 renderAdminFlow();
@@ -411,6 +525,10 @@ function renderSummary(stats) {
     let totalNonAi = 0;
     let durationSum = 0;
     let durationCount = 0;
+    let scoreSumAi = 0;
+    let scoreSumNonAi = 0;
+    let scoreCountAi = 0;
+    let scoreCountNonAi = 0;
 
     stats.forEach((entry) => {
         const isAi = !!entry.aiEnabled;
@@ -427,10 +545,22 @@ function renderSummary(stats) {
             durationSum += entry.durationMs;
             durationCount += 1;
         }
+
+        if (typeof entry.newsValue === 'number' && !Number.isNaN(entry.newsValue)) {
+            if (isAi) {
+                scoreSumAi += entry.newsValue;
+                scoreCountAi += 1;
+            } else {
+                scoreSumNonAi += entry.newsValue;
+                scoreCountNonAi += 1;
+            }
+        }
     });
 
     const avgSeconds = durationCount ? Math.round(durationSum / durationCount / 1000) : 0;
     const totalCount = totalAi + totalNonAi;
+    const avgScoreAi = scoreCountAi ? Math.round(scoreSumAi / scoreCountAi) : 0;
+    const avgScoreNonAi = scoreCountNonAi ? Math.round(scoreSumNonAi / scoreCountNonAi) : 0;
 
     const setText = (id, value) => {
         const el = document.getElementById(id);
@@ -444,6 +574,8 @@ function renderSummary(stats) {
     setText('stats-total-nonai', totalNonAi);
     setText('stats-total-total', totalAi + totalNonAi);
     setText('stats-avg-duration', avgSeconds);
+    setText('stats-score-ai', avgScoreAi);
+    setText('stats-score-nonai', avgScoreNonAi);
 
     const setBar = (id, value) => {
         const el = document.getElementById(id);
@@ -458,6 +590,18 @@ function renderSummary(stats) {
     setText('chart-value-ai', totalAi);
     setText('chart-value-nonai', totalNonAi);
     setText('chart-value-total', totalCount);
+
+    const setScoreBar = (id, value) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const percent = Math.max(0, Math.min(100, Math.round((value / 100) * 100)));
+        el.style.width = `${percent}%`;
+    };
+
+    setScoreBar('score-bar-ai', avgScoreAi);
+    setScoreBar('score-bar-nonai', avgScoreNonAi);
+    setText('score-value-ai', avgScoreAi);
+    setText('score-value-nonai', avgScoreNonAi);
 }
 
 function renderAdminFlow() {
@@ -472,7 +616,17 @@ function renderAdminFlow() {
     sceneIds.forEach((sceneId) => {
         const scene = mergedScenes[sceneId];
         const choices = Array.isArray(scene?.choices) ? scene.choices : [];
-        adjacency[sceneId] = choices.map(choice => choice.next).filter(Boolean);
+        const nextIds = [];
+        choices.forEach((choice) => {
+            if (!choice?.next) return;
+            if (choice.next === 'ending_final') {
+                if (mergedScenes.ending_good) nextIds.push('ending_good');
+                if (mergedScenes.ending_bad) nextIds.push('ending_bad');
+            } else {
+                nextIds.push(choice.next);
+            }
+        });
+        adjacency[sceneId] = Array.from(new Set(nextIds));
     });
 
     const levels = [];
@@ -802,6 +956,10 @@ async function initAiEditor() {
     const roleContainer = document.getElementById('ai-role-backgrounds');
     const roleSave = document.getElementById('ai-role-save');
     const roleFeedback = document.getElementById('ai-role-feedback');
+    const followupPromptInput = document.getElementById('ai-followup-prompt-zh');
+    const interviewPromptInput = document.getElementById('ai-interview-prompt-zh');
+    const promptsSave = document.getElementById('ai-prompts-save');
+    const promptsFeedback = document.getElementById('ai-prompts-feedback');
 
     if (!backgroundInput || !backgroundSave || !roleContainer || !roleSave) return;
 
@@ -815,6 +973,11 @@ async function initAiEditor() {
     };
 
     const overrides = loadOverrides();
+    if (followupPromptInput && interviewPromptInput) {
+        const prompts = getAiPrompts();
+        followupPromptInput.value = overrides.aiPrompts?.followup?.zh || prompts.followup.zh || '';
+        interviewPromptInput.value = overrides.aiPrompts?.interview?.zh || prompts.interview.zh || '';
+    }
     const baseBackground = await loadAiBackgroundDefault();
     const currentBackground = overrides.aiBackground?.zh || baseBackground?.zh || '';
     backgroundInput.value = currentBackground;
@@ -868,6 +1031,28 @@ async function initAiEditor() {
             roleSave.disabled = false;
         }
     });
+
+    if (promptsSave && followupPromptInput && interviewPromptInput) {
+        promptsSave.addEventListener('click', async () => {
+            promptsSave.disabled = true;
+            try {
+                const aiAvailable = await getAiAvailable();
+                const followupZh = followupPromptInput.value.trim();
+                const interviewZh = interviewPromptInput.value.trim();
+                const followupEn = await translateText(followupZh, 'zh', 'en', aiAvailable);
+                const interviewEn = await translateText(interviewZh, 'zh', 'en', aiAvailable);
+                const next = loadOverrides();
+                next.aiPrompts = {
+                    followup: { zh: followupZh, en: followupEn },
+                    interview: { zh: interviewZh, en: interviewEn }
+                };
+                saveOverrides(next);
+                showFeedback(promptsFeedback, '已成功保存');
+            } finally {
+                promptsSave.disabled = false;
+            }
+        });
+    }
 }
 
 renderRows();
@@ -877,3 +1062,4 @@ initEditor();
 initAiEditor();
 const actions = document.querySelector('.admin-actions');
 if (actions) actions.style.display = 'none';
+bindConfigTransfer();

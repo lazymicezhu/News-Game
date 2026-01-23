@@ -2,6 +2,16 @@ import { getLanguage } from './i18n.js';
 
 const OVERRIDES_STORAGE_KEY = 'newsgame-overrides';
 const backgroundCache = { base: null, roles: new Map() };
+const defaultPrompts = {
+    followup: {
+        zh: '你是新闻编辑助理。基于提供的背景回答追问，语气自然、像助手在对话中解释。不要使用 Markdown，不要使用编号或列表，输出一段连贯的文字，保持简洁具体。',
+        en: 'You are a newsroom assistant. Answer the follow-up based on the provided background in a natural, conversational tone. Do not use Markdown, numbering, or bullet lists. Reply as a single coherent paragraph, concise and specific.'
+    },
+    interview: {
+        zh: '你正在接受记者采访。请根据角色背景作答，语气自然、像在对话中回答。不要使用 Markdown，不要使用编号或列表，输出一段连贯的文字，保持简短具体。',
+        en: 'You are being interviewed. Answer based on the role background in a natural, conversational tone. Do not use Markdown, numbering, or bullet lists. Reply as a single coherent paragraph, concise and specific.'
+    }
+};
 
 function loadOverrides() {
     try {
@@ -53,4 +63,19 @@ export async function getRoleBackground(roleId) {
         backgroundCache.roles.set(roleId, data);
     }
     return pickLang(backgroundCache.roles.get(roleId), lang);
+}
+
+export function getAiPrompts() {
+    const overrides = loadOverrides();
+    const override = overrides.aiPrompts || {};
+    return {
+        followup: {
+            zh: override.followup?.zh || defaultPrompts.followup.zh,
+            en: override.followup?.en || defaultPrompts.followup.en
+        },
+        interview: {
+            zh: override.interview?.zh || defaultPrompts.interview.zh,
+            en: override.interview?.en || defaultPrompts.interview.en
+        }
+    };
 }

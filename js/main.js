@@ -116,6 +116,7 @@ function applyStaticText() {
     const statsDistance = document.getElementById('stats-label-distance');
     const statsAi = document.getElementById('stats-label-ai');
     const statsChoices = document.getElementById('stats-label-choices');
+    const liveScoreLabel = document.getElementById('live-score-label');
 
     document.title = t('gameTitle');
     if (titleEl) titleEl.textContent = t('gameTitle');
@@ -132,6 +133,7 @@ function applyStaticText() {
     if (statsTitle) statsTitle.textContent = t('statsTitle');
     if (statsReporter) statsReporter.textContent = t('statsReporter');
     if (statsScore) statsScore.textContent = t('statsScore');
+    if (liveScoreLabel) liveScoreLabel.textContent = t('statsScore');
     if (statsClicks) statsClicks.textContent = t('statsClicks');
     if (statsDistance) statsDistance.textContent = t('statsDistance');
     if (statsAi) statsAi.textContent = t('statsAi');
