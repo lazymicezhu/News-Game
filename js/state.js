@@ -26,6 +26,8 @@ class GameState {
         this.nonAiLogs = [];
         this.newsValue = 60;
         this.wildfireFamiliarity = '';
+        this.lastChoiceDelta = null;
+        this.evidence = new Set();
     }
 
     /**
@@ -54,6 +56,8 @@ class GameState {
         this.nonAiLogs = [];
         this.newsValue = 60;
         this.wildfireFamiliarity = '';
+        this.lastChoiceDelta = null;
+        this.evidence = new Set();
     }
 
     /**
@@ -201,6 +205,28 @@ class GameState {
 
     getLastMousePos() {
         return this.lastMousePos;
+    }
+
+    setLastChoiceDelta(delta) {
+        if (typeof delta !== 'number' || Number.isNaN(delta)) return;
+        this.lastChoiceDelta = delta;
+    }
+
+    consumeLastChoiceDelta() {
+        const value = this.lastChoiceDelta;
+        this.lastChoiceDelta = null;
+        return value;
+    }
+
+    addEvidence(key) {
+        if (!key) return false;
+        const sizeBefore = this.evidence.size;
+        this.evidence.add(key);
+        return this.evidence.size > sizeBefore;
+    }
+
+    hasEvidence(key) {
+        return this.evidence.has(key);
     }
 
     /**

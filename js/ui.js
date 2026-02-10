@@ -9,6 +9,34 @@ import { interviewRoles as defaultInterviewRoles } from '../data/interviewRoles.
 
 let followupQuestions = defaultFollowupQuestions;
 let interviewRoles = defaultInterviewRoles;
+let currentChoiceHandler = null;
+let currentSceneId = '';
+
+const tutorialRoles = [
+    { id: 'officer', label: { zh: '值班民警 周隽', en: 'Duty officer Zhou Jun' } },
+    { id: 'witness', label: { zh: '目击者 陈岚', en: 'Witness Chen Lan' } },
+    { id: 'shop', label: { zh: '便利店老板 许皓', en: 'Shop owner Xu Hao' } }
+];
+
+const tutorialRoleBackgrounds = {
+    officer: {
+        zh: '你是值班民警周隽，已到达现场并保持克制表述。你知道初步情况与警方简短通报，但不会推断动机，只强调等待确认。',
+        en: 'You are duty officer Zhou Jun on scene. You know the preliminary situation and the brief police note, but you avoid speculation and stress confirmation.'
+    },
+    witness: {
+        zh: '你是目击者陈岚，听到争吵与脚步声，但看不清倒地原因。你的描述带有情绪，信息可能不完整。',
+        en: 'You are witness Chen Lan. You heard an argument and footsteps but did not see the cause. Your account is emotional and incomplete.'
+    },
+    shop: {
+        zh: '你是便利店老板许皓，看到地面有红色液体，怀疑是油漆桶倒翻。你更关注现场秩序与客人安全。',
+        en: 'You are shop owner Xu Hao. You saw red liquid on the ground and suspect a toppled paint bucket. You focus on safety and order.'
+    }
+};
+
+const tutorialBackground = {
+    zh: '清晨 06:10，社区小巷里有人倒在地上，社媒传“奇怪的谋杀”。警方尚未确认，目击者听到争吵，便利店老板提到红色液体，物业监控仍在导出。请先区分事实与传闻。',
+    en: 'At 6:10 a.m., someone collapsed in a community alley. Social media calls it a “strange murder,” but police have not confirmed. A witness heard an argument, a shop owner saw red liquid, and CCTV is still exporting. Separate facts from rumors.'
+};
 
 export function setFollowupQuestions(data) {
     if (data && typeof data === 'object') {
@@ -48,6 +76,8 @@ export function renderScene(scene, onChoice) {
         image.src = scene.image;
         image.alt = localize(scene.title) || 'scene';
         image.className = 'scene-image';
+        image.loading = 'lazy';
+        image.decoding = 'async';
         sceneDiv.appendChild(image);
     }
     gameState.setCurrentSceneImage(scene.image || '');
@@ -67,18 +97,77 @@ export function renderScene(scene, onChoice) {
         textDiv.textContent = localize(scene.text);
         sceneDiv.appendChild(textDiv);
     }
+
+    // 多媒体
+    if (Array.isArray(scene.media) && scene.media.length) {
+        const mediaWrap = document.createElement('div');
+        mediaWrap.className = 'scene-media';
+        scene.media.forEach((item) => {
+            if (!item) return;
+            if (item.type === 'image' && item.src) {
+                const mediaImg = document.createElement('img');
+                mediaImg.src = item.src;
+                mediaImg.alt = item.alt ? localize(item.alt) : 'media';
+                mediaImg.className = 'scene-media-image';
+                mediaImg.loading = 'lazy';
+                mediaImg.decoding = 'async';
+                mediaWrap.appendChild(mediaImg);
+                return;
+            }
+            if (item.type === 'video' && item.src) {
+                const video = document.createElement('video');
+                video.className = 'scene-media-video';
+                video.controls = true;
+                video.src = item.src;
+                if (item.poster) {
+                    video.poster = item.poster;
+                }
+                mediaWrap.appendChild(video);
+                return;
+            }
+            const placeholder = document.createElement('div');
+            placeholder.className = 'scene-media-placeholder';
+            placeholder.textContent = item.label ? localize(item.label) : t('assistantSearching');
+            mediaWrap.appendChild(placeholder);
+        });
+        sceneDiv.appendChild(mediaWrap);
+    }
+
+    // 阶段性评估
+    if (scene.evaluation) {
+        const evalBox = document.createElement('div');
+        evalBox.className = 'scene-evaluation';
+        const evalTitle = document.createElement('div');
+        evalTitle.className = 'scene-evaluation-title';
+        evalTitle.textContent = t('stageEvaluation');
+        const evalBody = document.createElement('div');
+        evalBody.className = 'scene-evaluation-body';
+        evalBody.textContent = localize(scene.evaluation);
+        evalBox.appendChild(evalTitle);
+        evalBox.appendChild(evalBody);
+        sceneDiv.appendChild(evalBox);
+    }
     
     // 选项
     if (scene.choices && scene.choices.length > 0) {
         const choicesDiv = document.createElement('div');
         choicesDiv.className = 'choices';
 
-        scene.choices.forEach((choice, index) => {
+        const allChoices = [...scene.choices];
+        if (scene.id && scene.id.startsWith('tutorial_') && scene.id !== 'tutorial_resolution' && scene.id !== 'tutorial_ending' && gameState.hasEvidence('paint_bucket')) {
+            allChoices.unshift(getEvidenceChoice());
+        }
+
+        allChoices.forEach((choice, index) => {
             const button = document.createElement('button');
             button.className = 'btn btn-primary';
             button.textContent = localize(choice.text);
             if (choice.hint) {
                 button.title = localize(choice.hint);
+            }
+            if (isEvidenceChoice(choice)) {
+                button.classList.add('evidence-choice');
+                button.dataset.evidenceChoice = 'true';
             }
             button.onclick = () => onChoice(choice, index);
             choicesDiv.appendChild(button);
@@ -96,12 +185,22 @@ export function renderScene(scene, onChoice) {
         finalizeStats();
     }
 
+    currentChoiceHandler = onChoice;
+    currentSceneId = scene?.id || '';
+
     // 替换内容
     appElement.innerHTML = '';
     appElement.appendChild(sceneDiv);
 
     // 助手浮层
     renderAssistant(scene, !(scene.choices && scene.choices.length === 0));
+    showAiMaskIfNeeded(scene);
+    showShopHintMaskIfNeeded(scene);
+    insertEvidenceChoiceImmediate();
+    const lastDelta = gameState.consumeLastChoiceDelta();
+    if (typeof lastDelta === 'number') {
+        showChoiceFeedback(lastDelta);
+    }
     updateStatsPanel();
 }
 
@@ -115,10 +214,11 @@ function renderAssistant(scene, showActions = true) {
         assistant.id = 'assistant';
         assistant.innerHTML = `
             <div class="assistant-avatar">
-                <img src="arts/派蒙1.jpeg" alt="assistant">
+                <img src="arts/ai-assistant.svg" alt="assistant">
             </div>
             <div class="assistant-bubble">
                 <div class="assistant-text">${t('assistantFallback')}</div>
+                <div class="assistant-note">${t('assistantNote')}</div>
                 <div class="assistant-controls">
                     <button class="btn btn-secondary assistant-btn assistant-followup">${t('assistantFollowup')}</button>
                     <button class="btn btn-secondary assistant-btn assistant-interview">${t('assistantInterview')}</button>
@@ -155,6 +255,7 @@ function renderAssistant(scene, showActions = true) {
     const streamTitle = assistant.querySelector('.assistant-stream-title');
     const streamStatus = assistant.querySelector('.assistant-stream-status');
     const controls = assistant.querySelector('.assistant-controls');
+    const noteEl = assistant.querySelector('.assistant-note');
 
     // 始终显示助手：每个场景刷新一句
     assistant.style.display = 'flex';
@@ -195,9 +296,11 @@ function renderAssistant(scene, showActions = true) {
     followupBtn.textContent = t('assistantFollowup');
     interviewBtn.textContent = t('assistantInterview');
     panel.querySelector('.assistant-label').textContent = t('assistantRoleLabel');
-    renderInterviewRoles(roleSelect);
+    const roleList = scene && scene.id && scene.id.startsWith('tutorial_') ? tutorialRoles : interviewRoles;
+    renderInterviewRoles(roleSelect, roleList);
     inputEl.placeholder = t('assistantQuestionPlaceholder');
     sendBtn.textContent = t('assistantSend');
+    if (noteEl) noteEl.textContent = t('assistantNote');
     const allowActions = showActions && aiEnabled && aiConfigured;
     if (controls) {
         controls.style.display = allowActions ? 'flex' : 'none';
@@ -239,6 +342,7 @@ function renderAssistant(scene, showActions = true) {
             panel.classList.remove('open');
             followupList.classList.toggle('open');
             if (controls) controls.style.display = 'none';
+            dismissShopHintMask();
             if (streamTitle) {
                 streamTitle.textContent = t('assistantResponseTitle');
                 streamTitle.style.display = 'block';
@@ -248,6 +352,7 @@ function renderAssistant(scene, showActions = true) {
         interviewBtn.addEventListener('click', () => {
             panel.classList.toggle('open');
             if (controls) controls.style.display = 'none';
+            dismissShopHintMask();
             if (streamTitle) {
                 streamTitle.style.display = 'none';
             }
@@ -258,9 +363,238 @@ function renderAssistant(scene, showActions = true) {
             if (!question) return;
             panel.classList.add('open');
             inputEl.value = '';
+            dismissShopHintMask();
             await runInterview(assistant, streamBody, roleSelect.value, question);
         });
     }
+}
+
+function showAiMaskIfNeeded(scene) {
+    if (!scene || scene.id !== 'tutorial_intro') return;
+    const state = gameState.getState();
+    if (!state.aiEnabled && !state.aiConfigured) return;
+    const key = 'newsgame-ai-mask-seen';
+    if (localStorage.getItem(key)) return;
+    if (document.getElementById('ai-mask')) return;
+
+    const mask = document.createElement('div');
+    mask.id = 'ai-mask';
+    mask.innerHTML = `
+        <div class="ai-mask-backdrop"></div>
+        <div class="ai-mask-card">
+            <div class="ai-mask-title">${t('aiMaskTitle')}</div>
+            <div class="ai-mask-body">${t('aiMaskBody')}</div>
+            <button class="btn btn-primary ai-mask-close">${t('aiMaskButton')}</button>
+        </div>
+        <div class="ai-mask-arrow"></div>
+    `;
+    document.body.appendChild(mask);
+
+    const card = mask.querySelector('.ai-mask-card');
+    const arrow = mask.querySelector('.ai-mask-arrow');
+
+    const positionMask = () => {
+        const assistantBubble = document.querySelector('#assistant .assistant-bubble');
+        if (!assistantBubble) return false;
+        const rect = assistantBubble.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const radius = Math.max(rect.width, rect.height) * 0.7 + 16;
+        mask.style.setProperty('--spot-x', `${centerX}px`);
+        mask.style.setProperty('--spot-y', `${centerY}px`);
+        mask.style.setProperty('--spot-r', `${radius}px`);
+
+        const cardWidth = Math.min(360, window.innerWidth * 0.86);
+        const cardHeight = card.getBoundingClientRect().height || 160;
+        const gap = 48;
+        const left = Math.max(16, centerX - cardWidth - gap);
+        const top = Math.min(Math.max(16, centerY - cardHeight - gap), window.innerHeight - cardHeight - 16);
+        card.style.left = `${left}px`;
+        card.style.top = `${top}px`;
+
+        const sx = left + cardWidth;
+        const sy = top + cardHeight / 2;
+        const dx = centerX - sx;
+        const dy = centerY - sy;
+        const length = Math.max(60, Math.hypot(dx, dy) - 10);
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+        arrow.style.left = `${sx}px`;
+        arrow.style.top = `${sy}px`;
+        arrow.style.setProperty('--arrow-length', `${length}px`);
+        arrow.style.setProperty('--arrow-angle', `${angle}deg`);
+        return true;
+    };
+
+    const tryPosition = () => {
+        if (!positionMask()) {
+            requestAnimationFrame(tryPosition);
+        }
+    };
+
+    requestAnimationFrame(tryPosition);
+    window.addEventListener('resize', positionMask);
+
+    const closeBtn = mask.querySelector('.ai-mask-close');
+    closeBtn.addEventListener('click', () => {
+        localStorage.setItem(key, '1');
+        window.removeEventListener('resize', positionMask);
+        mask.remove();
+    });
+}
+
+function dismissShopHintMask() {
+    const mask = document.getElementById('tutorial-hint-mask');
+    if (!mask) return;
+    localStorage.setItem('newsgame-tutorial-shop-hint-seen', '1');
+    mask.remove();
+}
+
+function showShopHintMaskIfNeeded(scene) {
+    if (!scene || scene.id !== 'tutorial_follow') return;
+    const state = gameState.getState();
+    if (!state.aiEnabled && !state.aiConfigured) return;
+    const key = 'newsgame-tutorial-shop-hint-seen';
+    if (localStorage.getItem(key)) return;
+    if (document.getElementById('tutorial-hint-mask')) return;
+
+    const mask = document.createElement('div');
+    mask.id = 'tutorial-hint-mask';
+    mask.innerHTML = `
+        <div class="ai-mask-backdrop"></div>
+        <div class="ai-mask-card">
+            <div class="ai-mask-title">${t('shopHintTitle')}</div>
+            <div class="ai-mask-body">${t('shopHintBody')}</div>
+            <button class="btn btn-primary ai-mask-close">${t('shopHintButton')}</button>
+        </div>
+        <div class="ai-mask-arrow"></div>
+    `;
+    document.body.appendChild(mask);
+
+    const card = mask.querySelector('.ai-mask-card');
+    const arrow = mask.querySelector('.ai-mask-arrow');
+
+    const positionMask = () => {
+        const assistantBubble = document.querySelector('#assistant .assistant-bubble');
+        if (!assistantBubble) return false;
+        const rect = assistantBubble.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const radius = Math.max(rect.width, rect.height) * 0.7 + 16;
+        mask.style.setProperty('--spot-x', `${centerX}px`);
+        mask.style.setProperty('--spot-y', `${centerY}px`);
+        mask.style.setProperty('--spot-r', `${radius}px`);
+
+        const cardWidth = Math.min(360, window.innerWidth * 0.86);
+        const cardHeight = card.getBoundingClientRect().height || 160;
+        const left = Math.max(16, centerX - cardWidth - 48);
+        const top = Math.min(Math.max(16, centerY - cardHeight - 48), window.innerHeight - cardHeight - 16);
+        card.style.left = `${left}px`;
+        card.style.top = `${top}px`;
+
+        const sx = left + cardWidth;
+        const sy = top + cardHeight / 2;
+        const dx = centerX - sx;
+        const dy = centerY - sy;
+        const length = Math.max(60, Math.hypot(dx, dy) - 10);
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+        arrow.style.left = `${sx}px`;
+        arrow.style.top = `${sy}px`;
+        arrow.style.setProperty('--arrow-length', `${length}px`);
+        arrow.style.setProperty('--arrow-angle', `${angle}deg`);
+        return true;
+    };
+
+    const tryPosition = () => {
+        if (!positionMask()) {
+            requestAnimationFrame(tryPosition);
+        }
+    };
+
+    requestAnimationFrame(tryPosition);
+    window.addEventListener('resize', positionMask);
+
+    const closeBtn = mask.querySelector('.ai-mask-close');
+    closeBtn.addEventListener('click', () => {
+        localStorage.setItem(key, '1');
+        window.removeEventListener('resize', positionMask);
+        mask.remove();
+    });
+}
+
+export function showChoiceFeedback(delta) {
+    const appElement = document.getElementById('app');
+    if (!appElement) return;
+    const toast = document.createElement('div');
+    toast.className = 'choice-feedback';
+    if (delta >= 2) {
+        toast.classList.add('positive');
+        toast.textContent = t('choiceFeedbackPositive');
+    } else if (delta <= -1) {
+        toast.classList.add('risk');
+        toast.textContent = t('choiceFeedbackRisk');
+    } else {
+        toast.classList.add('neutral');
+        toast.textContent = t('choiceFeedbackNeutral');
+    }
+    appElement.appendChild(toast);
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 250);
+    }, 2000);
+}
+
+function showEvidenceModal() {
+    if (document.getElementById('evidence-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'evidence-modal';
+    modal.innerHTML = `
+        <div class="evidence-backdrop"></div>
+        <div class="evidence-card">
+            <div class="evidence-title">${t('evidenceTitle')}</div>
+            <div class="evidence-body">${t('evidenceBody')}</div>
+            <button class="btn btn-primary evidence-close">${t('evidenceConfirm')}</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    const closeBtn = modal.querySelector('.evidence-close');
+    closeBtn.addEventListener('click', () => {
+        modal.remove();
+    });
+}
+
+function getEvidenceChoice() {
+    return {
+        text: { zh: '立即结案：发布澄清', en: 'Close the case now: publish the clarification' },
+        next: 'tutorial_ending',
+        effect: { newsValueDelta: 2 }
+    };
+}
+
+function isEvidenceChoice(choice) {
+    return choice?.next === 'tutorial_ending';
+}
+
+function insertEvidenceChoiceImmediate() {
+    if (!currentSceneId || !currentSceneId.startsWith('tutorial_')) return;
+    if (currentSceneId === 'tutorial_resolution' || currentSceneId === 'tutorial_ending') return;
+    if (!gameState.hasEvidence('paint_bucket')) return;
+    if (typeof currentChoiceHandler !== 'function') return;
+    const choicesDiv = document.querySelector('#app .choices');
+    if (!choicesDiv) return;
+    if (choicesDiv.querySelector('[data-evidence-choice="true"]')) return;
+
+    const choice = getEvidenceChoice();
+    const button = document.createElement('button');
+    button.className = 'btn btn-primary evidence-choice';
+    button.dataset.evidenceChoice = 'true';
+    button.textContent = localize(choice.text);
+    button.onclick = () => currentChoiceHandler(choice, 0);
+    choicesDiv.prepend(button);
 }
 
 function buildSceneContext(assistant) {
@@ -365,11 +699,11 @@ function setStatusTags(assistant) {
     streamStatus.innerHTML = picks.map(tag => `<span class="assistant-status-tag">${tag}</span>`).join('');
 }
 
-function renderInterviewRoles(selectEl) {
+function renderInterviewRoles(selectEl, roles = interviewRoles) {
     if (!selectEl) return;
     const current = selectEl.value;
     selectEl.innerHTML = '';
-    interviewRoles.forEach((role) => {
+    roles.forEach((role) => {
         const option = document.createElement('option');
         option.value = role.id;
         option.textContent = localize(role.label);
@@ -382,7 +716,10 @@ function renderInterviewRoles(selectEl) {
 
 async function runFollowupAnswer(assistant, followupList, question) {
     const lang = getLanguage();
-    const background = await getAiBackground();
+    const sceneId = assistant.dataset.sceneId || '';
+    const background = sceneId.startsWith('tutorial_')
+        ? (lang === 'zh' ? tutorialBackground.zh : tutorialBackground.en)
+        : await getAiBackground();
     const prompts = getAiPrompts();
     const messages = [
         {
@@ -422,9 +759,13 @@ async function runFollowupAnswer(assistant, followupList, question) {
 
 async function runInterview(assistant, streamBody, role, question) {
     const lang = getLanguage();
-    const roleItem = interviewRoles.find((item) => item.id === role);
+    const sceneId = assistant.dataset.sceneId || '';
+    const roleList = sceneId.startsWith('tutorial_') ? tutorialRoles : interviewRoles;
+    const roleItem = roleList.find((item) => item.id === role);
     const roleLabel = roleItem ? localize(roleItem.label) : role;
-    const roleBackground = await getRoleBackground(role);
+    const roleBackground = sceneId.startsWith('tutorial_')
+        ? (tutorialRoleBackgrounds[role]?.[lang] || '-')
+        : await getRoleBackground(role);
     const prompts = getAiPrompts();
     const messages = [
         {
@@ -459,6 +800,16 @@ async function runInterview(assistant, streamBody, role, question) {
             question,
             response
         });
+        const sceneId = assistant.dataset.sceneId || '';
+        if (sceneId.startsWith('tutorial_') && role === 'shop') {
+            const gained = gameState.addEvidence('paint_bucket');
+            if (gained) {
+                gameState.applyEffect({ newsValueDelta: 5 });
+                updateStatsPanel();
+                showEvidenceModal();
+                insertEvidenceChoiceImmediate();
+            }
+        }
     }
 }
 

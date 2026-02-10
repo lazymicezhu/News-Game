@@ -83,6 +83,9 @@ class GameRouter {
         // 应用选择效果
         if (choice.effect) {
             gameState.applyEffect(choice.effect);
+            if (typeof choice.effect.newsValueDelta === 'number') {
+                gameState.setLastChoiceDelta(choice.effect.newsValueDelta);
+            }
         }
 
         // 跳转到下一个场景

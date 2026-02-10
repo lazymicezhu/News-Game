@@ -7,7 +7,8 @@ export const assistantLines = {
     '烟雾遮路，先抓住关键信息',
     '别慌，慢慢梳理就好',
     '补给到了，消息也补齐啦',
-    '我陪你，跟进每一步进展'
+    '我陪你，跟进每一步进展',
+    '需要我代采访吗？我可以先抓住线索'
   ],
   en: [
     'Wind is shifting; I am shifting your angle too.',
@@ -17,6 +18,7 @@ export const assistantLines = {
     'Smoke ahead; focus on the key facts.',
     'No panic—sort it step by step.',
     'Supplies are arriving; so is fresh info.',
-    'I am here to track each update with you.'
+    'I am here to track each update with you.',
+    'Need me to interview on your behalf? I can surface leads first.'
   ]
 };

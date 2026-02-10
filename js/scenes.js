@@ -4,10 +4,78 @@ import { textDB } from '../data/textDB.js';
  * 线性主线 + 分支汇合的剧情结构
  */
 export const scenes = {
+    tutorial_intro: {
+        id: 'tutorial_intro',
+        title: { zh: '教学关：奇怪的谋杀？', en: 'Tutorial: A Strange Murder?' },
+        text: textDB.tutorialIntro,
+        choices: [
+            {
+                text: { zh: '走近一点看看发生了什么', en: 'Step closer to see what happened' },
+                next: 'tutorial_follow',
+                effect: { newsValueDelta: 2 }
+            },
+            {
+                text: { zh: '询问周围的路人', en: 'Ask nearby bystanders' },
+                next: 'tutorial_follow',
+                effect: { newsValueDelta: 0 }
+            },
+            {
+                text: { zh: '先把热帖截个图发给编辑', en: 'Screenshot the viral post for the editor' },
+                next: 'tutorial_follow',
+                effect: { newsValueDelta: -2 }
+            }
+        ]
+    },
+    tutorial_follow: {
+        id: 'tutorial_follow',
+        title: { zh: '教学关：核实路线', en: 'Tutorial: Verification Route' },
+        text: textDB.tutorialFollow,
+        choices: [
+            {
+                text: { zh: '先去找监控室', en: 'Go to the CCTV room first' },
+                next: 'tutorial_resolution',
+                effect: { newsValueDelta: 2 }
+            },
+            {
+                text: { zh: '先追问目击者细节', en: 'Press witnesses for details first' },
+                next: 'tutorial_resolution',
+                effect: { newsValueDelta: 1 }
+            },
+            {
+                text: { zh: '先把“疑似谋杀”传给同事', en: 'Send “suspected murder” to the team' },
+                next: 'tutorial_resolution',
+                effect: { newsValueDelta: -2 }
+            }
+        ]
+    },
+    tutorial_resolution: {
+        id: 'tutorial_resolution',
+        title: { zh: '教学关：误会澄清', en: 'Tutorial: Misunderstanding Cleared' },
+        text: textDB.tutorialResolution,
+        choices: [
+            {
+                text: { zh: '进入正式报道', en: 'Proceed to the main report' },
+                next: 'intro',
+                effect: { newsValueDelta: 1 }
+            }
+        ]
+    },
+    tutorial_ending: {
+        id: 'tutorial_ending',
+        title: { zh: '教学关：结案', en: 'Tutorial: Case Closed' },
+        text: textDB.tutorialEnding,
+        choices: [
+            {
+                text: { zh: '进入正式报道', en: 'Proceed to the main report' },
+                next: 'intro',
+                effect: { newsValueDelta: 1 }
+            }
+        ]
+    },
     intro: {
         id: 'intro',
         title: { zh: '序章：不确定的第一小时', en: 'Prologue: The First Uncertain Hour' },
-        image: 'arts/大纪元-加州野火1.jpg',
+        image: 'arts/大纪元-加州野火1-low.jpg',
         text: textDB.intro,
         choices: [
             {
@@ -147,6 +215,7 @@ export const scenes = {
         id: 'data_room',
         title: { zh: '数据整合', en: 'Data Consolidation' },
         text: textDB.dataRoom,
+        evaluation: textDB.evaluationDataRoom,
         choices: [
             {
                 text: { zh: '标注来源可信度', en: 'Label source credibility' },
@@ -170,6 +239,10 @@ export const scenes = {
         id: 'rumor_trace',
         title: { zh: '传闻追踪', en: 'Rumor Trace' },
         text: textDB.rumorTrace,
+        media: [
+            { type: 'image', src: 'arts/大纪元-加州野火1-low.jpg', alt: { zh: '现场截图', en: 'Field snapshot' } },
+            { type: 'placeholder', label: { zh: '疑似爆炸视频片段（来源待核实）', en: 'Suspected blast clip (source unverified)' } }
+        ],
         choices: [
             {
                 text: { zh: '追踪原始发布者', en: 'Trace the original poster' },
@@ -239,6 +312,7 @@ export const scenes = {
         id: 'verification',
         title: { zh: '交叉核实', en: 'Cross Verification' },
         text: textDB.verification,
+        evaluation: textDB.evaluationVerification,
         choices: [
             {
                 text: { zh: '明确已核实事实', en: 'Clarify verified facts' },
@@ -262,6 +336,7 @@ export const scenes = {
         id: 'drafting',
         title: { zh: '稿件结构', en: 'Draft Structure' },
         text: textDB.drafting,
+        evaluation: textDB.evaluationDrafting,
         choices: [
             {
                 text: { zh: '透明标注证据边界', en: 'Be transparent about evidence limits' },

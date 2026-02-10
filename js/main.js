@@ -234,9 +234,11 @@ function init() {
         if (introModal) introModal.style.display = 'none';
         setStatsVisibility(false);
 
+        localStorage.removeItem('newsgame-ai-mask-seen');
+        localStorage.removeItem('newsgame-tutorial-shop-hint-seen');
         const mergedScenes = prepareOverrides();
         // 初始化游戏路由
-        gameRouter.init(mergedScenes, 'intro');
+        gameRouter.init(mergedScenes, 'tutorial_intro');
         if (playerName) {
             gameState.setPlayerName(playerName);
         }
@@ -253,6 +255,10 @@ function init() {
             gameState.setPlayerName(forcedVariant);
         }
         gameState.setAiConfigured(await isAiConfigured());
+        if (gameState.isAiConfigured() && forcedVariant !== 'NORMAL') {
+            gameState.setAiEnabled(true);
+        }
+        gameRouter.rerenderCurrent();
         gameState.startSession();
         gameState.setTelemetryActive(true);
         gameState.setLastMousePos(null);
@@ -262,8 +268,10 @@ function init() {
         newsBoard.init();
 
         const restartGame = async () => {
+            localStorage.removeItem('newsgame-ai-mask-seen');
+            localStorage.removeItem('newsgame-tutorial-shop-hint-seen');
             const mergedScenes = prepareOverrides();
-            gameRouter.init(mergedScenes, 'intro');
+            gameRouter.init(mergedScenes, 'tutorial_intro');
             newsBoard.restart(); // 重启新闻看板
             gameState.setPlayerName('');
             gameState.setAiEnabled(false);

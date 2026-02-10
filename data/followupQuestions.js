@@ -1,8 +1,8 @@
 export const followupQuestions = {
   intro: [
-    { zh: '目前火势规模与影响区域大致如何？', en: 'What is the current scale and affected area of the wildfire?' },
-    { zh: '官方最新通报的控制率与风险点是什么？', en: 'What do the latest official updates say about containment and risks?' },
-    { zh: '接下来最需要补充核实的关键信息有哪些？', en: 'What key details still need verification next?' }
+    { zh: '接下来最需要补充核实的关键信息有哪些？', en: 'What key details still need verification next?' },
+    { zh: '请给出三句可直接用于采访的追问，用引号分隔。', en: 'Give three direct follow-up questions for interviews, separated by quotation marks.' },
+    { zh: '官方最新通报的控制率与风险点是什么？', en: 'What do the latest official updates say about containment and risks?' }
   ],
   cal_fire_briefing: [
     { zh: '最新的火线长度与控制率数据是多少？', en: 'What are the latest fireline length and containment numbers?' },
@@ -109,9 +109,24 @@ export const followupQuestions = {
     { zh: '哪些部门或人物需要进一步采访？', en: 'Which agencies or people require further interviews?' },
     { zh: '下一步验证路线是什么？', en: 'What is the next verification path?' }
   ],
+  tutorial_intro: [
+    { zh: '可以确认的“眼前事实”有哪些？', en: 'What visible facts can be confirmed right now?' },
+    { zh: '这条传闻最不可靠的点是什么？', en: 'What is the weakest point in the rumor?' },
+    { zh: '给出三句可直接用于采访的追问，用引号分隔。', en: 'Give three direct interview questions, separated by quotation marks.' }
+  ],
+  tutorial_follow: [
+    { zh: '下一步最优先核实哪条信息？', en: 'What should be verified first?' },
+    { zh: '采访目击者时要避免哪些诱导？', en: 'What leading phrasing should we avoid when interviewing witnesses?' },
+    { zh: '给出三句可直接用于采访的追问，用引号分隔。', en: 'Give three direct interview questions, separated by quotation marks.' }
+  ],
+  tutorial_resolution: [
+    { zh: '如何写一句“澄清 + 责任”式的更新？', en: 'How to write a brief update that clarifies and accepts responsibility?' },
+    { zh: '这次误会提醒我们什么原则？', en: 'What principle does this misunderstanding highlight?' },
+    { zh: '给出三句可直接用于采访的追问，用引号分隔。', en: 'Give three direct interview questions, separated by quotation marks.' }
+  ],
   default: [
     { zh: '当前最需要核实的关键信息是什么？', en: 'What is the most critical detail to verify now?' },
-    { zh: '有哪些信息来源可以继续追问？', en: 'Which sources should be followed up next?' },
+    { zh: '请给出三句可直接用于采访的追问，用引号分隔。', en: 'Give three direct follow-up questions for interviews, separated by quotation marks.' },
     { zh: '接下来报道的重点应是什么？', en: 'What should the next reporting focus be?' }
   ]
 };
