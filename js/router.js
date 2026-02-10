@@ -95,6 +95,9 @@ class GameRouter {
                 const score = typeof gameState.newsValue === 'number' ? gameState.newsValue : 60;
                 nextSceneId = score >= 90 ? 'ending_good' : 'ending_bad';
             }
+            if (nextSceneId === 'intro' && currentSceneId && currentSceneId.startsWith('tutorial_')) {
+                gameState.resetNewsValue();
+            }
             // 将新场景加入历史
             gameState.history.push(nextSceneId);
             this.goTo(nextSceneId);

@@ -1,9 +1,4 @@
 export const followupQuestions = {
-  intro: [
-    { zh: '接下来最需要补充核实的关键信息有哪些？', en: 'What key details still need verification next?' },
-    { zh: '请给出三句可直接用于采访的追问，用引号分隔。', en: 'Give three direct follow-up questions for interviews, separated by quotation marks.' },
-    { zh: '官方最新通报的控制率与风险点是什么？', en: 'What do the latest official updates say about containment and risks?' }
-  ],
   cal_fire_briefing: [
     { zh: '最新的火线长度与控制率数据是多少？', en: 'What are the latest fireline length and containment numbers?' },
     { zh: '是否有新的强制撤离区域或安全提醒？', en: 'Are there any new evacuation zones or safety advisories?' },
@@ -123,6 +118,71 @@ export const followupQuestions = {
     { zh: '如何写一句“澄清 + 责任”式的更新？', en: 'How to write a brief update that clarifies and accepts responsibility?' },
     { zh: '这次误会提醒我们什么原则？', en: 'What principle does this misunderstanding highlight?' },
     { zh: '给出三句可直接用于采访的追问，用引号分隔。', en: 'Give three direct interview questions, separated by quotation marks.' }
+  ],
+  intro: [
+    { zh: '这条传闻最可能从哪里扩散？', en: 'Where did the rumor most likely spread from?' },
+    { zh: '目前火势规模与影响区域大致如何？', en: 'What is the current scale and affected area of the wildfire?' },
+    { zh: '接下来最需要补充核实的关键信息有哪些？', en: 'What key details still need verification next?' },
+  ],
+  briefing: [
+    { zh: '撤离通知有没有出现延迟或遗漏？', en: 'Were any evacuation notices delayed or missed?' },
+    { zh: '官方最新通报的控制率与风险点是什么？', en: 'What do the latest official updates say about containment and risks?' },
+    { zh: '接下来两小时内的应急部署重点是什么？', en: 'What are the next two hours of response priorities?' },
+  ],
+  route_choice: [
+    { zh: '哪一处场域最可能出现信息断层？', en: 'Which site is most likely to have information gaps?' },
+    { zh: '先进入哪里更能看到真实影响？', en: 'Where would you see the most direct impact first?' },
+    { zh: '哪条路线能最快获得可核实事实？', en: 'Which route gets verifiable facts fastest?' },
+  ],
+  shelter: [
+    { zh: '避难所最紧缺的是什么？', en: 'What is the most urgent shortage at the shelter?' },
+    { zh: '谁的叙述最接近事实？', en: 'Whose account is closest to the facts?' },
+    { zh: '你会建议报道先写哪一层？', en: 'Which layer should the story lead with?' },
+  ],
+  hospital: [
+    { zh: '医院当前最大压力点是什么？', en: 'What is the hospital’s biggest pressure point right now?' },
+    { zh: '哪些人群最需要被优先保护？', en: 'Which groups need priority protection?' },
+    { zh: '哪些信息必须先核实再发布？', en: 'Which details must be verified before publishing?' },
+  ],
+  logistics: [
+    { zh: '车队目前最大的阻碍是什么？', en: 'What is the convoy’s biggest bottleneck?' },
+    { zh: '哪些物资最可能断供？', en: 'Which supplies are most likely to run short?' },
+    { zh: '下一波补给何时到？', en: 'When is the next supply wave arriving?' },
+  ],
+  data_room: [
+    { zh: '数据里哪一处最不一致？', en: 'Which data point is most inconsistent?' },
+    { zh: '哪些数字可以直接引用？', en: 'Which figures can be cited directly?' },
+    { zh: '哪些变化需要标注时间？', en: 'Which changes need timestamps?' },
+  ],
+  rumor_trace: [
+    { zh: '视频最可疑的地方在哪里？', en: 'What looks most suspicious in the clip?' },
+    { zh: '这条传闻最可能的源头？', en: 'What is the most likely origin of the rumor?' },
+    { zh: '哪些证据最能反驳？', en: 'Which evidence would refute it best?' },
+  ],
+  official_response: [
+    { zh: '官方话术里有哪些保留表述？', en: 'Which phrasing suggests official caution?' },
+    { zh: '还有哪些问题没有回答？', en: 'What questions remain unanswered?' },
+    { zh: '哪些表述可以直接引用？', en: 'Which statements are safe to quote?' },
+  ],
+  community_hearings: [
+    { zh: '证言里最明显的矛盾点是什么？', en: 'What is the most obvious contradiction in testimony?' },
+    { zh: '哪些叙述需要降级处理？', en: 'Which accounts should be treated as lower confidence?' },
+    { zh: '哪些细节可以被核实？', en: 'Which details can be verified?' },
+  ],
+  verification: [
+    { zh: '还缺少哪一条独立来源？', en: 'Which independent source is still missing?' },
+    { zh: '哪些事实可以确定写进稿件？', en: 'Which facts are safe to include now?' },
+    { zh: '哪些内容需要继续标注待核实？', en: 'Which items should remain marked pending?' },
+  ],
+  drafting: [
+    { zh: '读者最在意哪个信息？', en: 'What do readers care about most?' },
+    { zh: '哪一段需要更克制？', en: 'Which section needs a more restrained tone?' },
+    { zh: '哪条事实链最有说服力？', en: 'Which fact chain is most convincing?' },
+  ],
+  final_decision: [
+    { zh: '下一轮更新最关键是什么？', en: 'What is the key point for the next update?' },
+    { zh: '哪些内容必须带上风险提示？', en: 'Which details must include risk notes?' },
+    { zh: '是否需要附上时间线？', en: 'Should the timeline be attached?' },
   ],
   default: [
     { zh: '当前最需要核实的关键信息是什么？', en: 'What is the most critical detail to verify now?' },

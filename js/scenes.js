@@ -10,17 +10,17 @@ export const scenes = {
         text: textDB.tutorialIntro,
         choices: [
             {
-                text: { zh: '走近一点看看发生了什么', en: 'Step closer to see what happened' },
+                text: { zh: '越过警戒线靠近倒地者', en: 'Slip past the tape toward the person' },
                 next: 'tutorial_follow',
                 effect: { newsValueDelta: 2 }
             },
             {
-                text: { zh: '询问周围的路人', en: 'Ask nearby bystanders' },
+                text: { zh: '拉住围观者问他们看到了什么', en: 'Stop a bystander and ask what they saw' },
                 next: 'tutorial_follow',
                 effect: { newsValueDelta: 0 }
             },
             {
-                text: { zh: '先把热帖截个图发给编辑', en: 'Screenshot the viral post for the editor' },
+                text: { zh: '盯住热帖和传播路径', en: 'Track the viral post and its spread' },
                 next: 'tutorial_follow',
                 effect: { newsValueDelta: -2 }
             }
@@ -32,17 +32,17 @@ export const scenes = {
         text: textDB.tutorialFollow,
         choices: [
             {
-                text: { zh: '先去找监控室', en: 'Go to the CCTV room first' },
+                text: { zh: '直奔监控室等导出', en: 'Head for CCTV and wait for the export' },
                 next: 'tutorial_resolution',
                 effect: { newsValueDelta: 2 }
             },
             {
-                text: { zh: '先追问目击者细节', en: 'Press witnesses for details first' },
+                text: { zh: '贴近目击者追问细节', en: 'Press witnesses for specifics' },
                 next: 'tutorial_resolution',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先把“疑似谋杀”传给同事', en: 'Send “suspected murder” to the team' },
+                text: { zh: '先把“疑似谋杀”报给同事', en: 'Push “suspected murder” to the team' },
                 next: 'tutorial_resolution',
                 effect: { newsValueDelta: -2 }
             }
@@ -79,17 +79,17 @@ export const scenes = {
         text: textDB.intro,
         choices: [
             {
-                text: { zh: '先建立事实清单', en: 'Build a fact list first' },
+                text: { zh: '先把现场能确认的事实写进本子', en: 'Write down the confirmable facts on scene' },
                 next: 'briefing',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '先锁定权威来源', en: 'Prioritize authoritative sources' },
+                text: { zh: '先打给官方简报口', en: 'Call the official briefing line first' },
                 next: 'briefing',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先跟踪传播路径', en: 'Track the spread path first' },
+                text: { zh: '先追踪传闻的传播路径', en: 'Chase the rumor’s spread first' },
                 next: 'briefing',
                 effect: { newsValueDelta: -2 }
             }
@@ -102,17 +102,17 @@ export const scenes = {
         text: textDB.briefing,
         choices: [
             {
-                text: { zh: '记录可核实事实', en: 'Log verifiable facts' },
+                text: { zh: '把可核实的信息一条条记下', en: 'Log each verifiable detail' },
                 next: 'route_choice',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '标注待确认要点', en: 'Flag items to verify' },
+                text: { zh: '把不确定的点圈出来', en: 'Circle the uncertainties' },
                 next: 'route_choice',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先整理时间线', en: 'Draft a timeline first' },
+                text: { zh: '先把时间线拉出来', en: 'Sketch a timeline first' },
                 next: 'route_choice',
                 effect: { newsValueDelta: -2 }
             }
@@ -125,17 +125,17 @@ export const scenes = {
         text: textDB.routeChoice,
         choices: [
             {
-                text: { zh: '先去避难所', en: 'Go to the shelter first' },
+                text: { zh: '赶去避难所挤进人群', en: 'Head to the shelter and push through the crowd' },
                 next: 'shelter',
                 effect: { newsValueDelta: 2 }
             },
             {
-                text: { zh: '先去医院', en: 'Go to the hospital first' },
+                text: { zh: '直奔医院急诊区', en: 'Go straight to the ER' },
                 next: 'hospital',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先去物流点', en: 'Go to the logistics hub first' },
+                text: { zh: '去物流点看补给车队', en: 'Go to the logistics hub for the convoys' },
                 next: 'logistics',
                 effect: { newsValueDelta: -2 }
             }
@@ -148,17 +148,17 @@ export const scenes = {
         text: textDB.shelter,
         choices: [
             {
-                text: { zh: '核对物资流向', en: 'Verify supply distribution' },
+                text: { zh: '盯着物资清单逐项核对', en: 'Audit the supply list item by item' },
                 next: 'data_room',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '记录不同证言差异', en: 'Log differences across testimonies' },
+                text: { zh: '把证言的矛盾点写在一起', en: 'Lay conflicting testimonies side by side' },
                 next: 'data_room',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先写情绪速记', en: 'Draft an emotional snapshot' },
+                text: { zh: '先记下人群情绪与氛围', en: 'Capture the crowd’s mood first' },
                 next: 'data_room',
                 effect: { newsValueDelta: -2 }
             }
@@ -171,17 +171,17 @@ export const scenes = {
         text: textDB.hospital,
         choices: [
             {
-                text: { zh: '补充健康风险信息', en: 'Add health risk details' },
+                text: { zh: '追着医生问风险细节', en: 'Press doctors for risk details' },
                 next: 'data_room',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '核对统计口径', en: 'Verify reporting criteria' },
+                text: { zh: '核对病例口径与统计方式', en: 'Verify case criteria and counting' },
                 next: 'data_room',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先整理现场描述', en: 'Organize on-site descriptions' },
+                text: { zh: '先把现场细节还原下来', en: 'Reconstruct the scene in notes' },
                 next: 'data_room',
                 effect: { newsValueDelta: -2 }
             }
@@ -194,17 +194,17 @@ export const scenes = {
         text: textDB.logistics,
         choices: [
             {
-                text: { zh: '验证供应链节点', en: 'Verify supply chain nodes' },
+                text: { zh: '追到车队节点逐一确认', en: 'Confirm each convoy node' },
                 next: 'data_room',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '记录官方调度', en: 'Record official dispatch info' },
+                text: { zh: '记录官方调度的说法', en: 'Record the official dispatch line' },
                 next: 'data_room',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '比对民间反馈', en: 'Compare grassroots feedback' },
+                text: { zh: '走访志愿者听民间反馈', en: 'Check grassroots feedback with volunteers' },
                 next: 'data_room',
                 effect: { newsValueDelta: -2 }
             }
@@ -218,17 +218,17 @@ export const scenes = {
         evaluation: textDB.evaluationDataRoom,
         choices: [
             {
-                text: { zh: '标注来源可信度', en: 'Label source credibility' },
+                text: { zh: '给每条来源贴上可信度', en: 'Tag each source with credibility' },
                 next: 'rumor_trace',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '整合多源数据', en: 'Merge multi-source data' },
+                text: { zh: '把多源数据叠在一起', en: 'Layer the data from multiple sources' },
                 next: 'rumor_trace',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '暂留证据缺口', en: 'Leave evidence gaps open' },
+                text: { zh: '把证据缺口留在明处', en: 'Leave the evidence gaps visible' },
                 next: 'rumor_trace',
                 effect: { newsValueDelta: -2 }
             }
@@ -245,17 +245,17 @@ export const scenes = {
         ],
         choices: [
             {
-                text: { zh: '追踪原始发布者', en: 'Trace the original poster' },
+                text: { zh: '追查最早发布的账号', en: 'Trace the earliest account' },
                 next: 'official_response',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '寻找现场证言', en: 'Seek on-site testimony' },
+                text: { zh: '回到现场找目击者', en: 'Return to find eyewitnesses' },
                 next: 'community_hearings',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先搭建证据链', en: 'Build an evidence chain first' },
+                text: { zh: '先把证据链搭起来', en: 'Build the evidence chain first' },
                 next: 'verification',
                 effect: { newsValueDelta: -2 }
             }
@@ -268,17 +268,17 @@ export const scenes = {
         text: textDB.officialResponse,
         choices: [
             {
-                text: { zh: '记录官方措辞边界', en: 'Record official wording limits' },
+                text: { zh: '逐句记下官方措辞边界', en: 'Note the limits of official wording' },
                 next: 'verification',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '对比媒体说法', en: 'Compare media narratives' },
+                text: { zh: '把媒体说法摊开对比', en: 'Lay media narratives side by side' },
                 next: 'verification',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先保留官方立场', en: 'Hold the official stance' },
+                text: { zh: '先按官方口径铺陈', en: 'Lead with the official line' },
                 next: 'verification',
                 effect: { newsValueDelta: -2 }
             }
@@ -291,17 +291,17 @@ export const scenes = {
         text: textDB.communityHearings,
         choices: [
             {
-                text: { zh: '标注证言层级', en: 'Label testimony levels' },
+                text: { zh: '标清谁是亲历谁是转述', en: 'Mark eyewitness vs. secondhand' },
                 next: 'verification',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '整理可核实细节', en: 'Extract verifiable details' },
+                text: { zh: '把可核实的细节拎出来', en: 'Pull out the verifiable details' },
                 next: 'verification',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先呈现情绪叙述', en: 'Present emotional accounts first' },
+                text: { zh: '先把情绪叙述摆在前面', en: 'Lead with the emotional accounts' },
                 next: 'verification',
                 effect: { newsValueDelta: -2 }
             }
@@ -315,17 +315,17 @@ export const scenes = {
         evaluation: textDB.evaluationVerification,
         choices: [
             {
-                text: { zh: '明确已核实事实', en: 'Clarify verified facts' },
+                text: { zh: '把已核实的事实点亮', en: 'Highlight the verified facts' },
                 next: 'drafting',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '标注不确定范围', en: 'Mark uncertainty ranges' },
+                text: { zh: '把不确定范围写清楚', en: 'Mark the uncertainty clearly' },
                 next: 'drafting',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先汇总要点', en: 'Summarize key points first' },
+                text: { zh: '先把要点收拢成一页', en: 'Condense the key points first' },
                 next: 'drafting',
                 effect: { newsValueDelta: -2 }
             }
@@ -339,17 +339,17 @@ export const scenes = {
         evaluation: textDB.evaluationDrafting,
         choices: [
             {
-                text: { zh: '透明标注证据边界', en: 'Be transparent about evidence limits' },
+                text: { zh: '把证据边界写在明处', en: 'State the evidence limits plainly' },
                 next: 'final_decision',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '平衡情绪与事实', en: 'Balance emotion and facts' },
+                text: { zh: '让情绪与事实并列出现', en: 'Balance emotion with facts' },
                 next: 'final_decision',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先发布简版', en: 'Publish a brief version first' },
+                text: { zh: '先发一版短讯', en: 'Push a short update first' },
                 next: 'final_decision',
                 effect: { newsValueDelta: -2 }
             }
@@ -362,17 +362,17 @@ export const scenes = {
         text: textDB.finalDecision,
         choices: [
             {
-                text: { zh: '再次核实关键点', en: 'Recheck key facts' },
+                text: { zh: '再核一次关键细节', en: 'Recheck the key details' },
                 next: 'ending_final',
                 effect: { newsValueDelta: 3 }
             },
             {
-                text: { zh: '补足不确定声明', en: 'Add uncertainty notes' },
+                text: { zh: '补上不确定性的声明', en: 'Add the uncertainty notes' },
                 next: 'ending_final',
                 effect: { newsValueDelta: 1 }
             },
             {
-                text: { zh: '先发布再更新', en: 'Publish now and update later' },
+                text: { zh: '先发出去再持续更新', en: 'Publish now, update as you go' },
                 next: 'ending_final',
                 effect: { newsValueDelta: -2 }
             }

@@ -245,6 +245,10 @@ class GameState {
         }
     }
 
+    resetNewsValue() {
+        this.newsValue = 60;
+    }
+
     /**
      * 记录一次决策
      * @param {Object} entry - 包含场景、选项和影响描述

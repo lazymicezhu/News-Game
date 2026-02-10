@@ -11,6 +11,180 @@ let followupQuestions = defaultFollowupQuestions;
 let interviewRoles = defaultInterviewRoles;
 let currentChoiceHandler = null;
 let currentSceneId = '';
+const mainSceneLeads = {
+    intro: {
+        type: 'followup',
+        question: {
+            zh: '这条传闻最可能从哪里扩散？',
+            en: 'Where did the rumor most likely spread from?'
+        },
+        key: 'lead_intro_rumor_source',
+        titleKey: 'leadIntroTitle',
+        bodyKey: 'leadIntroBody',
+        aiLine: {
+            zh: '线索：有更早的火光片段出现在 01:40 之前。',
+            en: 'Lead: an earlier fireball clip appeared before 1:40 a.m.'
+        }
+    },
+    briefing: {
+        type: 'followup',
+        question: {
+            zh: '撤离通知有没有出现延迟或遗漏？',
+            en: 'Were any evacuation notices delayed or missed?'
+        },
+        key: 'lead_evac_gap',
+        titleKey: 'leadEvacTitle',
+        bodyKey: 'leadEvacBody',
+        aiLine: {
+            zh: '线索：一处社区的撤离通知可能延后送达。',
+            en: 'Lead: one community’s evacuation notice may have been delayed.'
+        }
+    },
+    route_choice: {
+        type: 'followup',
+        question: {
+            zh: '哪一处场域最可能出现信息断层？',
+            en: 'Which site is most likely to have information gaps?'
+        },
+        key: 'lead_route_priority',
+        titleKey: 'leadRouteTitle',
+        bodyKey: 'leadRouteBody',
+        aiLine: {
+            zh: '线索：北侧避难所已超载，南侧仍有余量。',
+            en: 'Lead: the north shelter is over capacity while the south has room.'
+        }
+    },
+    shelter: {
+        type: 'interview',
+        roleId: 'volunteer',
+        key: 'lead_shelter_overflow',
+        titleKey: 'leadShelterTitle',
+        bodyKey: 'leadShelterBody',
+        aiLine: {
+            zh: '线索：夜里出现床位复用，人员在帐区轮换。',
+            en: 'Lead: beds are being reused overnight as people rotate.'
+        }
+    },
+    hospital: {
+        type: 'interview',
+        roleId: 'reporter',
+        key: 'lead_hospital_smoke',
+        titleKey: 'leadHospitalTitle',
+        bodyKey: 'leadHospitalBody',
+        aiLine: {
+            zh: '线索：高风险人群被建议转移到清洁空气点。',
+            en: 'Lead: high‑risk groups are advised to move to clean‑air points.'
+        }
+    },
+    logistics: {
+        type: 'interview',
+        roleId: 'volunteer',
+        key: 'lead_logistics_delay',
+        titleKey: 'leadLogisticsTitle',
+        bodyKey: 'leadLogisticsBody',
+        aiLine: {
+            zh: '线索：车队在关键路口改道，ETA 延后。',
+            en: 'Lead: convoys detoured at a key junction and ETA slipped.'
+        }
+    },
+    data_room: {
+        type: 'followup',
+        question: {
+            zh: '数据里哪一处最不一致？',
+            en: 'Which data point is most inconsistent?'
+        },
+        key: 'lead_data_anomaly',
+        titleKey: 'leadDataTitle',
+        bodyKey: 'leadDataBody',
+        aiLine: {
+            zh: '线索：控制率口径在两家媒体间不一致。',
+            en: 'Lead: containment figures differ between two outlets.'
+        }
+    },
+    rumor_trace: {
+        type: 'interview',
+        roleId: 'fire',
+        key: 'lead_rumor_timestamp',
+        titleKey: 'leadRumorTitle',
+        bodyKey: 'leadRumorBody',
+        aiLine: {
+            zh: '线索：视频时间戳疑似被剪切。',
+            en: 'Lead: the clip’s timestamp appears trimmed.'
+        }
+    },
+    official_response: {
+        type: 'followup',
+        question: {
+            zh: '官方话术里有哪些保留表述？',
+            en: 'Which phrasing suggests official caution?'
+        },
+        key: 'lead_official_wording',
+        titleKey: 'leadOfficialTitle',
+        bodyKey: 'leadOfficialBody',
+        aiLine: {
+            zh: '线索：官方反复使用“疑似”“待确认”。',
+            en: 'Lead: officials repeatedly used “suspected” and “pending.”'
+        }
+    },
+    community_hearings: {
+        type: 'followup',
+        question: {
+            zh: '证言里最明显的矛盾点是什么？',
+            en: 'What is the most obvious contradiction in testimony?'
+        },
+        key: 'lead_community_contradict',
+        titleKey: 'leadCommunityTitle',
+        bodyKey: 'leadCommunityBody',
+        aiLine: {
+            zh: '线索：地理描述出现相互矛盾。',
+            en: 'Lead: location details contradict each other.'
+        }
+    },
+    verification: {
+        type: 'followup',
+        question: {
+            zh: '还缺少哪一条独立来源？',
+            en: 'Which independent source is still missing?'
+        },
+        key: 'lead_verification_gap',
+        titleKey: 'leadVerifyTitle',
+        bodyKey: 'leadVerifyBody',
+        aiLine: {
+            zh: '线索：还缺一条独立来源交叉印证。',
+            en: 'Lead: one independent source is still missing.'
+        }
+    },
+    drafting: {
+        type: 'followup',
+        question: {
+            zh: '读者最在意哪个信息？',
+            en: 'What do readers care about most?'
+        },
+        key: 'lead_drafting_angle',
+        titleKey: 'leadDraftTitle',
+        bodyKey: 'leadDraftBody',
+        aiLine: {
+            zh: '线索：撤离路线与空气风险最受关注。',
+            en: 'Lead: evacuation routes and air risk draw the most attention.'
+        }
+    },
+    final_decision: {
+        type: 'followup',
+        question: {
+            zh: '下一轮更新最关键是什么？',
+            en: 'What is the key point for the next update?'
+        },
+        key: 'lead_final_update',
+        titleKey: 'leadFinalTitle',
+        bodyKey: 'leadFinalBody',
+        aiLine: {
+            zh: '线索：传闻溯源结果将决定下一轮更新。',
+            en: 'Lead: the rumor source trace will drive the next update.'
+        }
+    }
+};
+
+
 
 const tutorialRoles = [
     { id: 'officer', label: { zh: '值班民警 周隽', en: 'Duty officer Zhou Jun' } },
@@ -548,15 +722,15 @@ export function showChoiceFeedback(delta) {
     }, 2000);
 }
 
-function showEvidenceModal() {
+function showEvidenceModal(title, body) {
     if (document.getElementById('evidence-modal')) return;
     const modal = document.createElement('div');
     modal.id = 'evidence-modal';
     modal.innerHTML = `
         <div class="evidence-backdrop"></div>
         <div class="evidence-card">
-            <div class="evidence-title">${t('evidenceTitle')}</div>
-            <div class="evidence-body">${t('evidenceBody')}</div>
+            <div class="evidence-title">${title || t('evidenceTitle')}</div>
+            <div class="evidence-body">${body || t('evidenceBody')}</div>
             <button class="btn btn-primary evidence-close">${t('evidenceConfirm')}</button>
         </div>
     `;
@@ -567,6 +741,33 @@ function showEvidenceModal() {
     });
 }
 
+
+function getSceneLead(sceneId) {
+    if (!sceneId) return null;
+    return mainSceneLeads[sceneId] || null;
+}
+
+function pickLeadLine(lead, lang) {
+    if (!lead || !lead.aiLine) return '';
+    return lang === 'zh' ? lead.aiLine.zh : lead.aiLine.en;
+}
+
+function matchesLeadQuestion(lead, question, lang) {
+    if (!lead || lead.type !== 'followup') return false;
+    if (!question) return false;
+    const leadText = lang === 'zh' ? lead.question?.zh : lead.question?.en;
+    return leadText && question.trim() === leadText.trim();
+}
+
+function maybeGrantSceneLead(sceneId, lead, lang) {
+    if (!lead) return false;
+    const gained = gameState.addEvidence(lead.key);
+    if (!gained) return false;
+    gameState.applyEffect({ newsValueDelta: 3 });
+    updateStatsPanel();
+    showEvidenceModal(t(lead.titleKey), t(lead.bodyKey));
+    return true;
+}
 function getEvidenceChoice() {
     return {
         text: { zh: '立即结案：发布澄清', en: 'Close the case now: publish the clarification' },
@@ -579,6 +780,17 @@ function isEvidenceChoice(choice) {
     return choice?.next === 'tutorial_ending';
 }
 
+
+
+
+    updateStatsPanel();
+    showEvidenceModal(t(lead.titleKey), t(lead.bodyKey));
+}
+
+
+    updateStatsPanel();
+    showEvidenceModal(t(lead.titleKey), t(lead.bodyKey));
+}
 function insertEvidenceChoiceImmediate() {
     if (!currentSceneId || !currentSceneId.startsWith('tutorial_')) return;
     if (currentSceneId === 'tutorial_resolution' || currentSceneId === 'tutorial_ending') return;
@@ -754,6 +966,18 @@ async function runFollowupAnswer(assistant, followupList, question) {
             question: localize(question),
             response
         });
+        const lead = getSceneLead(sceneId);
+        if (matchesLeadQuestion(lead, localize(question), lang)) {
+            const gained = maybeGrantSceneLead(sceneId, lead, lang);
+            if (gained) {
+                const line = pickLeadLine(lead, lang);
+                if (line) {
+                    const updated = `${response}
+（${line}）`;
+                    streamBody.innerHTML = formatAiResponse(updated);
+                }
+            }
+        }
     }
 }
 
@@ -806,8 +1030,22 @@ async function runInterview(assistant, streamBody, role, question) {
             if (gained) {
                 gameState.applyEffect({ newsValueDelta: 5 });
                 updateStatsPanel();
-                showEvidenceModal();
+                showEvidenceModal(t('evidenceTitle'), t('evidenceBody'));
                 insertEvidenceChoiceImmediate();
+            }
+        }
+        if (!sceneId.startsWith('tutorial_')) {
+            const lead = getSceneLead(sceneId);
+            if (lead && lead.type === 'interview' && lead.roleId === role) {
+                const gained = maybeGrantSceneLead(sceneId, lead, lang);
+                if (gained) {
+                    const line = pickLeadLine(lead, lang);
+                    if (line) {
+                        const updated = `${response}
+（${line}）`;
+                        streamBody.innerHTML = formatAiResponse(updated);
+                    }
+                }
             }
         }
     }
