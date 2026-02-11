@@ -13,6 +13,7 @@
                 <div class="admin-tabs-bar">
                     <div class="admin-tabs">
                         <button class="admin-tab is-active" data-target="admin-tips">提示</button>
+                        <button class="admin-tab" data-target="admin-leads">线索</button>
                         <button class="admin-tab" data-target="admin-data">数据</button>
                         <button class="admin-tab" data-target="admin-stats">统计</button>
                         <button class="admin-tab" data-target="admin-editor">修改</button>
@@ -51,7 +52,99 @@
                     </div>
                     <div class="admin-sidebar-section">
                         <div class="admin-sidebar-heading">流程说明</div>
-                        <p>当前为线性流程（10-15 个页面），每页 3 个开放选项。新闻价值初始 60 分，选项会加减分；最终 90 分及以上为好结局，低于 90 为坏结局。</p>
+                        <p>进入后先进行教学关卡（奇怪的谋杀误会），再进入正式山火报道。新闻价值初始 60 分，选项会加减分；最终 90 分及以上为好结局，低于 90 为坏结局。</p>
+                    </div>
+                    <div class="admin-sidebar-section">
+                        <div class="admin-sidebar-heading">线索系统</div>
+                        <p>教学关与正式剧情均有“线索触发”。线索只在指定的 AI 追问/采访中获得，触发后弹出“线索收集成功”，并在 AI 回复中追加线索。</p>
+                    </div>
+                </div>
+            </section>
+            <section id="admin-leads" class="admin-section">
+                <div class="admin-section-note">
+                    <div class="admin-section-note-title">线索触发条件</div>
+                    <p>每个环节仅设置 1 条唯一线索。追问需命中指定问题；采访需命中指定人物。线索触发后 +3 新闻价值，并在 AI 回复末尾追加线索句。</p>
+                </div>
+                <div class="admin-content">
+                    <div class="admin-leads">
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">序章（intro）</div>
+                            <div class="admin-lead-row">方式：AI 追问</div>
+                            <div class="admin-lead-row">问题：这条传闻最可能从哪里扩散？</div>
+                            <div class="admin-lead-row">线索：01:40 前出现更早火光片段</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">官方简报（briefing）</div>
+                            <div class="admin-lead-row">方式：AI 追问</div>
+                            <div class="admin-lead-row">问题：撤离通知有没有出现延迟或遗漏？</div>
+                            <div class="admin-lead-row">线索：一处社区撤离通知可能延后</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">路线选择（route_choice）</div>
+                            <div class="admin-lead-row">方式：AI 追问</div>
+                            <div class="admin-lead-row">问题：哪一处场域最可能出现信息断层？</div>
+                            <div class="admin-lead-row">线索：北侧避难所超载，南侧有余量</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">避难所（shelter）</div>
+                            <div class="admin-lead-row">方式：AI 采访</div>
+                            <div class="admin-lead-row">人物：避难所志愿者 陈蔚</div>
+                            <div class="admin-lead-row">线索：夜里床位复用、帐区轮换</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">医院（hospital）</div>
+                            <div class="admin-lead-row">方式：AI 采访</div>
+                            <div class="admin-lead-row">人物：现场记者 王清</div>
+                            <div class="admin-lead-row">线索：高风险人群需转移到清洁空气点</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">物流点（logistics）</div>
+                            <div class="admin-lead-row">方式：AI 采访</div>
+                            <div class="admin-lead-row">人物：避难所志愿者 陈蔚</div>
+                            <div class="admin-lead-row">线索：车队改道，ETA 延后</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">数据整合（data_room）</div>
+                            <div class="admin-lead-row">方式：AI 追问</div>
+                            <div class="admin-lead-row">问题：数据里哪一处最不一致？</div>
+                            <div class="admin-lead-row">线索：控制率口径在媒体间不一致</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">传闻追踪（rumor_trace）</div>
+                            <div class="admin-lead-row">方式：AI 采访</div>
+                            <div class="admin-lead-row">人物：消防官员 李政浩</div>
+                            <div class="admin-lead-row">线索：视频时间戳疑似被剪切</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">官方回应（official_response）</div>
+                            <div class="admin-lead-row">方式：AI 追问</div>
+                            <div class="admin-lead-row">问题：官方话术里有哪些保留表述？</div>
+                            <div class="admin-lead-row">线索：反复使用“疑似/待确认”</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">社区证言（community_hearings）</div>
+                            <div class="admin-lead-row">方式：AI 追问</div>
+                            <div class="admin-lead-row">问题：证言里最明显的矛盾点是什么？</div>
+                            <div class="admin-lead-row">线索：地理描述相互矛盾</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">交叉核实（verification）</div>
+                            <div class="admin-lead-row">方式：AI 追问</div>
+                            <div class="admin-lead-row">问题：还缺少哪一条独立来源？</div>
+                            <div class="admin-lead-row">线索：缺一条独立来源交叉印证</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">稿件结构（drafting）</div>
+                            <div class="admin-lead-row">方式：AI 追问</div>
+                            <div class="admin-lead-row">问题：读者最在意哪个信息？</div>
+                            <div class="admin-lead-row">线索：撤离路线与空气风险最受关注</div>
+                        </div>
+                        <div class="admin-lead-card">
+                            <div class="admin-lead-title">发布前抉择（final_decision）</div>
+                            <div class="admin-lead-row">方式：AI 追问</div>
+                            <div class="admin-lead-row">问题：下一轮更新最关键是什么？</div>
+                            <div class="admin-lead-row">线索：传闻溯源决定下一轮更新</div>
+                        </div>
                     </div>
                 </div>
             </section>

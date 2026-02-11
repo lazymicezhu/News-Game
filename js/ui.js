@@ -780,17 +780,6 @@ function isEvidenceChoice(choice) {
     return choice?.next === 'tutorial_ending';
 }
 
-
-
-
-    updateStatsPanel();
-    showEvidenceModal(t(lead.titleKey), t(lead.bodyKey));
-}
-
-
-    updateStatsPanel();
-    showEvidenceModal(t(lead.titleKey), t(lead.bodyKey));
-}
 function insertEvidenceChoiceImmediate() {
     if (!currentSceneId || !currentSceneId.startsWith('tutorial_')) return;
     if (currentSceneId === 'tutorial_resolution' || currentSceneId === 'tutorial_ending') return;

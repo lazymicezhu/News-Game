@@ -889,6 +889,34 @@ body.admin-page {
     gap: 10px;
 }
 
+.admin-leads {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.admin-lead-card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 12px 14px;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-lead-title {
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+}
+
+.admin-lead-row {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 4px;
+}
+
 .admin-loading-overlay {
     position: fixed;
     inset: 0;
