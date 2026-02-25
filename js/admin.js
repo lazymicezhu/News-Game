@@ -779,6 +779,13 @@ function getLocaleValue(value, lang) {
     return '';
 }
 
+function formatNewsValueDelta(effect) {
+    const delta = effect?.newsValueDelta;
+    if (typeof delta !== 'number' || Number.isNaN(delta)) return '0';
+    if (delta > 0) return `+${delta}`;
+    return String(delta);
+}
+
 function createAiRoleRow(roleLabel, roleId, value) {
     const row = document.createElement('div');
     row.className = 'admin-editor-role-row is-ai-role';
@@ -856,11 +863,15 @@ function initEditor() {
             row.dataset.next = choice.next || '';
             const targetScene = scenes[choice.next];
             const targetTitle = targetScene ? getLocaleValue(targetScene.title, 'zh') || choice.next : (choice.next || '-');
+            const deltaText = formatNewsValueDelta(choice.effect);
             row.innerHTML = `
                 <div class="admin-editor-choice-label">选项 ${index + 1}</div>
                 <input class="admin-editor-input choice-text-zh" type="text" data-lang="zh" />
-                <div class="admin-editor-choice-label">通向页面：</div>
-                <div class="admin-editor-choice-target">${targetTitle}</div>
+                <div class="admin-editor-choice-meta">
+                    <span class="admin-editor-choice-meta-item">顺序：${index + 1}</span>
+                    <span class="admin-editor-choice-meta-item">通向页面：${targetTitle}</span>
+                    <span class="admin-editor-choice-meta-item">新闻价值：${deltaText}</span>
+                </div>
             `;
             const input = row.querySelector('.choice-text-zh');
             if (input) input.value = getLocaleValue(choice.text, 'zh');

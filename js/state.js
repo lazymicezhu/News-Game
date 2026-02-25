@@ -28,6 +28,7 @@ class GameState {
         this.wildfireFamiliarity = '';
         this.lastChoiceDelta = null;
         this.evidence = new Set();
+        this.sceneChoiceOrders = {};
     }
 
     /**
@@ -58,6 +59,7 @@ class GameState {
         this.wildfireFamiliarity = '';
         this.lastChoiceDelta = null;
         this.evidence = new Set();
+        this.sceneChoiceOrders = {};
     }
 
     /**
@@ -227,6 +229,21 @@ class GameState {
 
     hasEvidence(key) {
         return this.evidence.has(key);
+    }
+
+    getSceneChoiceOrder(sceneId, length) {
+        if (!sceneId || !Number.isInteger(length) || length <= 0) return [];
+        const existing = this.sceneChoiceOrders[sceneId];
+        if (Array.isArray(existing) && existing.length === length) {
+            return [...existing];
+        }
+        const order = Array.from({ length }, (_, index) => index);
+        for (let i = order.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [order[i], order[j]] = [order[j], order[i]];
+        }
+        this.sceneChoiceOrders[sceneId] = order;
+        return [...order];
     }
 
     /**

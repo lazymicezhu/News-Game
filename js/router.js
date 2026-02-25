@@ -11,6 +11,7 @@ class GameRouter {
     constructor() {
         this.scenes = null;
         this.startSceneId = 'intro';
+        this.isTransitioning = false;
     }
 
     /**
@@ -57,50 +58,66 @@ class GameRouter {
      * 处理选择
      * @param {Object} choice - 选择对象
      */
-    handleChoice(choice) {
-        // 检查是否从历史记录中的某个点产生了新的分支
-        const { history, currentSceneId } = gameState.getState();
-        if (history[history.length - 1] !== currentSceneId) {
-            // 是的，用户回溯并做出了不同的选择
-            // 截断历史记录
-            gameState.truncateHistory(currentSceneId);
-            // 注意: 这里我们没有清理未来的变量，这是一个简化的实现
-        }
+    async handleChoice(choice) {
+        if (this.isTransitioning) return;
+        this.isTransitioning = true;
 
-        // 记录决策
-        const currentScene = this.scenes[currentSceneId];
-        gameState.logDecision({
-            sceneId: currentSceneId,
-            sceneTitle: currentScene ? localize(currentScene.title) : currentSceneId,
-            sceneTitleIntl: currentScene ? currentScene.title : null,
-            choiceText: localize(choice.text),
-            choiceIntl: choice.text,
-            effect: choice.effect || {},
-            tags: choice.tags || []
-        });
-        updateStatsPanel();
+        try {
+            // 检查是否从历史记录中的某个点产生了新的分支
+            const { history, currentSceneId } = gameState.getState();
+            if (history[history.length - 1] !== currentSceneId) {
+                // 是的，用户回溯并做出了不同的选择
+                // 截断历史记录
+                gameState.truncateHistory(currentSceneId);
+                // 注意: 这里我们没有清理未来的变量，这是一个简化的实现
+            }
 
-        // 应用选择效果
-        if (choice.effect) {
-            gameState.applyEffect(choice.effect);
-            if (typeof choice.effect.newsValueDelta === 'number') {
-                gameState.setLastChoiceDelta(choice.effect.newsValueDelta);
-            }
-        }
+            // 记录决策
+            const currentScene = this.scenes[currentSceneId];
+            gameState.logDecision({
+                sceneId: currentSceneId,
+                sceneTitle: currentScene ? localize(currentScene.title) : currentSceneId,
+                sceneTitleIntl: currentScene ? currentScene.title : null,
+                choiceText: localize(choice.text),
+                choiceIntl: choice.text,
+                effect: choice.effect || {},
+                tags: choice.tags || []
+            });
+            updateStatsPanel();
 
-        // 跳转到下一个场景
-        if (choice.next) {
-            let nextSceneId = choice.next;
-            if (nextSceneId === 'ending_final') {
-                const score = typeof gameState.newsValue === 'number' ? gameState.newsValue : 60;
-                nextSceneId = score >= 90 ? 'ending_good' : 'ending_bad';
+            // 应用选择效果
+            let finalChoiceDelta = null;
+            if (choice.effect) {
+                gameState.applyEffect(choice.effect);
+                if (typeof choice.effect.newsValueDelta === 'number') {
+                    finalChoiceDelta = choice.effect.newsValueDelta;
+                    // 非 AI 版本补偿：高质量选择（+2 及以上）额外 +1，保证不依赖 AI 也能达成信任结局。
+                    if (!gameState.getState().aiEnabled && finalChoiceDelta >= 2) {
+                        gameState.applyEffect({ newsValueDelta: 1 });
+                        finalChoiceDelta += 1;
+                    }
+                }
             }
-            if (nextSceneId === 'intro' && currentSceneId && currentSceneId.startsWith('tutorial_')) {
-                gameState.resetNewsValue();
+            if (typeof finalChoiceDelta === 'number') {
+                gameState.setLastChoiceDelta(finalChoiceDelta);
             }
-            // 将新场景加入历史
-            gameState.history.push(nextSceneId);
-            this.goTo(nextSceneId);
+
+            // 跳转到下一个场景
+            if (choice.next) {
+                let nextSceneId = choice.next;
+                if (nextSceneId === 'ending_final') {
+                    const score = typeof gameState.newsValue === 'number' ? gameState.newsValue : 60;
+                    nextSceneId = score >= 90 ? 'ending_good' : 'ending_bad';
+                }
+                if (nextSceneId === 'intro' && currentSceneId && currentSceneId.startsWith('tutorial_')) {
+                    gameState.resetNewsValue();
+                }
+                // 将新场景加入历史
+                gameState.history.push(nextSceneId);
+                this.goTo(nextSceneId);
+            }
+        } finally {
+            this.isTransitioning = false;
         }
     }
 

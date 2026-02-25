@@ -11,6 +11,8 @@ let followupQuestions = defaultFollowupQuestions;
 let interviewRoles = defaultInterviewRoles;
 let currentChoiceHandler = null;
 let currentSceneId = '';
+let aiAvatarIntroPlayed = false;
+let aiAvatarIntroRunning = false;
 const mainSceneLeads = {
     intro: {
         type: 'followup',
@@ -184,6 +186,97 @@ const mainSceneLeads = {
     }
 };
 
+const aiLeadHintSceneIds = new Set([
+    'intro',
+    'briefing',
+    'route_choice',
+    'shelter',
+    'hospital',
+    'logistics',
+    'rumor_trace',
+    'official_response',
+    'verification',
+    'final_decision'
+]);
+
+function getAiLeadHint(sceneId, lang) {
+    if (!sceneId || !aiLeadHintSceneIds.has(sceneId)) return '';
+    const lead = mainSceneLeads[sceneId];
+    if (!lead) return '';
+    if (gameState.hasEvidence(lead.key)) return '';
+    if (lead.type === 'followup') {
+        const subtleFollowupHints = {
+            intro: {
+                zh: '也许可以先摸一摸这条传闻是从哪条链路扩开的。',
+                en: 'You might start by tracing which path amplified this rumor.'
+            },
+            briefing: {
+                zh: '简报之外，撤离通知的时间差可能藏着关键信息。',
+                en: 'Outside the briefing, timing gaps in evacuation notices may matter.'
+            },
+            route_choice: {
+                zh: '先找信息最容易断层的点位，常能更快抓住主线。',
+                en: 'Finding the weakest information link often reveals the main thread.'
+            },
+            data_room: {
+                zh: '把不一致的数据先挑出来，线索通常就在那里。',
+                en: 'Conflicting data points are often where the lead is.'
+            },
+            official_response: {
+                zh: '留意那些带保留意味的措辞，可能比结论更有信息量。',
+                en: 'Watch cautious wording; it can reveal more than conclusions.'
+            },
+            community_hearings: {
+                zh: '证言里若有对不上的地理细节，值得再往下挖。',
+                en: 'If location details conflict in testimony, that thread is worth pulling.'
+            },
+            verification: {
+                zh: '再补一条独立来源，整条证据链会稳很多。',
+                en: 'One more independent source could stabilize the whole chain.'
+            },
+            drafting: {
+                zh: '稿件角度可以先贴近读者最急需的信息。',
+                en: 'You may want to anchor the draft in what readers need most right now.'
+            },
+            final_decision: {
+                zh: '下一轮更新最关键的变量，最好先写进计划里。',
+                en: 'It may help to lock the key variable for the next update first.'
+            }
+        };
+        const pick = subtleFollowupHints[sceneId];
+        if (!pick) return '';
+        return lang === 'zh'
+            ? `提示：${pick.zh}`
+            : `Tip: ${pick.en}`;
+    }
+    if (lead.type === 'interview') {
+        const subtleInterviewHints = {
+            shelter: {
+                zh: '今晚床位和轮换信息，可能在一线协助者那里更清楚。',
+                en: 'Tonight’s bed turnover details may be clearer from frontline helpers.'
+            },
+            hospital: {
+                zh: '健康风险的变化，现场跑医疗线的人往往最先感到。',
+                en: 'Shifts in health risk are often felt first by people covering medical lines.'
+            },
+            logistics: {
+                zh: '关于改道与到达延迟，执行端视角可能更接近事实。',
+                en: 'For detours and ETA slips, operational voices are often closer to ground truth.'
+            },
+            rumor_trace: {
+                zh: '传闻视频的时间问题，熟悉处置流程的人也许能给你参照。',
+                en: 'On clip timing, someone close to response procedures may offer a better anchor.'
+            }
+        };
+        const pick = subtleInterviewHints[sceneId];
+        if (!pick) return '';
+        return lang === 'zh'
+            ? `提示：${pick.zh}`
+            : `Tip: ${pick.en}`;
+    }
+    return '';
+}
+
 
 
 const tutorialRoles = [
@@ -327,7 +420,11 @@ export function renderScene(scene, onChoice) {
         const choicesDiv = document.createElement('div');
         choicesDiv.className = 'choices';
 
-        const allChoices = [...scene.choices];
+        const choiceOrder = gameState.getSceneChoiceOrder(scene.id, scene.choices.length);
+        const orderedChoices = choiceOrder.length === scene.choices.length
+            ? choiceOrder.map((index) => scene.choices[index]).filter(Boolean)
+            : [...scene.choices];
+        const allChoices = [...orderedChoices];
         if (scene.id && scene.id.startsWith('tutorial_') && scene.id !== 'tutorial_resolution' && scene.id !== 'tutorial_ending' && gameState.hasEvidence('paint_bucket')) {
             allChoices.unshift(getEvidenceChoice());
         }
@@ -439,7 +536,12 @@ function renderAssistant(scene, showActions = true) {
     const isEnding = !(scene && scene.choices && scene.choices.length > 0);
     const aiEnabled = gameState.getState().aiEnabled;
     const aiConfigured = gameState.getState().aiConfigured;
-    if (!aiEnabled && scene && !isEnding) {
+    if (aiEnabled && scene && !isEnding) {
+        const hint = getAiLeadHint(scene.id, getLanguage());
+        if (hint) {
+            line = hint;
+        }
+    } else if (!aiEnabled && scene && !isEnding) {
         const storedHint = gameState.getNonAiHint(scene.id);
         if (storedHint !== undefined) {
             if (storedHint) {
@@ -479,6 +581,9 @@ function renderAssistant(scene, showActions = true) {
     if (controls) {
         controls.style.display = allowActions ? 'flex' : 'none';
     }
+    if (noteEl) {
+        noteEl.style.display = aiEnabled ? 'block' : 'none';
+    }
     if (!aiEnabled && !aiConfigured) {
         streamTitle.style.display = 'none';
         if (streamStatus) streamStatus.innerHTML = '';
@@ -508,6 +613,17 @@ function renderAssistant(scene, showActions = true) {
 
     bubble.classList.add('assistant-pop');
     setTimeout(() => bubble.classList.remove('assistant-pop'), 300);
+
+    const shouldRunIntroAvatar =
+        !!scene &&
+        scene.id === 'tutorial_intro' &&
+        aiEnabled &&
+        !aiAvatarIntroPlayed &&
+        !localStorage.getItem('newsgame-ai-mask-seen');
+    if (shouldRunIntroAvatar) {
+        aiAvatarIntroPlayed = true;
+        playAssistantAvatarIntro(assistant, scene);
+    }
 
     if (!assistant.dataset.bound) {
         assistant.dataset.bound = 'true';
@@ -543,10 +659,88 @@ function renderAssistant(scene, showActions = true) {
     }
 }
 
+async function playAssistantAvatarIntro(assistant, scene) {
+    if (!assistant || aiAvatarIntroRunning) return;
+    const avatar = assistant.querySelector('.assistant-avatar');
+    if (!avatar) return;
+
+    const img = avatar.querySelector('img');
+    const src = img?.getAttribute('src') || 'arts/ai-assistant.svg';
+    const target = avatar.getBoundingClientRect();
+    if (!target.width || !target.height) return;
+
+    aiAvatarIntroRunning = true;
+    assistant.style.visibility = 'hidden';
+
+    const ghost = document.createElement('div');
+    ghost.id = 'assistant-intro-avatar';
+    ghost.style.position = 'fixed';
+    ghost.style.left = '50%';
+    ghost.style.top = '50%';
+    ghost.style.width = '168px';
+    ghost.style.height = '168px';
+    ghost.style.borderRadius = '50%';
+    ghost.style.overflow = 'hidden';
+    ghost.style.border = '3px solid #dbeafe';
+    ghost.style.boxShadow = '0 18px 40px rgba(15, 23, 42, 0.22)';
+    ghost.style.background = '#fff';
+    ghost.style.transform = 'translate(-50%, -50%)';
+    ghost.style.zIndex = '720';
+    ghost.innerHTML = `<img src="${src}" alt="" style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1);">`;
+    document.body.appendChild(ghost);
+    const introLine = document.createElement('div');
+    introLine.id = 'assistant-intro-line';
+    introLine.textContent = t('preludeLineAi');
+    introLine.style.position = 'fixed';
+    introLine.style.left = '50%';
+    introLine.style.top = 'calc(50% + 118px)';
+    introLine.style.transform = 'translateX(-50%)';
+    introLine.style.maxWidth = 'min(620px, 90vw)';
+    introLine.style.padding = '0 16px';
+    introLine.style.textAlign = 'center';
+    introLine.style.fontSize = '18px';
+    introLine.style.lineHeight = '1.6';
+    introLine.style.color = '#0b0b0b';
+    introLine.style.zIndex = '721';
+    introLine.style.opacity = '1';
+    introLine.style.transition = 'opacity 0.28s ease';
+    document.body.appendChild(introLine);
+    await sleep(900);
+
+    const destinationX = target.left + target.width / 2;
+    const destinationY = target.top + target.height / 2;
+    const scale = target.width / 168;
+    const deltaX = destinationX - window.innerWidth / 2;
+    const deltaY = destinationY - window.innerHeight / 2;
+
+    await ghost.animate(
+        [
+            { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.98 },
+            { transform: `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(${scale})`, opacity: 1 }
+        ],
+        {
+            duration: 760,
+            easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+            fill: 'forwards'
+        }
+    ).finished.catch(() => null);
+
+    await sleep(120);
+    introLine.style.opacity = '0';
+    await sleep(280);
+    introLine.remove();
+    ghost.remove();
+    assistant.style.visibility = 'visible';
+    aiAvatarIntroRunning = false;
+    showAiMaskIfNeeded(scene);
+}
+
 function showAiMaskIfNeeded(scene) {
     if (!scene || scene.id !== 'tutorial_intro') return;
     const state = gameState.getState();
-    if (!state.aiEnabled && !state.aiConfigured) return;
+    if (!state.aiEnabled) return;
+    if (aiAvatarIntroRunning) return;
+    if (!aiAvatarIntroPlayed) return;
     const key = 'newsgame-ai-mask-seen';
     if (localStorage.getItem(key)) return;
     if (document.getElementById('ai-mask')) return;
@@ -627,7 +821,7 @@ function dismissShopHintMask() {
 function showShopHintMaskIfNeeded(scene) {
     if (!scene || scene.id !== 'tutorial_follow') return;
     const state = gameState.getState();
-    if (!state.aiEnabled && !state.aiConfigured) return;
+    if (!state.aiEnabled) return;
     const key = 'newsgame-tutorial-shop-hint-seen';
     if (localStorage.getItem(key)) return;
     if (document.getElementById('tutorial-hint-mask')) return;
@@ -752,11 +946,75 @@ function pickLeadLine(lead, lang) {
     return lang === 'zh' ? lead.aiLine.zh : lead.aiLine.en;
 }
 
+function normalizeQuestionText(text) {
+    return String(text || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^\u4e00-\u9fffa-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function buildTokenSet(text) {
+    const set = new Set();
+    if (!text) return set;
+    const parts = text.split(' ');
+    for (const part of parts) {
+        if (part) set.add(part);
+    }
+    return set;
+}
+
+function countSetOverlap(a, b) {
+    if (!a.size || !b.size) return 0;
+    let hit = 0;
+    for (const item of a) {
+        if (b.has(item)) hit += 1;
+    }
+    return hit;
+}
+
+function buildHanCharSet(text) {
+    const set = new Set();
+    if (!text) return set;
+    for (const ch of text) {
+        if (/[\u4e00-\u9fff]/.test(ch)) set.add(ch);
+    }
+    return set;
+}
+
 function matchesLeadQuestion(lead, question, lang) {
     if (!lead || lead.type !== 'followup') return false;
     if (!question) return false;
     const leadText = lang === 'zh' ? lead.question?.zh : lead.question?.en;
-    return leadText && question.trim() === leadText.trim();
+    if (!leadText) return false;
+
+    const normalizedLead = normalizeQuestionText(leadText);
+    const normalizedQuestion = normalizeQuestionText(question);
+    if (!normalizedLead || !normalizedQuestion) return false;
+
+    if (normalizedLead === normalizedQuestion) return true;
+    if (normalizedLead.includes(normalizedQuestion) || normalizedQuestion.includes(normalizedLead)) {
+        return true;
+    }
+
+    if (lang === 'zh') {
+        const leadChars = buildHanCharSet(normalizedLead);
+        const questionChars = buildHanCharSet(normalizedQuestion);
+        const overlap = countSetOverlap(leadChars, questionChars);
+        if (!overlap) return false;
+        const leadCoverage = overlap / leadChars.size;
+        const questionCoverage = overlap / questionChars.size;
+        return leadCoverage >= 0.65 && questionCoverage >= 0.45;
+    }
+
+    const leadTokens = buildTokenSet(normalizedLead);
+    const questionTokens = buildTokenSet(normalizedQuestion);
+    const overlap = countSetOverlap(leadTokens, questionTokens);
+    if (!overlap) return false;
+    const leadCoverage = overlap / leadTokens.size;
+    const questionCoverage = overlap / questionTokens.size;
+    return leadCoverage >= 0.6 && questionCoverage >= 0.5;
 }
 
 function maybeGrantSceneLead(sceneId, lead, lang) {
@@ -1037,6 +1295,65 @@ async function runInterview(assistant, streamBody, role, question) {
                 }
             }
         }
+    }
+}
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function playPreludeInterlude() {
+    aiAvatarIntroPlayed = false;
+    aiAvatarIntroRunning = false;
+    const lines = [
+        t('preludeLine1'),
+        t('preludeLine2'),
+        t('preludeLine3'),
+        t('preludeLine4'),
+        t('preludeLine5')
+    ];
+    lines.push(t('preludeLine6'));
+    if (gameState.getState().aiEnabled) {
+        lines.push(t('preludeLineAi'));
+    }
+    const filteredLines = lines.filter((line) => typeof line === 'string' && line.trim());
+
+    if (!filteredLines.length) return;
+
+    const existing = document.getElementById('prelude-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'prelude-overlay';
+    overlay.innerHTML = `
+        <div class="prelude-panel">
+            <div class="prelude-line"></div>
+            <span class="prelude-cursor" aria-hidden="true"></span>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const lineEl = overlay.querySelector('.prelude-line');
+    const assistant = document.getElementById('assistant');
+    const previousVisibility = assistant ? assistant.style.visibility : '';
+    if (assistant) assistant.style.visibility = 'hidden';
+
+    try {
+        for (const line of filteredLines) {
+            lineEl.classList.remove('is-fading');
+            lineEl.textContent = '';
+            for (const ch of Array.from(line)) {
+                lineEl.textContent += ch;
+                await sleep(64);
+            }
+            await sleep(560);
+            lineEl.classList.add('is-fading');
+            await sleep(300);
+        }
+        await sleep(220);
+    } finally {
+        if (assistant) assistant.style.visibility = previousVisibility;
+        overlay.remove();
     }
 }
 

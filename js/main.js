@@ -8,7 +8,7 @@ import { gameRouter } from './router.js';
 import { newsBoard } from './newsBoard.js';
 import { setLanguage, getLanguage, onLanguageChange, t } from './i18n.js';
 import { gameState } from './state.js';
-import { updateStatsPanel, setStatsVisibility, setFollowupQuestions, setInterviewRoles } from './ui.js';
+import { updateStatsPanel, setStatsVisibility, setFollowupQuestions, setInterviewRoles, playPreludeInterlude } from './ui.js';
 import { isAiConfigured } from './aiClient.js';
 import { followupQuestions as baseFollowupQuestions } from '../data/followupQuestions.js';
 
@@ -237,6 +237,16 @@ function init() {
         localStorage.removeItem('newsgame-ai-mask-seen');
         localStorage.removeItem('newsgame-tutorial-shop-hint-seen');
         const mergedScenes = prepareOverrides();
+        const aiConfigured = await isAiConfigured();
+        const randomAiAssigned = Math.random() < 0.5;
+        const aiAssigned = forcedVariant === 'NORMAL'
+            ? false
+            : (forcedVariant === 'AI' ? true : randomAiAssigned);
+        const effectiveAiEnabled = forcedVariant === 'NORMAL'
+            ? false
+            : (aiConfigured ? true : aiAssigned);
+        gameState.setAiEnabled(effectiveAiEnabled);
+        await playPreludeInterlude();
         // 初始化游戏路由
         gameRouter.init(mergedScenes, 'tutorial_intro');
         if (playerName) {
@@ -247,17 +257,11 @@ function init() {
         } else {
             gameState.setWildfireFamiliarity('');
         }
-        let aiAssigned = Math.random() < 0.5;
-        if (forcedVariant === 'AI') aiAssigned = true;
-        if (forcedVariant === 'NORMAL') aiAssigned = false;
-        gameState.setAiEnabled(aiAssigned);
+        gameState.setAiEnabled(effectiveAiEnabled);
         if (forcedVariant) {
             gameState.setPlayerName(forcedVariant);
         }
-        gameState.setAiConfigured(await isAiConfigured());
-        if (gameState.isAiConfigured() && forcedVariant !== 'NORMAL') {
-            gameState.setAiEnabled(true);
-        }
+        gameState.setAiConfigured(aiConfigured);
         gameRouter.rerenderCurrent();
         gameState.startSession();
         gameState.setTelemetryActive(true);
@@ -308,10 +312,10 @@ function init() {
             // 按数字键选择选项
             const num = parseInt(e.key);
             if (num >= 1 && num <= 9) {
-                const currentScene = gameRouter.getCurrentScene();
-                if (currentScene && currentScene.choices && currentScene.choices[num - 1]) {
-                    const choice = currentScene.choices[num - 1];
-                    gameRouter.handleChoice(choice);
+                const buttons = Array.from(document.querySelectorAll('#app .choices .btn'));
+                const button = buttons[num - 1];
+                if (button) {
+                    button.click();
                 }
             }
         });
