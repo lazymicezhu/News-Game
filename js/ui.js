@@ -382,14 +382,24 @@ export function renderScene(scene, onChoice) {
                 return;
             }
             if (item.type === 'video' && item.src) {
+                const videoWrap = document.createElement('div');
+                videoWrap.className = 'scene-media-video-wrap';
                 const video = document.createElement('video');
                 video.className = 'scene-media-video';
-                video.controls = true;
+                video.controls = item.controls !== false;
+                video.autoplay = !!item.autoplay;
+                video.muted = item.muted !== false;
+                video.loop = !!item.loop;
+                video.playsInline = true;
                 video.src = item.src;
                 if (item.poster) {
                     video.poster = item.poster;
                 }
-                mediaWrap.appendChild(video);
+                videoWrap.appendChild(video);
+                const maskBottom = document.createElement('div');
+                maskBottom.className = 'scene-media-video-mask';
+                videoWrap.appendChild(maskBottom);
+                mediaWrap.appendChild(videoWrap);
                 return;
             }
             const placeholder = document.createElement('div');

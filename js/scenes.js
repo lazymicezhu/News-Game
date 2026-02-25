@@ -380,7 +380,7 @@ export const scenes = {
         text: textDB.rumorTrace,
         media: [
             { type: 'image', src: 'arts/大纪元-加州野火1-low.jpg', alt: { zh: '现场截图', en: 'Field snapshot' } },
-            { type: 'placeholder', label: { zh: '疑似爆炸视频片段（来源待核实）', en: 'Suspected blast clip (source unverified)' } }
+            { type: 'video', src: 'arts/视频1.mp4', autoplay: true, muted: true, loop: true, controls: false }
         ],
         choices: [
             {

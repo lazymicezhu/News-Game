@@ -261,9 +261,38 @@ body {
 .scene-media-image,
 .scene-media-video {
     width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+}
+
+.scene-media-image {
     border-radius: var(--border-radius-sm);
     border: 1px solid var(--border-color);
     background: #fff;
+}
+
+.scene-media-video-wrap {
+    position: relative;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    background: #fff;
+    overflow: hidden;
+}
+
+.scene-media-video {
+    border: 0;
+    background: #000;
+}
+
+.scene-media-video-mask {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 5%;
+    background: #000;
+    pointer-events: none;
 }
 
 .scene-media-placeholder {
