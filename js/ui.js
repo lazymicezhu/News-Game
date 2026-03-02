@@ -906,15 +906,17 @@ export function showChoiceFeedback(delta) {
     if (!appElement) return;
     const toast = document.createElement('div');
     toast.className = 'choice-feedback';
+    const deltaText = delta > 0 ? `+${delta}` : `${delta}`;
+    const scoreLabel = getLanguage() === 'zh' ? '新闻价值' : 'Story value';
     if (delta >= 2) {
         toast.classList.add('positive');
-        toast.textContent = t('choiceFeedbackPositive');
+        toast.textContent = `${scoreLabel} ${deltaText}`;
     } else if (delta <= -1) {
         toast.classList.add('risk');
-        toast.textContent = t('choiceFeedbackRisk');
+        toast.textContent = `${scoreLabel} ${deltaText}`;
     } else {
         toast.classList.add('neutral');
-        toast.textContent = t('choiceFeedbackNeutral');
+        toast.textContent = `${scoreLabel} ${deltaText}`;
     }
     appElement.appendChild(toast);
     requestAnimationFrame(() => {
