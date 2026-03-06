@@ -13,9 +13,16 @@
             <div id="intro-modal" class="intro-modal">
                 <div class="intro-card">
                     <h2 class="intro-title">开场任务</h2>
-                    <p class="intro-text">
-                        你是一名采访记者，需要在信息不确定的情况下持续追踪山火事件，并在核实与时效之间做出取舍。
-                    </p>
+                    <div class="intro-text">
+                        <p>你将阅读一篇关于近期加州野火事件的新闻报道。请仔细阅读内容，并根据你的理解和感受回答后续问题。</p>
+                        <p>请注意：</p>
+                        <ul>
+                            <li>“阅读过程中尽量保持专注。”</li>
+                            <li>“你无需记住所有细节，但请尽量理解新闻的主要内容和信息。”</li>
+                            <li>“完成阅读后，你将回答关于新闻可信度和个人感受的问卷。”</li>
+                        </ul>
+                        <p>阅读时间预计 2-3 分钟。请开始阅读新闻。</p>
+                    </div>
                     <div id="intro-step-name" class="intro-step is-active">
                         <label class="intro-label" for="player-name-input">你的名字</label>
                         <input id="player-name-input" class="intro-input" type="text" placeholder="请输入姓名" />
@@ -171,6 +178,117 @@
                 <!-- 新闻将通过 JavaScript 动态加载 -->
             </div>
         </aside>
+    </div>
+
+    <div id="reading-modal" class="reading-modal" style="display:none;">
+        <div class="reading-card">
+            <h2 class="reading-title" id="reading-title"></h2>
+            <div class="reading-body" id="reading-body"></div>
+            <div class="reading-actions">
+                <button id="reading-done-btn" class="btn btn-primary">我已完成阅读，继续</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="posttest-modal" class="posttest-modal" style="display:none;">
+        <div class="posttest-card">
+            <h2 class="posttest-title">后测问卷</h2>
+            <p class="posttest-note">请在游戏结束后填写。除开放题外均为必填，1-5分量表中 1=最低，5=最高。</p>
+            <div class="posttest-body">
+                <section class="posttest-section">
+                    <h3>一、操控检查</h3>
+                    <div class="intro-label">你认为最开始你阅读的新闻是由谁制作的？</div>
+                    <div class="intro-radio-group">
+                        <label class="intro-radio"><input type="radio" name="post-producer-type" value="human" /> 人类记者</label>
+                        <label class="intro-radio"><input type="radio" name="post-producer-type" value="ai" /> AI</label>
+                        <label class="intro-radio"><input type="radio" name="post-producer-type" value="unsure" /> 不确定</label>
+                    </div>
+
+                    <div class="intro-label">你认为你体验最好的内容是：</div>
+                    <div class="intro-radio-group">
+                        <label class="intro-radio"><input type="radio" name="post-best-format" value="text_news" /> 传统文本新闻</label>
+                        <label class="intro-radio"><input type="radio" name="post-best-format" value="interactive_game" /> 互动新闻游戏</label>
+                    </div>
+                </section>
+
+                <section class="posttest-section">
+                    <h3>二、新闻可信度（1=完全不同意，5=完全同意）</h3>
+                    <div class="intro-label">我认为这篇新闻内容准确可靠。</div>
+                    <div class="intro-likert post-likert" data-field="credAccuracy"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">我觉得这篇新闻报道值得信任。</div>
+                    <div class="intro-likert post-likert" data-field="credTrust"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">我认为新闻内容公正、没有偏见。</div>
+                    <div class="intro-likert post-likert" data-field="credFair"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">新闻提供了足够的背景信息和深度。</div>
+                    <div class="intro-likert post-likert" data-field="credDepth"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">新闻内容客观、中立。</div>
+                    <div class="intro-likert post-likert" data-field="credNeutral"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                </section>
+
+                <section class="posttest-section">
+                    <h3>三、情绪参与（1=完全没有，5=非常强烈）</h3>
+                    <div class="intro-label">我在阅读/游戏过程中感到关心事件中的人物和情况。</div>
+                    <div class="intro-likert post-likert" data-field="emoConcern"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">我感到悲伤或难过。</div>
+                    <div class="intro-likert post-likert" data-field="emoSad"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">我感到愤怒或不满。</div>
+                    <div class="intro-likert post-likert" data-field="emoAngry"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">我感到希望或乐观。</div>
+                    <div class="intro-likert post-likert" data-field="emoHope"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">我感到焦虑或紧张。</div>
+                    <div class="intro-likert post-likert" data-field="emoAnxious"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                </section>
+
+                <section class="posttest-section">
+                    <h3>四、叙事沉浸/体验感受（1=完全不同意，5=完全同意）</h3>
+                    <div class="intro-label">我在体验过程中完全投入在新闻故事里。</div>
+                    <div class="intro-likert post-likert" data-field="narImmersed"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">我觉得自己能够理解记者在报道中所面临的挑战。</div>
+                    <div class="intro-likert post-likert" data-field="narChallenge"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">我对故事的发展有情感投入。</div>
+                    <div class="intro-likert post-likert" data-field="narEmotion"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">我容易想象新闻中描述的情景和事件。</div>
+                    <div class="intro-likert post-likert" data-field="narImagine"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                </section>
+
+                <section class="posttest-section">
+                    <h3>五、行为意图（1=完全不同意，5=完全同意）</h3>
+                    <div class="intro-label">我愿意将这篇新闻分享给他人。</div>
+                    <div class="intro-likert post-likert" data-field="intentShare"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                    <div class="intro-label">我有兴趣进一步了解该事件的更多信息。</div>
+                    <div class="intro-likert post-likert" data-field="intentLearn"><button type="button" class="intro-dot" data-value="1"></button><button type="button" class="intro-dot" data-value="2"></button><button type="button" class="intro-dot" data-value="3"></button><button type="button" class="intro-dot" data-value="4"></button><button type="button" class="intro-dot" data-value="5"></button></div>
+                    <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                </section>
+
+                <section class="posttest-section">
+                    <h3>六、开放反馈（选填）</h3>
+                    <div class="intro-label">在新闻阅读/新闻游戏过程中，你印象最深的部分是什么？</div>
+                    <textarea id="post-open-1" class="posttest-textarea" rows="3"></textarea>
+                    <div class="intro-label">你对新闻报道的可信度或情绪反应有何感受？</div>
+                    <textarea id="post-open-2" class="posttest-textarea" rows="3"></textarea>
+                    <div class="intro-label">你对互动新闻体验或游戏设计有何建议？</div>
+                    <textarea id="post-open-3" class="posttest-textarea" rows="3"></textarea>
+                </section>
+            </div>
+            <div class="posttest-actions">
+                <button id="posttest-submit-btn" class="btn btn-primary">提交并完成</button>
+            </div>
+        </div>
     </div>
 
     <script src="js/vendor/html2canvas.min.js"></script>

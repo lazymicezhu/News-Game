@@ -168,7 +168,6 @@
                                 <th>行为</th>
                                 <th>选择记录</th>
                                 <th>前测</th>
-                                <th>管理</th>
                             </tr>
                         </thead>
                         <tbody id="admin-rows"></tbody>
@@ -201,6 +200,13 @@
                         <div class="admin-stats-title">平均新闻价值</div>
                         <div class="admin-stats-row">AI：<span id="stats-score-ai">0</span></div>
                         <div class="admin-stats-row">非 AI：<span id="stats-score-nonai">0</span></div>
+                    </div>
+                    <div class="admin-stats-group">
+                        <div class="admin-stats-title">四类组合计数</div>
+                        <div class="admin-stats-row">AI新闻 + AI游戏：<span id="stats-combo-ai-ai">0</span></div>
+                        <div class="admin-stats-row">人类新闻 + AI游戏：<span id="stats-combo-human-ai">0</span></div>
+                        <div class="admin-stats-row">AI新闻 + 非AI游戏：<span id="stats-combo-ai-nonai">0</span></div>
+                        <div class="admin-stats-row">人类新闻 + 非AI游戏：<span id="stats-combo-human-nonai">0</span></div>
                     </div>
                 </div>
                 <div class="admin-chart">
@@ -245,6 +251,39 @@
                                 <div id="score-bar-nonai" class="admin-chart-fill"></div>
                             </div>
                             <div id="score-value-nonai" class="admin-chart-value">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-chart">
+                    <div class="admin-chart-title">四类组合分布</div>
+                    <div class="admin-chart-bars">
+                        <div class="admin-chart-bar">
+                            <div class="admin-chart-label">AI新闻 + AI游戏</div>
+                            <div class="admin-chart-track">
+                                <div id="chart-bar-combo-ai-ai" class="admin-chart-fill"></div>
+                            </div>
+                            <div id="chart-value-combo-ai-ai" class="admin-chart-value">0</div>
+                        </div>
+                        <div class="admin-chart-bar">
+                            <div class="admin-chart-label">人类新闻 + AI游戏</div>
+                            <div class="admin-chart-track">
+                                <div id="chart-bar-combo-human-ai" class="admin-chart-fill"></div>
+                            </div>
+                            <div id="chart-value-combo-human-ai" class="admin-chart-value">0</div>
+                        </div>
+                        <div class="admin-chart-bar">
+                            <div class="admin-chart-label">AI新闻 + 非AI游戏</div>
+                            <div class="admin-chart-track">
+                                <div id="chart-bar-combo-ai-nonai" class="admin-chart-fill"></div>
+                            </div>
+                            <div id="chart-value-combo-ai-nonai" class="admin-chart-value">0</div>
+                        </div>
+                        <div class="admin-chart-bar">
+                            <div class="admin-chart-label">人类新闻 + 非AI游戏</div>
+                            <div class="admin-chart-track">
+                                <div id="chart-bar-combo-human-nonai" class="admin-chart-fill"></div>
+                            </div>
+                            <div id="chart-value-combo-human-nonai" class="admin-chart-value">0</div>
                         </div>
                     </div>
                 </div>

@@ -8,13 +8,16 @@ import { gameRouter } from './router.js';
 import { newsBoard } from './newsBoard.js';
 import { setLanguage, getLanguage, onLanguageChange, t } from './i18n.js';
 import { gameState } from './state.js';
-import { updateStatsPanel, setStatsVisibility, setFollowupQuestions, setInterviewRoles, playPreludeInterlude } from './ui.js';
+import { updateStatsPanel, setStatsVisibility, setFollowupQuestions, setInterviewRoles, playPreludeInterlude, resetStatsFinalization } from './ui.js';
 import { isAiConfigured } from './aiClient.js';
 import { followupQuestions as baseFollowupQuestions } from '../data/followupQuestions.js';
+import { readingArticles } from '../data/readingArticles.js';
 
 const LANGUAGE_STORAGE_KEY = 'newsgame-lang';
 const OVERRIDES_STORAGE_KEY = 'newsgame-overrides';
 const SCENE_EDITOR_FILE = 'data/sceneCopyEditor.json';
+const STATS_STORAGE_KEY = 'newsgame-stats';
+const BALANCE_THRESHOLD = 4;
 
 function loadOverrides() {
     try {
@@ -173,10 +176,6 @@ function applyStaticText() {
     const introText = document.querySelector('.intro-text');
     const introNameLabel = document.querySelector('label[for="player-name-input"]');
     const introInput = document.getElementById('player-name-input');
-    const introFamiliarityLabel = document.querySelector('label[for="intro-familiarity"]');
-    const introFamiliaritySelect = document.getElementById('intro-familiarity');
-    const introFamiliarityYes = introFamiliaritySelect?.querySelector('option[value="yes"]');
-    const introFamiliarityNo = introFamiliaritySelect?.querySelector('option[value="no"]');
     const introBtn = document.getElementById('intro-start-btn');
     const statsTitle = document.querySelector('.stats-title');
     const statsReporter = document.getElementById('stats-label-reporter');
@@ -195,12 +194,12 @@ function applyStaticText() {
     if (languageLabel) languageLabel.textContent = t('languageLabel');
     if (loadingEl) loadingEl.textContent = t('loading');
     if (introTitle) introTitle.textContent = t('introTitle');
-    if (introText) introText.textContent = t('introBody');
+    // Keep intro rich text authored in HTML; avoid overriding with plain text.
+    if (introText && !introText.dataset.staticIntroBound) {
+        introText.dataset.staticIntroBound = '1';
+    }
     if (introNameLabel) introNameLabel.textContent = t('introNameLabel');
     if (introInput) introInput.placeholder = t('introNamePlaceholder');
-    if (introFamiliarityLabel) introFamiliarityLabel.textContent = t('introFamiliarityLabel');
-    if (introFamiliarityYes) introFamiliarityYes.textContent = t('introFamiliarityYes');
-    if (introFamiliarityNo) introFamiliarityNo.textContent = t('introFamiliarityNo');
     if (introBtn) introBtn.textContent = t('introStart');
     if (statsTitle) statsTitle.textContent = t('statsTitle');
     if (statsReporter) statsReporter.textContent = t('statsReporter');
@@ -276,6 +275,282 @@ function setupTelemetry() {
         }
         gameState.setLastMousePos({ x: event.clientX, y: event.clientY });
         updateStatsPanel();
+    });
+}
+
+function pickRandomArticle() {
+    if (!Array.isArray(readingArticles) || !readingArticles.length) return null;
+    const index = Math.floor(Math.random() * readingArticles.length);
+    return readingArticles[index] || null;
+}
+
+function getArticleTypeFromId(articleId) {
+    const id = String(articleId || '').toLowerCase();
+    if (!id) return '';
+    if (id.includes('ai_news') || id.includes('ai-news')) return 'ai_news';
+    return 'human_news';
+}
+
+function getArticleTypeFromSource(source) {
+    const text = String(source || '').toLowerCase();
+    if (!text) return '';
+    if (text.includes('ai-news') || text.includes('ai news')) return 'ai_news';
+    if (text.includes('ap-news') || text.includes('ap news')) return 'human_news';
+    return '';
+}
+
+function getArticleTypeFromEntry(entry) {
+    if (!entry) return '';
+    const directType = getArticleTypeFromId(entry?.readingAssignment?.id);
+    if (directType) return directType;
+    const sourceType = getArticleTypeFromSource(entry?.readingAssignment?.source);
+    if (sourceType) return sourceType;
+    const choices = Array.isArray(entry?.choices) ? entry.choices : [];
+    const marker = choices.find((item) => item && item.sceneId === 'reading_assignment');
+    if (marker?.text) {
+        return getArticleTypeFromSource(marker.text);
+    }
+    return '';
+}
+
+function getComboKey(aiEnabled, articleType) {
+    const aiKey = aiEnabled ? 'ai_game' : 'nonai_game';
+    const articleKey = articleType === 'ai_news' ? 'ai_news' : 'human_news';
+    return `${articleKey}__${aiKey}`;
+}
+
+function loadHistoricalStats() {
+    try {
+        const raw = JSON.parse(localStorage.getItem(STATS_STORAGE_KEY) || '[]');
+        return Array.isArray(raw) ? raw : [];
+    } catch {
+        return [];
+    }
+}
+
+function countComboStats(list) {
+    const combos = {
+        ai_news__ai_game: 0,
+        human_news__ai_game: 0,
+        ai_news__nonai_game: 0,
+        human_news__nonai_game: 0
+    };
+    let validCount = 0;
+    (Array.isArray(list) ? list : []).forEach((entry) => {
+        const articleType = getArticleTypeFromEntry(entry);
+        if (!articleType) return;
+        const key = getComboKey(!!entry.aiEnabled, articleType);
+        if (!Object.prototype.hasOwnProperty.call(combos, key)) return;
+        combos[key] += 1;
+        validCount += 1;
+    });
+    return { combos, validCount };
+}
+
+function chooseBalancedComboKey(combos) {
+    const keys = Object.keys(combos);
+    if (!keys.length) return '';
+    let min = Infinity;
+    keys.forEach((key) => {
+        min = Math.min(min, Number(combos[key] || 0));
+    });
+    const candidates = keys.filter((key) => Number(combos[key] || 0) === min);
+    if (!candidates.length) return keys[0];
+    return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function pickArticleByType(articleType) {
+    const target = articleType === 'ai_news' ? 'ai_news' : 'human_news';
+    const matched = readingArticles.filter((item) => getArticleTypeFromId(item?.id) === target);
+    if (!matched.length) return pickRandomArticle();
+    return matched[Math.floor(Math.random() * matched.length)];
+}
+
+function decideExperimentAssignment({ forcedVariant, aiConfigured }) {
+    const history = loadHistoricalStats();
+    const { combos, validCount } = countComboStats(history);
+
+    if (forcedVariant === 'AI') {
+        const article = pickRandomArticle();
+        return {
+            aiEnabled: true,
+            article,
+            mode: 'forced'
+        };
+    }
+    if (forcedVariant === 'NORMAL') {
+        const article = pickRandomArticle();
+        return {
+            aiEnabled: false,
+            article,
+            mode: 'forced'
+        };
+    }
+
+    if (!aiConfigured) {
+        return {
+            aiEnabled: false,
+            article: pickRandomArticle(),
+            mode: 'fallback_nonai'
+        };
+    }
+
+    if (validCount > BALANCE_THRESHOLD) {
+        const comboKey = chooseBalancedComboKey(combos);
+        const aiEnabled = comboKey.endsWith('__ai_game');
+        const articleType = comboKey.startsWith('ai_news__') ? 'ai_news' : 'human_news';
+        return {
+            aiEnabled,
+            article: pickArticleByType(articleType),
+            mode: 'balanced',
+            comboKey
+        };
+    }
+
+    const aiEnabled = Math.random() < 0.5;
+    const articleType = Math.random() < 0.5 ? 'ai_news' : 'human_news';
+    return {
+        aiEnabled,
+        article: pickArticleByType(articleType),
+        mode: 'random_50_50'
+    };
+}
+
+function escapeHtml(text) {
+    return String(text || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
+function resolveRelativePath(basePath, targetPath) {
+    if (!targetPath) return '';
+    if (/^(https?:)?\/\//.test(targetPath) || targetPath.startsWith('/')) {
+        return targetPath;
+    }
+    const baseParts = String(basePath || '').split('/').filter(Boolean);
+    if (baseParts.length) baseParts.pop();
+    const targetParts = String(targetPath).split('/').filter(Boolean);
+    const stack = [...baseParts];
+    targetParts.forEach((part) => {
+        if (part === '.') return;
+        if (part === '..') {
+            if (stack.length) stack.pop();
+            return;
+        }
+        stack.push(part);
+    });
+    return stack.join('/');
+}
+
+function renderMarkdownToHtml(markdown, basePath = '') {
+    const lines = String(markdown || '').replace(/\r\n/g, '\n').split('\n');
+    const html = [];
+    let inList = false;
+
+    const closeList = () => {
+        if (!inList) return;
+        html.push('</ul>');
+        inList = false;
+    };
+
+    for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line) {
+            closeList();
+            continue;
+        }
+
+        const imageMatch = line.match(/^!\[(.*?)\]\((.*?)\)$/);
+        if (imageMatch) {
+            closeList();
+            const alt = escapeHtml(imageMatch[1] || '');
+            const resolved = resolveRelativePath(basePath, imageMatch[2] || '');
+            const src = escapeHtml(resolved);
+            html.push(`<p><img src="${src}" alt="${alt}" class="reading-image" /></p>`);
+            continue;
+        }
+
+        if (line.startsWith('- ') || line.startsWith('* ')) {
+            if (!inList) {
+                html.push('<ul>');
+                inList = true;
+            }
+            html.push(`<li>${escapeHtml(line.slice(2).trim())}</li>`);
+            continue;
+        }
+
+        if (line.startsWith('### ')) {
+            closeList();
+            html.push(`<h3>${escapeHtml(line.slice(4).trim())}</h3>`);
+            continue;
+        }
+        if (line.startsWith('## ')) {
+            closeList();
+            html.push(`<h2>${escapeHtml(line.slice(3).trim())}</h2>`);
+            continue;
+        }
+        if (line.startsWith('# ')) {
+            closeList();
+            html.push(`<h1>${escapeHtml(line.slice(2).trim())}</h1>`);
+            continue;
+        }
+
+        closeList();
+        html.push(`<p>${escapeHtml(line)}</p>`);
+    }
+    closeList();
+    return html.join('\n');
+}
+
+async function loadArticleMarkdown(article) {
+    if (!article?.markdownPath) return '';
+    try {
+        const response = await fetch(article.markdownPath, { cache: 'no-store' });
+        if (!response.ok) return '';
+        return await response.text();
+    } catch {
+        return '';
+    }
+}
+
+function showReadingModal(article) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('reading-modal');
+        const titleEl = document.getElementById('reading-title');
+        const bodyEl = document.getElementById('reading-body');
+        const doneBtn = document.getElementById('reading-done-btn');
+        if (!modal || !titleEl || !bodyEl || !doneBtn || !article) {
+            resolve(0);
+            return;
+        }
+        titleEl.textContent = '加载中...';
+        bodyEl.textContent = '';
+        modal.style.display = 'flex';
+        loadArticleMarkdown(article).then((markdown) => {
+            const content = markdown || '';
+            const firstLine = content.split('\n').map((s) => s.trim()).find(Boolean) || '';
+            titleEl.textContent = firstLine || '阅读材料';
+            bodyEl.innerHTML = renderMarkdownToHtml(content, article.markdownPath || '');
+            const startedAt = Date.now();
+            const onDone = () => {
+                doneBtn.removeEventListener('click', onDone);
+                modal.style.display = 'none';
+                resolve(Math.max(0, Date.now() - startedAt));
+            };
+            doneBtn.addEventListener('click', onDone);
+        }).catch(() => {
+            titleEl.textContent = '阅读材料';
+            bodyEl.textContent = '加载失败，请刷新页面重试。';
+            const onDone = () => {
+                doneBtn.removeEventListener('click', onDone);
+                modal.style.display = 'none';
+                resolve(0);
+            };
+            doneBtn.addEventListener('click', onDone);
+        });
     });
 }
 
@@ -383,16 +658,30 @@ function init() {
 
         localStorage.removeItem('newsgame-ai-mask-seen');
         localStorage.removeItem('newsgame-tutorial-shop-hint-seen');
+        resetStatsFinalization();
         const mergedScenes = await prepareOverrides();
         const aiConfigured = await isAiConfigured();
-        const randomAiAssigned = Math.random() < 0.5;
-        const aiAssigned = forcedVariant === 'NORMAL'
-            ? false
-            : (forcedVariant === 'AI' ? true : randomAiAssigned);
-        const effectiveAiEnabled = forcedVariant === 'NORMAL'
-            ? false
-            : (aiConfigured ? true : aiAssigned);
+        const assignment = decideExperimentAssignment({ forcedVariant, aiConfigured });
+        const effectiveAiEnabled = !!assignment.aiEnabled;
         gameState.setAiEnabled(effectiveAiEnabled);
+
+        const article = assignment.article;
+        let readingAssignmentData = null;
+        if (article) {
+            const readingMs = await showReadingModal(article);
+            const articleType = getArticleTypeFromId(article.id) || getArticleTypeFromSource(article.source) || '';
+            const assignmentKey = getComboKey(effectiveAiEnabled, articleType || 'human_news');
+            readingAssignmentData = {
+                id: article.id,
+                source: article.source,
+                markdownPath: article.markdownPath || '',
+                readingMs,
+                articleType,
+                assignmentKey,
+                assignmentMode: assignment.mode || ''
+            };
+        }
+
         await playPreludeInterlude();
         // 初始化游戏路由
         gameRouter.init(mergedScenes, 'tutorial_intro');
@@ -405,6 +694,8 @@ function init() {
             gameState.setWildfireFamiliarity('');
         }
         gameState.setPreSurvey(preSurvey || {});
+        gameState.setReadingAssignment(readingAssignmentData);
+        gameState.setPostSurvey({});
         gameState.setAiEnabled(effectiveAiEnabled);
         if (forcedVariant) {
             gameState.setPlayerName(forcedVariant);
@@ -422,6 +713,7 @@ function init() {
         const restartGame = async () => {
             localStorage.removeItem('newsgame-ai-mask-seen');
             localStorage.removeItem('newsgame-tutorial-shop-hint-seen');
+            resetStatsFinalization();
             const mergedScenes = await prepareOverrides();
             gameRouter.init(mergedScenes, 'tutorial_intro');
             newsBoard.restart(); // 重启新闻看板
@@ -432,6 +724,8 @@ function init() {
             gameState.setLastMousePos(null);
             gameState.setWildfireFamiliarity('');
             gameState.setPreSurvey({});
+            gameState.setPostSurvey({});
+            gameState.setReadingAssignment(null);
             setStatsVisibility(false);
             updateStatsPanel();
             if (introModal) introModal.style.display = 'flex';

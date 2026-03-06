@@ -15,6 +15,7 @@ let currentChoiceHandler = null;
 let currentSceneId = '';
 let aiAvatarIntroPlayed = false;
 let aiAvatarIntroRunning = false;
+let statsFinalized = false;
 const mainSceneLeads = {
     intro: {
         type: 'followup',
@@ -1637,10 +1638,160 @@ export function setStatsVisibility(visible) {
     panel.classList.toggle('is-visible', !!visible);
 }
 
+export function resetStatsFinalization() {
+    statsFinalized = false;
+}
+
+function avgLikert(values = []) {
+    const valid = values.filter((v) => Number.isFinite(v));
+    if (!valid.length) return null;
+    const sum = valid.reduce((acc, cur) => acc + cur, 0);
+    return Math.round((sum / valid.length) * 100) / 100;
+}
+
+function showPostTestSurveyModal() {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('posttest-modal');
+        const submitBtn = document.getElementById('posttest-submit-btn');
+        if (!modal || !submitBtn) {
+            resolve({});
+            return;
+        }
+
+        const likertGroups = Array.from(modal.querySelectorAll('.post-likert'));
+        const clearForm = () => {
+            modal.querySelectorAll('input[type="radio"]').forEach((input) => {
+                input.checked = false;
+            });
+            likertGroups.forEach((group) => {
+                group.querySelectorAll('.intro-dot').forEach((dot) => dot.classList.remove('is-selected'));
+            });
+            ['post-open-1', 'post-open-2', 'post-open-3'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        };
+
+        const bindLikert = () => {
+            likertGroups.forEach((group) => {
+                group.onclick = (event) => {
+                    const target = event.target.closest('.intro-dot');
+                    if (!target) return;
+                    group.querySelectorAll('.intro-dot').forEach((dot) => dot.classList.remove('is-selected'));
+                    target.classList.add('is-selected');
+                };
+            });
+        };
+
+        const getRadioValue = (name) => {
+            const selected = modal.querySelector(`input[name="${name}"]:checked`);
+            return selected ? selected.value : '';
+        };
+
+        const getLikertValue = (field) => {
+            const selected = modal.querySelector(`.post-likert[data-field="${field}"] .intro-dot.is-selected`);
+            return selected ? Number(selected.dataset.value) : null;
+        };
+
+        const collect = () => {
+            const data = {
+                manipulationProducer: getRadioValue('post-producer-type'),
+                manipulationBestFormat: getRadioValue('post-best-format'),
+                credibilityAccuracy: getLikertValue('credAccuracy'),
+                credibilityTrust: getLikertValue('credTrust'),
+                credibilityFair: getLikertValue('credFair'),
+                credibilityDepth: getLikertValue('credDepth'),
+                credibilityNeutral: getLikertValue('credNeutral'),
+                emotionConcern: getLikertValue('emoConcern'),
+                emotionSad: getLikertValue('emoSad'),
+                emotionAngry: getLikertValue('emoAngry'),
+                emotionHope: getLikertValue('emoHope'),
+                emotionAnxious: getLikertValue('emoAnxious'),
+                narrativeImmersed: getLikertValue('narImmersed'),
+                narrativeChallenge: getLikertValue('narChallenge'),
+                narrativeEmotion: getLikertValue('narEmotion'),
+                narrativeImagine: getLikertValue('narImagine'),
+                intentionShare: getLikertValue('intentShare'),
+                intentionLearn: getLikertValue('intentLearn'),
+                openFeedback1: document.getElementById('post-open-1')?.value?.trim() || '',
+                openFeedback2: document.getElementById('post-open-2')?.value?.trim() || '',
+                openFeedback3: document.getElementById('post-open-3')?.value?.trim() || ''
+            };
+            data.credibilityScore = avgLikert([
+                data.credibilityAccuracy,
+                data.credibilityTrust,
+                data.credibilityFair,
+                data.credibilityDepth,
+                data.credibilityNeutral
+            ]);
+            data.emotionScore = avgLikert([
+                data.emotionConcern,
+                data.emotionSad,
+                data.emotionAngry,
+                data.emotionHope,
+                data.emotionAnxious
+            ]);
+            data.narrativeScore = avgLikert([
+                data.narrativeImmersed,
+                data.narrativeChallenge,
+                data.narrativeEmotion,
+                data.narrativeImagine
+            ]);
+            data.behaviorScore = avgLikert([
+                data.intentionShare,
+                data.intentionLearn
+            ]);
+            return data;
+        };
+
+        const validate = (data) => {
+            if (!data.manipulationProducer) return '请完成“新闻由谁制作”题。';
+            if (!data.manipulationBestFormat) return '请完成“体验最好内容”题。';
+            const requiredLikert = [
+                data.credibilityAccuracy, data.credibilityTrust, data.credibilityFair, data.credibilityDepth, data.credibilityNeutral,
+                data.emotionConcern, data.emotionSad, data.emotionAngry, data.emotionHope, data.emotionAnxious,
+                data.narrativeImmersed, data.narrativeChallenge, data.narrativeEmotion, data.narrativeImagine,
+                data.intentionShare, data.intentionLearn
+            ];
+            if (requiredLikert.some((v) => !Number.isFinite(v))) {
+                return '请完成所有 1-5 分量表题后再提交。';
+            }
+            return '';
+        };
+
+        clearForm();
+        bindLikert();
+        modal.style.display = 'flex';
+
+        submitBtn.onclick = () => {
+            const data = collect();
+            const errorMsg = validate(data);
+            if (errorMsg) {
+                window.alert(errorMsg);
+                return;
+            }
+            modal.style.display = 'none';
+            resolve(data);
+        };
+    });
+}
+
 function buildStatsPayload() {
     const state = gameState.getState();
     const start = state.sessionStart || Date.now();
     const durationMs = Math.max(0, Date.now() - start);
+    const choices = state.decisions.map((entry) => {
+        return {
+            sceneId: entry.sceneId,
+            text: entry.choiceIntl ? localize(entry.choiceIntl) : entry.choiceText
+        };
+    });
+    if (state.readingAssignment?.id) {
+        choices.unshift({
+            sceneId: 'reading_assignment',
+            text: `[阅读材料] ${state.readingAssignment.source || state.readingAssignment.id}`
+        });
+    }
     return {
         name: state.playerName || '',
         aiEnabled: !!state.aiEnabled,
@@ -1650,15 +1801,12 @@ function buildStatsPayload() {
         aiLogs: state.aiLogs || [],
         clickPoints: state.clickPoints || [],
         nonAiLogs: state.nonAiLogs || [],
-        choices: state.decisions.map((entry) => {
-            return {
-                sceneId: entry.sceneId,
-                text: entry.choiceIntl ? localize(entry.choiceIntl) : entry.choiceText
-            };
-        }),
+        choices,
         newsValue: typeof state.newsValue === 'number' ? state.newsValue : 60,
         wildfireFamiliarity: state.wildfireFamiliarity || '',
         preSurvey: state.preSurvey || {},
+        postSurvey: state.postSurvey || {},
+        readingAssignment: state.readingAssignment || null,
         durationMs,
         timestamp: Date.now()
     };
@@ -1687,16 +1835,17 @@ async function saveStatsToRemote(payload) {
 }
 
 function persistStats(payload) {
-    saveStatsToRemote(payload).then((ok) => {
-        if (!ok) {
-            saveStatsToLocal(payload);
-        }
-    }).catch(() => {
-        saveStatsToLocal(payload);
-    });
+    // Always keep a local mirror so the frontend balancer can use recent counts.
+    saveStatsToLocal(payload);
+    saveStatsToRemote(payload).catch(() => null);
 }
 
-function finalizeStats() {
+async function finalizeStats() {
+    if (statsFinalized) return;
+    if (!gameState.isTelemetryActive()) return;
+    statsFinalized = true;
+    const postSurvey = await showPostTestSurveyModal();
+    gameState.setPostSurvey(postSurvey || {});
     gameState.setTelemetryActive(false);
     updateStatsPanel();
     persistStats(buildStatsPayload());

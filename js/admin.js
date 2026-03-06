@@ -68,6 +68,60 @@ function safeJsonParse(value, fallback) {
     }
 }
 
+function getArticleTypeFromReadingAssignment(readingAssignment) {
+    const id = String(readingAssignment?.id || '').toLowerCase();
+    if (id.includes('ai_news') || id.includes('ai-news')) return 'ai_news';
+    if (id.includes('ap_news') || id.includes('ap-news')) return 'human_news';
+    const source = String(readingAssignment?.source || '').toLowerCase();
+    if (source.includes('ai-news') || source.includes('ai news')) return 'ai_news';
+    if (source.includes('ap-news') || source.includes('ap news')) return 'human_news';
+    return '';
+}
+
+function getArticleTypeFromChoices(choices) {
+    const list = Array.isArray(choices) ? choices : [];
+    const marker = list.find((item) => item && item.sceneId === 'reading_assignment');
+    const text = String(marker?.text || '').toLowerCase();
+    if (!text) return '';
+    if (text.includes('ai-news') || text.includes('ai news')) return 'ai_news';
+    if (text.includes('ap-news') || text.includes('ap news')) return 'human_news';
+    return '';
+}
+
+function getArticleTypeFromEntry(entry) {
+    const byAssignment = getArticleTypeFromReadingAssignment(entry?.readingAssignment);
+    if (byAssignment) return byAssignment;
+    return getArticleTypeFromChoices(entry?.choices);
+}
+
+function getAssignmentGroupKey(entry) {
+    const articleType = getArticleTypeFromEntry(entry) || 'human_news';
+    const gameType = entry?.aiEnabled ? 'ai_game' : 'nonai_game';
+    return `${articleType}__${gameType}`;
+}
+
+function getNewsVersionLabel(entry) {
+    const articleType = getArticleTypeFromEntry(entry);
+    if (articleType === 'ai_news') return 'AI新闻';
+    if (articleType === 'human_news') return '人类新闻';
+    return '新闻未知';
+}
+
+function mapPostValue(field, value) {
+    const raw = String(value || '');
+    if (!raw) return '';
+    if (field === 'manipulationProducer') {
+        if (raw === 'human') return '人类记者';
+        if (raw === 'ai') return 'AI';
+        if (raw === 'unsure') return '不确定';
+    }
+    if (field === 'manipulationBestFormat') {
+        if (raw === 'text_news') return '传统文本新闻';
+        if (raw === 'interactive_game') return '互动新闻游戏';
+    }
+    return raw;
+}
+
 function getAdminToken() {
     const cached = localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || '';
     if (cached) return cached;
@@ -80,6 +134,9 @@ function getAdminToken() {
 function normalizeRemoteEntry(entry) {
     const createdAt = entry?.created_at ? new Date(entry.created_at).getTime() : Date.now();
     const preNewsSources = safeJsonParse(entry?.pre_news_sources_json, []);
+    const choices = safeJsonParse(entry?.choices_json, []);
+    const readingAssignment = safeJsonParse(entry?.reading_assignment_json, null);
+    const postSurvey = safeJsonParse(entry?.post_survey_json, {});
     return {
         id: entry?.id,
         name: entry?.name || '',
@@ -90,9 +147,11 @@ function normalizeRemoteEntry(entry) {
         newsValue: Number(entry?.news_value || 60),
         wildfireFamiliarity: entry?.wildfire_familiarity || '',
         durationMs: Number(entry?.duration_ms || 0),
-        choices: safeJsonParse(entry?.choices_json, []),
+        choices,
         aiLogs: safeJsonParse(entry?.ai_logs_json, []),
         nonAiLogs: safeJsonParse(entry?.non_ai_logs_json, []),
+        readingAssignment: readingAssignment || null,
+        postSurvey: postSurvey && typeof postSurvey === 'object' ? postSurvey : {},
         preSurvey: {
             aiReliable: entry?.pre_ai_reliable ?? null,
             aiCredible: entry?.pre_ai_credible ?? null,
@@ -341,8 +400,10 @@ function renderRows(stats = statsCache) {
     const rows = (Array.isArray(stats) ? stats : [])
         .map((entry, sourceIndex) => ({ ...entry, __sourceIndex: sourceIndex }))
         .sort((a, b) => {
-            const aKey = typeof a.id === 'number' ? a.id : Number(a.timestamp || 0);
-            const bKey = typeof b.id === 'number' ? b.id : Number(b.timestamp || 0);
+            const aId = Number(a.id);
+            const bId = Number(b.id);
+            const aKey = Number.isFinite(aId) && aId > 0 ? aId : Number(a.timestamp || 0);
+            const bKey = Number.isFinite(bId) && bId > 0 ? bId : Number(b.timestamp || 0);
             return aKey - bKey;
         });
     rows.forEach((entry, index) => {
@@ -388,24 +449,44 @@ function renderRows(stats = statsCache) {
         }).join('');
         const score = typeof entry.newsValue === 'number' ? entry.newsValue : 60;
         const preSurvey = entry.preSurvey || {};
+        const postSurvey = entry.postSurvey || {};
         const preLines = [];
         if (preSurvey.aiReliable) preLines.push(`AI可靠: ${preSurvey.aiReliable}`);
         if (preSurvey.aiCredible) preLines.push(`AI可信: ${preSurvey.aiCredible}`);
         if (preSurvey.aiUncertain) preLines.push(`AI不确定: ${preSurvey.aiUncertain}`);
+        if (entry.wildfireFamiliarity === 'yes') preLines.push('是否了解山火: 了解');
+        if (entry.wildfireFamiliarity === 'no') preLines.push('是否了解山火: 不了解');
         if (preSurvey.newsFrequency) preLines.push(`看新闻: ${preSurvey.newsFrequency}`);
         if (Array.isArray(preSurvey.newsSources) && preSurvey.newsSources.length) {
             preLines.push(`新闻渠道: ${preSurvey.newsSources.join(',')}`);
         }
         if (preSurvey.gameFrequency) preLines.push(`玩游戏: ${preSurvey.gameFrequency}`);
         if (preSurvey.storyGameFamiliarity) preLines.push(`叙事游戏熟悉度: ${preSurvey.storyGameFamiliarity}`);
+        const postFilled = Object.keys(postSurvey).length > 0;
+        preLines.push(`后测: ${postFilled ? '已填写' : '未填写'}`);
+        if (postFilled) {
+            if (postSurvey.manipulationProducer) preLines.push(`后测-新闻作者感知: ${mapPostValue('manipulationProducer', postSurvey.manipulationProducer)}`);
+            if (postSurvey.manipulationBestFormat) preLines.push(`后测-最佳体验形式: ${mapPostValue('manipulationBestFormat', postSurvey.manipulationBestFormat)}`);
+            if (postSurvey.credibilityScore !== null && postSurvey.credibilityScore !== undefined) {
+                preLines.push(`后测-可信度总分: ${postSurvey.credibilityScore}`);
+            }
+            if (postSurvey.emotionScore !== null && postSurvey.emotionScore !== undefined) {
+                preLines.push(`后测-情绪参与总分: ${postSurvey.emotionScore}`);
+            }
+            if (postSurvey.narrativeScore !== null && postSurvey.narrativeScore !== undefined) {
+                preLines.push(`后测-叙事沉浸总分: ${postSurvey.narrativeScore}`);
+            }
+            if (postSurvey.behaviorScore !== null && postSurvey.behaviorScore !== undefined) {
+                preLines.push(`后测-行为意图总分: ${postSurvey.behaviorScore}`);
+            }
+            if (postSurvey.openFeedback1) preLines.push(`后测-开放题1: ${String(postSurvey.openFeedback1).slice(0, 120)}`);
+            if (postSurvey.openFeedback2) preLines.push(`后测-开放题2: ${String(postSurvey.openFeedback2).slice(0, 120)}`);
+            if (postSurvey.openFeedback3) preLines.push(`后测-开放题3: ${String(postSurvey.openFeedback3).slice(0, 120)}`);
+        }
         const preSurveyHtml = preLines.length
             ? preLines.map((line) => `<div class="admin-pre-log">${line}</div>`).join('')
             : '-';
-        const familiarity = entry.wildfireFamiliarity === 'yes'
-            ? '了解'
-            : entry.wildfireFamiliarity === 'no'
-                ? '不了解'
-                : '';
+        const newsVersionTag = getNewsVersionLabel(entry);
         const variantTag = entry.aiEnabled ? 'AI版' : '非AI';
         const serial = entry.id ?? (index + 1);
         tr.innerHTML = `
@@ -413,8 +494,8 @@ function renderRows(stats = statsCache) {
             <td class="admin-name-cell">
                 <span class="admin-name-cell-content">
                     ${entry.name && entry.name !== 'AI' && entry.name !== 'NORMAL' ? entry.name : '-'} (${score})
+                    <span class="admin-tag ${newsVersionTag === 'AI新闻' ? 'admin-tag-variant' : 'admin-tag-normal'}">${newsVersionTag}</span>
                     <span class="admin-tag ${entry.aiEnabled ? 'admin-tag-variant' : 'admin-tag-nonvariant'}">${variantTag}</span>
-                    ${familiarity ? `<span class="admin-tag admin-tag-familiarity">${familiarity}</span>` : ''}
                     ${entry.name === 'AI' ? '<span class="admin-tag admin-tag-ai">AI</span>' : ''}
                     ${entry.name === 'NORMAL' ? '<span class="admin-tag admin-tag-normal">NORMAL</span>' : ''}
                 </span>
@@ -434,33 +515,8 @@ function renderRows(stats = statsCache) {
             </td>
             <td class="admin-choices">${choiceLines || '-'}</td>
             <td class="admin-pre-cell">${preSurveyHtml}</td>
-            <td>
-                <button class="btn btn-secondary admin-delete-btn" data-index="${index}" aria-label="删除">×</button>
-            </td>
         `;
         tbody.appendChild(tr);
-
-        const deleteBtn = tr.querySelector('.admin-delete-btn');
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', () => {
-                if (entry.id) {
-                    window.alert('线上数据暂不支持在前端删除，请在数据库侧处理。');
-                    return;
-                }
-                if (!window.confirm('确认删除该条数据吗？')) return;
-                const index = parseInt(deleteBtn.dataset.index, 10);
-                if (Number.isNaN(index)) return;
-                const list = loadStats();
-                const sourceIndex = rows[index]?.__sourceIndex;
-                if (Number.isInteger(sourceIndex)) {
-                    list.splice(sourceIndex, 1);
-                } else {
-                    list.splice(index, 1);
-                }
-                saveStats(list);
-                renderRows();
-            });
-        }
     });
     renderSummary(stats);
 }
@@ -576,6 +632,12 @@ function renderSummary(stats) {
     let scoreSumNonAi = 0;
     let scoreCountAi = 0;
     let scoreCountNonAi = 0;
+    const comboCounts = {
+        ai_news__ai_game: 0,
+        human_news__ai_game: 0,
+        ai_news__nonai_game: 0,
+        human_news__nonai_game: 0
+    };
 
     stats.forEach((entry) => {
         const isAi = !!entry.aiEnabled;
@@ -602,12 +664,24 @@ function renderSummary(stats) {
                 scoreCountNonAi += 1;
             }
         }
+
+        const groupKey = getAssignmentGroupKey(entry);
+        if (Object.prototype.hasOwnProperty.call(comboCounts, groupKey)) {
+            comboCounts[groupKey] += 1;
+        }
     });
 
     const avgSeconds = durationCount ? Math.round(durationSum / durationCount / 1000) : 0;
     const totalCount = totalAi + totalNonAi;
     const avgScoreAi = scoreCountAi ? Math.round(scoreSumAi / scoreCountAi) : 0;
     const avgScoreNonAi = scoreCountNonAi ? Math.round(scoreSumNonAi / scoreCountNonAi) : 0;
+    const comboMax = Math.max(
+        0,
+        comboCounts.ai_news__ai_game,
+        comboCounts.human_news__ai_game,
+        comboCounts.ai_news__nonai_game,
+        comboCounts.human_news__nonai_game
+    );
 
     const setText = (id, value) => {
         const el = document.getElementById(id);
@@ -623,6 +697,10 @@ function renderSummary(stats) {
     setText('stats-avg-duration', avgSeconds);
     setText('stats-score-ai', avgScoreAi);
     setText('stats-score-nonai', avgScoreNonAi);
+    setText('stats-combo-ai-ai', comboCounts.ai_news__ai_game);
+    setText('stats-combo-human-ai', comboCounts.human_news__ai_game);
+    setText('stats-combo-ai-nonai', comboCounts.ai_news__nonai_game);
+    setText('stats-combo-human-nonai', comboCounts.human_news__nonai_game);
 
     const setBar = (id, value) => {
         const el = document.getElementById(id);
@@ -637,6 +715,22 @@ function renderSummary(stats) {
     setText('chart-value-ai', totalAi);
     setText('chart-value-nonai', totalNonAi);
     setText('chart-value-total', totalCount);
+
+    const setComboBar = (id, value) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const percent = comboMax ? Math.round((value / comboMax) * 100) : 0;
+        el.style.width = `${percent}%`;
+    };
+
+    setComboBar('chart-bar-combo-ai-ai', comboCounts.ai_news__ai_game);
+    setComboBar('chart-bar-combo-human-ai', comboCounts.human_news__ai_game);
+    setComboBar('chart-bar-combo-ai-nonai', comboCounts.ai_news__nonai_game);
+    setComboBar('chart-bar-combo-human-nonai', comboCounts.human_news__nonai_game);
+    setText('chart-value-combo-ai-ai', comboCounts.ai_news__ai_game);
+    setText('chart-value-combo-human-ai', comboCounts.human_news__ai_game);
+    setText('chart-value-combo-ai-nonai', comboCounts.ai_news__nonai_game);
+    setText('chart-value-combo-human-nonai', comboCounts.human_news__nonai_game);
 
     const setScoreBar = (id, value) => {
         const el = document.getElementById(id);

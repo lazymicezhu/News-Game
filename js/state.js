@@ -27,6 +27,8 @@ class GameState {
         this.newsValue = 60;
         this.wildfireFamiliarity = '';
         this.preSurvey = {};
+        this.postSurvey = {};
+        this.readingAssignment = null;
         this.lastChoiceDelta = null;
         this.evidence = new Set();
         this.sceneChoiceOrders = {};
@@ -59,6 +61,8 @@ class GameState {
         this.newsValue = 60;
         this.wildfireFamiliarity = '';
         this.preSurvey = {};
+        this.postSurvey = {};
+        this.readingAssignment = null;
         this.lastChoiceDelta = null;
         this.evidence = new Set();
         this.sceneChoiceOrders = {};
@@ -88,7 +92,9 @@ class GameState {
             currentSceneImage: this.currentSceneImage,
             newsValue: this.newsValue,
             wildfireFamiliarity: this.wildfireFamiliarity,
-            preSurvey: { ...this.preSurvey }
+            preSurvey: { ...this.preSurvey },
+            postSurvey: { ...this.postSurvey },
+            readingAssignment: this.readingAssignment ? { ...this.readingAssignment } : null
         };
     }
 
@@ -160,6 +166,22 @@ class GameState {
             return;
         }
         this.preSurvey = { ...data };
+    }
+
+    setPostSurvey(data) {
+        if (!data || typeof data !== 'object') {
+            this.postSurvey = {};
+            return;
+        }
+        this.postSurvey = { ...data };
+    }
+
+    setReadingAssignment(data) {
+        if (!data || typeof data !== 'object') {
+            this.readingAssignment = null;
+            return;
+        }
+        this.readingAssignment = { ...data };
     }
 
     incrementClick() {
