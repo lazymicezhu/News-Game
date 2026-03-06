@@ -105,19 +105,29 @@ export const followupQuestions = {
     { zh: '下一步验证路线是什么？', en: 'What is the next verification path?' }
   ],
   tutorial_intro: [
-    { zh: '可以确认的“眼前事实”有哪些？', en: 'What visible facts can be confirmed right now?' },
-    { zh: '这条传闻最不可靠的点是什么？', en: 'What is the weakest point in the rumor?' },
-    { zh: '给出三句可直接用于采访的追问，用引号分隔。', en: 'Give three direct interview questions, separated by quotation marks.' }
+    { zh: '现场哪些信息可以立刻确认，哪些还只是猜测？', en: 'Which details on scene are immediately verifiable, and which are still speculation?' },
+    { zh: '“疑似命案”这句传闻目前最薄弱的证据点在哪里？', en: 'What is the weakest evidence behind the “suspected homicide” rumor right now?' },
+    { zh: '给出三句可直接问围观者的追问，聚焦“时间、位置、你亲眼看到什么”。', en: 'Give three direct witness follow-ups focused on time, location, and what they personally saw.' }
   ],
-  tutorial_follow: [
-    { zh: '下一步最优先核实哪条信息？', en: 'What should be verified first?' },
-    { zh: '采访目击者时要避免哪些诱导？', en: 'What leading phrasing should we avoid when interviewing witnesses?' },
-    { zh: '给出三句可直接用于采访的追问，用引号分隔。', en: 'Give three direct interview questions, separated by quotation marks.' }
+  tutorial_follow_wakeup: [
+    { zh: '在“查监控 / 继续问目击者 / 先封控舆论”里，哪一步最先做最稳妥？', en: 'Among CCTV check, more witness interviews, and immediate content control, which first step is most reliable?' },
+    { zh: '如果继续问目击者，怎样提问能减少被情绪带偏？', en: 'If we continue interviewing witnesses, how can we ask without being driven by emotion?' },
+    { zh: '给出三句可直接用于现场核实的追问，分别对应“监控、目击者、现场物证”。', en: 'Give three direct verification questions for CCTV, witness testimony, and physical evidence.' }
+  ],
+  tutorial_follow_witness: [
+    { zh: '围观者说法不一时，先用哪条标准筛选可用信息？', en: 'When bystander accounts conflict, which rule should we use first to filter usable facts?' },
+    { zh: '继续追问目击者时，怎样避免把“听说”写成“亲眼所见”？', en: 'How do we avoid turning hearsay into eyewitness claims during follow-up interviews?' },
+    { zh: '给出三句可直接用于现场核实的追问，分别对应“时间、站位、看到的动作”。', en: 'Give three direct verification questions for time, position, and observed actions.' }
+  ],
+  tutorial_follow_report: [
+    { zh: '快讯被驳回后，下一步最该补哪类证据？', en: 'After the quick alert is rejected, which evidence type should be filled first?' },
+    { zh: '如何向编辑说明“暂不发布”的依据，避免再次误判？', en: 'How should we justify “do not publish yet” to avoid another misjudgment?' },
+    { zh: '给出三句可直接用于补证的追问，分别对应“警方、目击者、物业监控”。', en: 'Give three direct follow-ups for police, witnesses, and property CCTV to close evidence gaps.' }
   ],
   tutorial_resolution: [
-    { zh: '如何写一句“澄清 + 责任”式的更新？', en: 'How to write a brief update that clarifies and accepts responsibility?' },
-    { zh: '这次误会提醒我们什么原则？', en: 'What principle does this misunderstanding highlight?' },
-    { zh: '给出三句可直接用于采访的追问，用引号分隔。', en: 'Give three direct interview questions, separated by quotation marks.' }
+    { zh: '确认“醉酒睡着 + 油漆倒翻”后，如何写一句不制造二次误导的澄清？', en: 'After confirming “drunk and asleep + spilled paint,” how do we write a clarification without creating secondary misinformation?' },
+    { zh: '这次误会最该复盘的采编原则是什么？', en: 'What editorial principle should be reviewed most from this misunderstanding?' },
+    { zh: '给出三句用于后续采访警方或目击者的追问，重点是“信息如何被误读”。', en: 'Give three follow-ups for police or witnesses, focusing on how the information was misread.' }
   ],
   intro: [
     { zh: '这条传闻最可能从哪里扩散？', en: 'Where did the rumor most likely spread from?' },

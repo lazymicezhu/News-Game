@@ -4,9 +4,12 @@ import { streamChat, isAiConfigured } from './aiClient.js';
 import { getAiPrompts } from './aiContext.js';
 
 const OVERRIDES_STORAGE_KEY = 'newsgame-overrides';
+const ADMIN_TOKEN_STORAGE_KEY = 'newsgame-admin-token';
+const REMOTE_STATS_ENDPOINT = 'https://newsgame-egxdvooreq.cn-hangzhou.fcapp.run/responses';
 let editorLang = 'zh';
 let aiAvailablePromise = null;
 const aiBackgroundCache = { base: null, roles: new Map() };
+let statsCache = [];
 
 function formatTime(ts) {
     if (!ts) return '-';
@@ -21,11 +24,105 @@ function formatDuration(ms) {
     return `${seconds}`;
 }
 
+function setDataStatus(mode, message) {
+    const badge = document.getElementById('admin-data-status-badge');
+    const text = document.getElementById('admin-data-status-text');
+    const time = document.getElementById('admin-data-status-time');
+    if (!badge || !text || !time) return;
+
+    badge.classList.remove('is-cloud', 'is-local', 'is-error', 'is-loading');
+
+    if (mode === 'cloud') {
+        badge.classList.add('is-cloud');
+        badge.textContent = '云端';
+    } else if (mode === 'local') {
+        badge.classList.add('is-local');
+        badge.textContent = '本地回退';
+    } else if (mode === 'error') {
+        badge.classList.add('is-error');
+        badge.textContent = '读取失败';
+    } else {
+        badge.classList.add('is-loading');
+        badge.textContent = '读取中';
+    }
+
+    text.textContent = message || '';
+    time.textContent = `更新时间：${new Date().toLocaleTimeString()}`;
+}
+
 function loadStats() {
     try {
         return JSON.parse(localStorage.getItem('newsgame-stats') || '[]');
     } catch {
         return [];
+    }
+}
+
+function safeJsonParse(value, fallback) {
+    if (value === null || value === undefined || value === '') return fallback;
+    if (typeof value !== 'string') return value;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return fallback;
+    }
+}
+
+function getAdminToken() {
+    const cached = localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || '';
+    if (cached) return cached;
+    const input = window.prompt('请输入管理员 Token（x-admin-token）');
+    const token = (input || '').trim();
+    if (token) localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
+    return token;
+}
+
+function normalizeRemoteEntry(entry) {
+    const createdAt = entry?.created_at ? new Date(entry.created_at).getTime() : Date.now();
+    return {
+        id: entry?.id,
+        name: entry?.name || '',
+        aiEnabled: !!entry?.ai_enabled,
+        clicks: Number(entry?.clicks || 0),
+        distance: Number(entry?.distance || 0),
+        aiInteractions: Number(entry?.ai_interactions || 0),
+        newsValue: Number(entry?.news_value || 60),
+        wildfireFamiliarity: entry?.wildfire_familiarity || '',
+        durationMs: Number(entry?.duration_ms || 0),
+        choices: safeJsonParse(entry?.choices_json, []),
+        aiLogs: safeJsonParse(entry?.ai_logs_json, []),
+        nonAiLogs: safeJsonParse(entry?.non_ai_logs_json, []),
+        clickPoints: safeJsonParse(entry?.click_points_json, []),
+        sceneImage: entry?.scene_image || '',
+        pageSnapshot: entry?.page_snapshot || '',
+        timestamp: Number.isNaN(createdAt) ? Date.now() : createdAt
+    };
+}
+
+async function fetchRemoteStats() {
+    const token = getAdminToken();
+    if (!token) {
+        return { ok: false, error: 'missing_token', list: [] };
+    }
+    try {
+        const response = await fetch(`${REMOTE_STATS_ENDPOINT}?page=1&pageSize=500`, {
+            headers: {
+                'x-admin-token': token
+            }
+        });
+        if (response.status === 401) {
+            localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
+            window.alert('管理员 Token 无效，请重新输入。');
+            return { ok: false, error: 'unauthorized', list: [] };
+        }
+        if (!response.ok) {
+            return { ok: false, error: `http_${response.status}`, list: [] };
+        }
+        const payload = await response.json();
+        const list = Array.isArray(payload?.list) ? payload.list.map(normalizeRemoteEntry) : [];
+        return { ok: true, list };
+    } catch {
+        return { ok: false, error: 'network', list: [] };
     }
 }
 
@@ -242,10 +339,9 @@ async function translateText(text, fromLang, toLang, aiAvailable) {
     }
 }
 
-function renderRows() {
+function renderRows(stats = statsCache) {
     const tbody = document.getElementById('admin-rows');
     if (!tbody) return;
-    const stats = loadStats();
     tbody.innerHTML = '';
 
     const notes = loadNotes();
@@ -365,6 +461,10 @@ function renderRows() {
         const deleteBtn = tr.querySelector('.admin-delete-btn');
         if (deleteBtn) {
             deleteBtn.addEventListener('click', () => {
+                if (entry.id) {
+                    window.alert('线上数据暂不支持在前端删除，请在数据库侧处理。');
+                    return;
+                }
                 if (!window.confirm('确认删除该条数据吗？')) return;
                 const index = parseInt(deleteBtn.dataset.index, 10);
                 if (Number.isNaN(index)) return;
@@ -469,9 +569,9 @@ function bindActions() {
     const exportBtn = document.getElementById('admin-export');
     const clearBtn = document.getElementById('admin-clear');
     if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
+        refreshBtn.addEventListener('click', async () => {
             if (!window.confirm('确认刷新数据吗？')) return;
-            renderRows();
+            await refreshStats();
         });
     }
     if (exportBtn) {
@@ -482,16 +582,21 @@ function bindActions() {
     }
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
+            if (statsCache.some((row) => row.id)) {
+                window.alert('线上数据暂不支持前端清空，请在数据库侧处理。');
+                return;
+            }
             if (!window.confirm('确认清空数据吗？此操作不可撤销。')) return;
             localStorage.removeItem('newsgame-stats');
+            statsCache = [];
             renderRows();
+            setDataStatus('local', '已清空本地数据，当前本地记录 0 条。');
         });
     }
 }
 
 function exportData() {
-    const data = loadStats();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
+    const blob = new Blob([JSON.stringify(statsCache, null, 2)], { type: 'application/json;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     const ts = new Date().toISOString().replace(/[:.]/g, '-');
@@ -501,6 +606,32 @@ function exportData() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+}
+
+async function refreshStats() {
+    setDataStatus('loading', '正在读取云端数据...');
+    const remote = await fetchRemoteStats();
+    if (remote.ok) {
+        statsCache = remote.list;
+        renderRows();
+        setDataStatus('cloud', `当前为云端数据，共 ${statsCache.length} 条。`);
+        return;
+    }
+    const local = loadStats();
+    statsCache = local;
+    if (remote.error === 'missing_token') {
+        setDataStatus('local', `未输入管理员 Token，当前显示本地数据，共 ${statsCache.length} 条。`);
+    } else if (remote.error === 'unauthorized') {
+        setDataStatus('local', `管理员 Token 无效，当前显示本地数据，共 ${statsCache.length} 条。`);
+    } else if (remote.error === 'network') {
+        setDataStatus('local', `云端不可达，当前显示本地数据，共 ${statsCache.length} 条。`);
+    } else {
+        setDataStatus('error', `读取云端失败（${remote.error || 'unknown'}），已回退本地，共 ${statsCache.length} 条。`);
+    }
+    if (!remote.ok && remote.error !== 'missing_token' && remote.error !== 'unauthorized') {
+        window.alert('远端数据获取失败，已回退到本地数据。');
+    }
+    renderRows();
 }
 
 function bindTabs() {
@@ -1086,7 +1217,7 @@ async function initAiEditor() {
     }
 }
 
-renderRows();
+refreshStats();
 bindActions();
 bindTabs();
 initEditor();

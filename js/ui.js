@@ -7,6 +7,8 @@ import { followupQuestions as defaultFollowupQuestions } from '../data/followupQ
 import { nonAiHints } from '../data/nonAiHints.js';
 import { interviewRoles as defaultInterviewRoles } from '../data/interviewRoles.js';
 
+const REMOTE_STATS_ENDPOINT = 'https://newsgame-egxdvooreq.cn-hangzhou.fcapp.run/responses';
+
 let followupQuestions = defaultFollowupQuestions;
 let interviewRoles = defaultInterviewRoles;
 let currentChoiceHandler = null;
@@ -301,8 +303,8 @@ const tutorialRoleBackgrounds = {
 };
 
 const tutorialBackground = {
-    zh: '清晨 06:10，社区小巷里有人倒在地上，社媒传“奇怪的谋杀”。警方尚未确认，目击者听到争吵，便利店老板提到红色液体，物业监控仍在导出。请先区分事实与传闻。',
-    en: 'At 6:10 a.m., someone collapsed in a community alley. Social media calls it a “strange murder,” but police have not confirmed. A witness heard an argument, a shop owner saw red liquid, and CCTV is still exporting. Separate facts from rumors.'
+    zh: '早晨 07:43，离你很近的街道传出“疑似命案”。现场有人倒地且有红色液体，围观者大量拍摄传播。警方尚未确认定性，目击者说法不一，便利店老板怀疑是油漆倒翻，监控仍在调取。请优先区分可证实事实与情绪化传闻。',
+    en: 'At 7:43 a.m., a nearby street reports a “suspected homicide.” A person is down with red liquid on the ground, and bystander footage is spreading fast. Police have not classified the case, witness accounts conflict, a shop owner suspects spilled paint, and CCTV is still being retrieved. Prioritize verifiable facts over emotional rumor.'
 };
 
 export function setFollowupQuestions(data) {
@@ -462,6 +464,7 @@ export function renderScene(scene, onChoice) {
         scoreDiv.className = 'ending-score';
         scoreDiv.textContent = `${t('statsScore')}：${score} / 100`;
         sceneDiv.appendChild(scoreDiv);
+        sceneDiv.appendChild(renderEndingReview(score));
         showFooter();
         finalizeStats();
     }
@@ -483,6 +486,108 @@ export function renderScene(scene, onChoice) {
         showChoiceFeedback(lastDelta);
     }
     updateStatsPanel();
+}
+
+function renderEndingReview(score) {
+    const state = gameState.getState();
+    const panel = document.createElement('section');
+    panel.className = 'ending-review';
+
+    const title = document.createElement('div');
+    title.className = 'ending-review-title';
+    title.textContent = t('endingReviewTitle');
+    panel.appendChild(title);
+
+    const statsGrid = document.createElement('div');
+    statsGrid.className = 'ending-review-grid';
+    const durationSec = Math.max(0, Math.round((Date.now() - (state.sessionStart || Date.now())) / 1000));
+    const positiveCount = state.decisions.filter((entry) => (entry.effect?.newsValueDelta || 0) >= 2).length;
+    const riskCount = state.decisions.filter((entry) => (entry.effect?.newsValueDelta || 0) <= -1).length;
+    let reliability = t('endingReliabilityMedium');
+    if (score >= 86 && riskCount <= 2) reliability = t('endingReliabilityHigh');
+    if (score < 75 || riskCount >= 5) reliability = t('endingReliabilityLow');
+
+    const metrics = [
+        { label: t('endingChoices'), value: `${state.decisions.length}` },
+        { label: t('endingAiInteractions'), value: `${state.aiInteractions || 0}` },
+        { label: t('endingSessionTime'), value: t('endingSeconds', durationSec) },
+        { label: t('endingReliability'), value: reliability }
+    ];
+    metrics.forEach((item) => {
+        const card = document.createElement('div');
+        card.className = 'ending-review-item';
+        const label = document.createElement('div');
+        label.className = 'ending-review-label';
+        label.textContent = item.label;
+        const value = document.createElement('div');
+        value.className = 'ending-review-value';
+        value.textContent = item.value;
+        card.appendChild(label);
+        card.appendChild(value);
+        statsGrid.appendChild(card);
+    });
+    panel.appendChild(statsGrid);
+
+    const highlightSection = document.createElement('div');
+    highlightSection.className = 'ending-review-section';
+    const highlightTitle = document.createElement('div');
+    highlightTitle.className = 'ending-review-subtitle';
+    highlightTitle.textContent = t('endingHighlights');
+    const highlightList = document.createElement('ol');
+    highlightList.className = 'ending-review-list';
+    const topPositive = state.decisions
+        .filter((entry) => (entry.effect?.newsValueDelta || 0) >= 1)
+        .sort((a, b) => (b.effect?.newsValueDelta || 0) - (a.effect?.newsValueDelta || 0))
+        .slice(0, 3);
+    topPositive.forEach((entry) => {
+        const li = document.createElement('li');
+        li.textContent = entry.choiceIntl ? localize(entry.choiceIntl) : (entry.choiceText || '-');
+        highlightList.appendChild(li);
+    });
+    if (!topPositive.length) {
+        const li = document.createElement('li');
+        li.textContent = getLanguage() === 'zh' ? '你坚持完成了全流程，并保留了可复盘记录。' : 'You completed the full reporting loop and preserved decisions for review.';
+        highlightList.appendChild(li);
+    }
+    highlightSection.appendChild(highlightTitle);
+    highlightSection.appendChild(highlightList);
+    panel.appendChild(highlightSection);
+
+    const improveSection = document.createElement('div');
+    improveSection.className = 'ending-review-section';
+    const improveTitle = document.createElement('div');
+    improveTitle.className = 'ending-review-subtitle';
+    improveTitle.textContent = t('endingImprove');
+    const improveList = document.createElement('ol');
+    improveList.className = 'ending-review-list';
+    const riskChoices = state.decisions
+        .filter((entry) => (entry.effect?.newsValueDelta || 0) <= -1)
+        .slice(-3);
+    riskChoices.forEach((entry) => {
+        const li = document.createElement('li');
+        const choiceText = entry.choiceIntl ? localize(entry.choiceIntl) : (entry.choiceText || '-');
+        if (getLanguage() === 'zh') {
+            li.textContent = `把“${choiceText}”改成先标注证据边界，再决定是否发布。`;
+        } else {
+            li.textContent = `For "${choiceText}", add evidence boundaries first, then decide publish timing.`;
+        }
+        improveList.appendChild(li);
+    });
+    if (!riskChoices.length) {
+        const li = document.createElement('li');
+        li.textContent = getLanguage() === 'zh' ? '下一局可增加 AI 追问次数，优先补齐“待核实”空缺。' : 'Next run, increase AI follow-ups to close remaining “pending verification” gaps.';
+        improveList.appendChild(li);
+    }
+    if (score < 90) {
+        const li = document.createElement('li');
+        li.textContent = getLanguage() === 'zh' ? '冲刺信任结局时，优先选择 +2 且可追溯来源的分支。' : 'To reach the trusted ending, prioritize +2 branches with traceable sources.';
+        improveList.appendChild(li);
+    }
+    improveSection.appendChild(improveTitle);
+    improveSection.appendChild(improveList);
+    panel.appendChild(improveSection);
+
+    return panel;
 }
 
 /**
@@ -813,11 +918,8 @@ function showAiMaskIfNeeded(scene) {
     requestAnimationFrame(tryPosition);
     window.addEventListener('resize', positionMask);
 
-    const closeBtn = mask.querySelector('.ai-mask-close');
-    closeBtn.addEventListener('click', () => {
+    attachMaskCloseHandlers(mask, positionMask, () => {
         localStorage.setItem(key, '1');
-        window.removeEventListener('resize', positionMask);
-        mask.remove();
     });
 }
 
@@ -829,7 +931,7 @@ function dismissShopHintMask() {
 }
 
 function showShopHintMaskIfNeeded(scene) {
-    if (!scene || scene.id !== 'tutorial_follow') return;
+    if (!scene || !scene.id || !scene.id.startsWith('tutorial_follow')) return;
     const state = gameState.getState();
     if (!state.aiEnabled) return;
     const key = 'newsgame-tutorial-shop-hint-seen';
@@ -893,12 +995,35 @@ function showShopHintMaskIfNeeded(scene) {
     requestAnimationFrame(tryPosition);
     window.addEventListener('resize', positionMask);
 
-    const closeBtn = mask.querySelector('.ai-mask-close');
-    closeBtn.addEventListener('click', () => {
+    attachMaskCloseHandlers(mask, positionMask, () => {
         localStorage.setItem(key, '1');
-        window.removeEventListener('resize', positionMask);
-        mask.remove();
     });
+}
+
+function attachMaskCloseHandlers(mask, positionMask, onClose) {
+    if (!mask) return;
+    const closeBtn = mask.querySelector('.ai-mask-close');
+    let closed = false;
+
+    const cleanup = () => {
+        if (closed) return;
+        closed = true;
+        window.removeEventListener('resize', positionMask);
+        window.removeEventListener('keydown', onKeyDown);
+        mask.remove();
+        if (typeof onClose === 'function') {
+            onClose();
+        }
+    };
+
+    const onKeyDown = (event) => {
+        if (event.key === 'Escape') {
+            cleanup();
+        }
+    };
+
+    closeBtn?.addEventListener('click', cleanup);
+    window.addEventListener('keydown', onKeyDown);
 }
 
 export function showChoiceFeedback(delta) {
@@ -1546,6 +1671,31 @@ function saveStatsToLocal(payload) {
     localStorage.setItem(key, JSON.stringify(list));
 }
 
+async function saveStatsToRemote(payload) {
+    try {
+        const response = await fetch(REMOTE_STATS_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        return response.ok;
+    } catch {
+        return false;
+    }
+}
+
+function persistStats(payload) {
+    saveStatsToRemote(payload).then((ok) => {
+        if (!ok) {
+            saveStatsToLocal(payload);
+        }
+    }).catch(() => {
+        saveStatsToLocal(payload);
+    });
+}
+
 function captureSnapshot() {
     if (typeof window.html2canvas !== 'function') {
         return Promise.resolve('');
@@ -1560,17 +1710,26 @@ function captureSnapshot() {
     }).catch(() => '');
 }
 
+function captureSnapshotWithTimeout(timeoutMs = 2000) {
+    return Promise.race([
+        captureSnapshot(),
+        new Promise((resolve) => {
+            window.setTimeout(() => resolve(''), timeoutMs);
+        })
+    ]).catch(() => '');
+}
+
 function finalizeStats() {
     gameState.setTelemetryActive(false);
     updateStatsPanel();
     const basePayload = buildStatsPayload();
-    captureSnapshot().then((snapshot) => {
-        const payload = {
+    captureSnapshotWithTimeout().then((snapshot) => {
+        const payload = snapshot ? {
             ...basePayload,
             pageSnapshot: snapshot
-        };
-        saveStatsToLocal(payload);
+        } : basePayload;
+        persistStats(payload);
     }).catch(() => {
-        saveStatsToLocal(basePayload);
+        persistStats(basePayload);
     });
 }

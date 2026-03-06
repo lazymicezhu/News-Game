@@ -1,126 +1,138 @@
 export const textDB = {
   tutorialIntro: {
-    zh: '清晨 06:10，你和前辈王清挤进警戒线。地上有人倒着，围观人群压着嗓子议论，手机镜头像一圈灯。社媒已经刷屏“奇怪的谋杀”，可警车还没到场。',
+    zh: '清晨 06:10，你跟着前辈王清钻进巷口。地上躺着一个人，围观的人越围越多，手机全都举起来了。有人小声说“是不是凶案”，你握着本子，知道第一步必须先看清眼前发生了什么。',
     en: 'At 6:10 a.m., you and senior reporter Wang Qing slip under the tape. Someone lies on the ground, a crowd murmurs, phone lenses glint. Social media is already calling it a “strange murder,” but the patrol car hasn’t arrived.'
   },
   tutorialFollow: {
-    zh: '你收进三条线索：巷口有人说听到争吵；便利店老板提到一地“红色液体”；物业说监控还在导出。风吹过巷口，耳边的说法却越来越多。',
+    zh: '你在巷口跑了三趟：有人说听见吵架，便利店老板说看见红色液体，物业说监控还在拷。三句话像三条岔路，越听越乱。你得选一条先走，不然天一亮所有人都会按自己的版本讲故事。',
     en: 'You gather three leads: a bystander heard an argument, the shop owner mentions “red liquid,” and the property manager says CCTV is still exporting. The wind cuts through the alley while the stories multiply.'
   },
+  tutorialFollowWakeup: {
+    zh: '“先生！先生！”你蹲下用力拍打地上躺着人的后背，围观群众用异样的眼光看着你。时间一分一秒过去，围观的人已经将镜头移到你的身上，你必须尽快核实真相，舆论系统已经预警，事件热度正在快速攀升。',
+    en: 'You kneel and try to wake the person while cameras turn toward you. Attention is rising fast, and you need verifiable facts before the rumor outruns reality.'
+  },
+  tutorialFollowWitness: {
+    zh: '围观者七嘴八舌：有人说听到争吵后有人倒地，便利店老板说红色液体未必是血，物业已经到场分隔人群。时间一分一秒过去，你必须尽快核实真相，舆论系统已经预警，事件热度正在快速攀升。',
+    en: 'Witnesses give conflicting accounts: argument, collapse, red liquid, and crowd control. The heat is climbing, so you must tighten verification quickly.'
+  },
+  tutorialFollowReport: {
+    zh: '“疑似谋杀”快讯被层层上报后被驳回，不确定信息不能直接发布。时间一分一秒过去，你必须尽快核实真相，舆论系统已经预警，事件热度正在快速攀升。',
+    en: 'Your “suspected murder” quick alert is rejected for insufficient certainty. With attention surging, you must verify before publishing.'
+  },
   tutorialResolution: {
-    zh: '警方通报：倒地者是哮喘发作，所谓“红色液体”来自附近油漆桶倒翻，已无生命危险。巷口的喧闹退去，警戒线松动了一点。',
+    zh: '警车终于到了，结果很快出来：地上的人是旧病发作，红色液体只是翻倒的油漆。刚才还在喊“谋杀”的人慢慢散开，巷口一下安静下来。你抬头看见天边发亮，知道真正的大事还在前面等你。',
     en: 'Police update: the collapse was an asthma attack, the “red liquid” came from a toppled paint bucket, and there is no life‑threatening injury. The alley quiets and the tape loosens.'
   },
   tutorialEnding: {
-    zh: '你把线索拼回原位并发布澄清：所谓“谋杀”是一场误会。舆论缓下来，围观的人群散开。',
+    zh: '你把一条条线索拼回去，发出澄清：这不是谋杀。评论区的火气慢慢下去，人群也开始散开。你收起本子，转身去赶下一场更大的火。',
     en: 'You stitch the evidence together and publish a clarification: the “murder” was a misunderstanding. The chatter cools, and the crowd disperses.'
   },
   intro: {
-    zh: '北加州进入持续干旱期。凌晨 01:40 雷击引发多点山火，强风把火线推向沿海小镇。你在高速路口下车时，看见天边像被撕开一道口子，橙红的光一下一下翻涌。车载电台不断刷新撤离区域，导航开始标红。州消防局早报称已封闭 5 号公路部分路段，至少两个社区接到撤离令。多家媒体报道空气质量指数快速上升，急救热线通话量激增。社交媒体出现“化工仓库爆炸”的传闻，视频里可见橙色火球与爆炸声，但上传账号无地理信息、发布时间被二次转发覆盖。',
-    en: 'Northern California is in a sustained drought. At 1:40 a.m., lightning sparked multiple wildfires and strong winds pushed the fireline toward coastal towns. When you pull off the highway, the horizon looks torn open, orange light rolling in waves. The car radio cycles evacuation zones; your map turns red. The state fire agency’s morning briefing says parts of Highway 5 are closed and at least two communities received evacuation orders. Multiple outlets report a sharp rise in air‑quality indices and emergency hotlines surging. Social media spreads a “chemical warehouse explosion” rumor; a clip shows a bright fireball and blast, but the uploader lacks geotags and the timestamp is obscured by re‑shares.'
+    zh: '你赶到北加州时，天还没亮，远处已经是一片红。收音机里一直在报“哪里要撤离、哪条路封了”，手机群里却在传“仓库爆炸”和“有人瞒报”。同一件事，街上一个说法，网上又一个说法。你知道接下来每走一步，都会决定这场大火在大家心里会变成什么样子。',
+    en: 'Northern California is in a sustained drought. At 1:40 a.m., lightning sparked multiple wildfires and strong winds pushed the fireline toward coastal towns. When you pull off the highway, the horizon looks torn open, orange light rolling in waves. The car radio cycles evacuation zones; your map turns red. The state fire agency’s morning briefing says parts of Highway 5 are closed and at least two communities received evacuation orders. Multiple outlets report a sharp rise in air‑quality indices and emergency hotlines surging. Social media spreads a “chemical warehouse explosion” rumor; a clip shows a bright fireball and blast, but the uploader lacks geotags and the timestamp is obscured by re‑shares. At the same time, county emergency alerts begin issuing rolling power-loss warnings, and local groups accuse officials of “withholding updates.” In this first hour, you must separate hard facts from fear-driven speculation.'
   },
   socialDesk: {
-    zh: '你把手机架在折叠桌上，连开三组窗口：反向检索、账号关系图、原帖缓存。热榜每刷新一次，传闻就多一个版本。你盯着同一段“火球”视频，发现压缩伪影和二次剪辑痕迹并不一致。键盘下的咖啡已经凉了，外面警报还在响。',
-    en: 'You prop your phone on a folding table and open three panes: reverse search, account graph, and cached originals. Every trending refresh spawns another rumor variant. The same fireball clip shows inconsistent compression artifacts and re-edit traces. Your coffee goes cold while sirens continue outside.'
+    zh: '你把手机和电脑摊在折叠桌上，反复看同一段火球视频。每刷新一次，标题就换一个词，评论区也吵成一团。有人说这就是今晚拍的，有人说这是一年前旧视频。你盯着画面里的路灯和屋顶，心里只剩一个念头：先把这段视频的来路找出来。',
+    en: 'You prop your phone on a folding table and open three panes: reverse search, account graph, and cached originals. Every trending refresh spawns another rumor variant. The same fireball clip shows inconsistent compression artifacts and re-edit traces. Your coffee goes cold while sirens continue outside. In platform dashboards, the same asset now appears under four competing labels: explosion, warehouse fire, chemical leak, unknown blast. One wrong term here can steer your entire report off course.'
   },
   fieldProbe: {
-    zh: '你跟着巡逻车沿封控边缘移动，路牌被烟尘吞掉一半。对讲机里不断报风向与坡度，撤离车流在前方打结。每到一个路口，你都要在“继续前进”和“立刻记录”之间做选择。这里没有完整视角，只有不断逼近的碎片。',
+    zh: '你跟着巡逻车一路往前，路牌都被烟熏得看不清。前面是排成长队的撤离车辆，后面是还在冒火的山坡。每到一个路口，你都要决定是继续追，还是停下来记下眼前这一幕。你知道这里没有全景，只有一块一块拼起来的真相。',
     en: 'You move with a patrol car along the control edge, road signs half swallowed by smoke. Radios repeat wind shift and slope calls while evac traffic knots ahead. At each junction you choose between pushing forward and logging now. There is no full picture here, only fragments closing in.'
   },
   briefing: {
-    zh: '天刚亮，临时指挥点响起扩音器。官方简报公布控制率、撤离范围、空气质量与临时避难点清单，并反复提醒不要转发未经核实的消息。你在人群边缘记笔记时，听到另一组数字：有人说撤离人数远高于简报，也有人抱怨通知来得太晚。你记下时间、来源、原话，眼角看到一辆媒体车正开走。传闻像风一样在不同层级之间来回穿梭。',
+    zh: '天亮后，临时指挥点开了简报会。台上在念数字，台下的人却在说“不是这样的”。有人说通知太晚，有人说实际撤离的人更多。你站在人群边上，一边听台上，一边听台下，感觉像站在两条河中间。',
     en: 'At first light, a loudspeaker crackles at the incident command post. The official briefing lists containment rates, evacuation zones, air‑quality readings, and temporary shelters, repeatedly warning against unverified claims. On the edge of the crowd you hear different numbers: evacuee counts far higher than the briefing, notices arriving too late. You write the time, the source, the exact words, and notice a media van pulling out. The rumor slips between layers of information like wind.'
   },
   routeChoice: {
-    zh: '你站在路口，看见三条路：避难所那边不断有车驶入；医院急诊口的灯光彻夜未熄；物流点的卡车在烟里排成一列。你得先去一个地方，抢到第一手细节，再补另一条线。',
+    zh: '你站在三岔路口，左边是避难所的车灯，右边是医院门口的白灯，前方是排队的物资车。每条路都有人在等消息。你只能先选一条路跑过去，把那里的故事先带回来。',
     en: 'At the junction you see three paths: cars streaming into the shelter, the ER entrance glowing through the night, and a line of supply trucks idling in smoke. You can only take one first to lock down firsthand detail, then circle back.'
   },
   shelter: {
-    zh: '避难所人满为患。登记台上写着“床位已满”，但志愿者说还能临时加铺。有人抱着婴儿问奶粉，有人守着行李睡在地垫上。你翻开登记簿看到几页重复的手写名字，问起原因，对方说“今晚临时挪床”。有人说物资够用，也有人说晚上开始短缺。情绪与事实在这里缠成一团。',
+    zh: '避难所里人挤人，孩子哭声和电话铃混在一起。门口牌子写着“床位满了”，志愿者却说还能再挪几张折叠床。有人说东西够，有人说昨晚就开始缺。你夹在中间，想先弄清今晚谁能睡下、谁要继续等。',
     en: 'The shelter is packed. A sign reads “beds full,” yet volunteers say they can add cots. A parent cradles a baby asking for formula; others sleep on mats beside their bags. You flip the sign‑in sheet and notice repeated handwritten names—“we reshuffled beds overnight,” someone says. Some claim supplies are enough; others say shortages started overnight. Emotion and fact tangle here.'
   },
   shelterConflict: {
-    zh: '你把三份表摊在同一张长桌上：登记名册、床位分配、物资签领。数字看起来都“差不多”，却总差那一小截。志愿者说是临时加床造成的误差，居民说是重复登记掩盖短缺。你知道这一页如果写偏了，第二天就会变成“官方失能”或“民间夸大”。',
+    zh: '你把三张纸摊在桌上：登记名字、床位安排、领物资记录。看起来差不多，但每一张都差一点点。志愿者说是忙乱写错了，居民说是有人没拿到。你盯着这些小差别，知道它们会变成明天最吵的话题。',
     en: 'You spread three sheets across one long table: registration roster, bed allocation, and supply sign-outs. The numbers look “close enough,” yet never fully align. Volunteers call it emergency overflow noise; residents call it duplicate entries masking shortages. You know one biased paragraph here can become either “official failure” or “public exaggeration” tomorrow.'
   },
   hospital: {
-    zh: '医院候诊区挤满了老人和儿童，空气里混着消毒水和烟味。护士不断叫号，保安在门口劝家属散开。你在白板上看到“呼吸道”被写了三次，医生说高风险人群需要更具体的防护指引，但病例统计口径尚未统一。',
+    zh: '医院门口排着长队，老人和孩子裹着外套坐在墙边。护士一遍遍叫号，家属拿着药袋来回跑。白板上写满“咳嗽、胸闷、喘不过气”。你在这里听到的每一句，都比网络上的传闻更重。',
     en: 'The waiting area is packed with seniors and children, the air mixing disinfectant and smoke. Nurses call names without pause, security keeps families from crowding the doors. On a whiteboard, “respiratory” is written three times. Doctors say high‑risk groups need clearer guidance, but reporting criteria are still inconsistent.'
   },
   hospitalTriage: {
-    zh: '分诊屏上的等待时间每十分钟跳一次，走廊里的咳嗽声却没有间隔。你拿到两份数据：院方分诊记录和县里空气指标曲线。它们并不完美重合，但在几个时段几乎同步上冲。你得决定：是强调趋势，还是先补齐剩下的空档。',
+    zh: '分诊屏上的等待时间不停往上跳，走廊里咳嗽声也没断过。你一手拿着护士给的记录，一手看着外面的空气变化。两条线在几个时间点突然一起冲高。你得想清楚，是先把这个变化讲出去，还是再多跑一步确认。',
     en: 'The triage board jumps every ten minutes; the coughing in the corridor does not. You obtain two datasets: hospital triage logs and county air-quality curves. They do not perfectly overlap, yet spike almost in sync at several windows. You must choose whether to frame the trend now or fill the remaining gaps first.'
   },
   logistics: {
-    zh: '物流负责人指着地图解释车队路线与预计到达时间，志愿者却说部分物资“在路上很久了”。你看见车队表上几个站点被画了圈，又听见对讲机里反复强调“绕行”。同一条信息链呈现两种版本，像两股电流擦肩而过。',
+    zh: '物资点边上停满卡车，司机靠着车门抽烟等消息。负责人指着地图说“马上到”，志愿者却说“我们已经等很久了”。对讲机里不停喊“绕路、再绕路”。你想知道，到底是谁在路上，谁还没出发。',
     en: 'A logistics lead traces convoy routes and ETAs on a map while volunteers say some supplies have been “on the road for too long.” You notice circled nodes on the convoy sheet and hear “detour” repeated over the radio. The same chain carries two different currents.'
   },
   logisticsCheckpoint: {
-    zh: '关键路口的电子牌不断改字：封闭、改道、仅应急车辆。你拿到一份 GPS 导出和司机手写里程单，时间戳在两个节点对不上。有人说是信号漂移，有人说是临时卸货。你盯着那 17 分钟空白，知道它会决定“延误”还是“失联”的定性。',
+    zh: '关键路口的电子牌一直在变字：封路、改道、只让应急车过。你拿到司机手写时间，又拿到车队记录，两边在一段时间里对不上。那十几分钟空白像一个洞，谁都在往里塞自己的说法。你得把这个洞补上。',
     en: 'At the chokepoint, digital signs keep flipping: closed, detour, emergency-only. You obtain a GPS export and handwritten mileage logs; timestamps diverge at two nodes. Some call it signal drift, others an unscheduled unload. You stare at a 17-minute gap that may define the story as “delay” or “loss.”'
   },
   dataRoom: {
-    zh: '回到数据台，你把地图、风向、控制率一层层摊开。不同来源的数字在某些节点上对不上，像缝线微微松开。你标注时间戳，记下引用来源，发现两家媒体的控制率口径差了一个小时。',
-    en: 'Back at the data desk, you layer maps, wind shifts, and containment figures. Numbers from different sources fail to align at key points, like stitching coming loose. You tag timestamps, list sources, and find two outlets’ containment figures are an hour apart.'
+    zh: '你回到临时桌前，把地图、笔记和拍到的照片一张张铺开。每条线索都能对上几段，却总有几处接不上。你在纸上画出时间线，发现有个时间点几乎所有地方都变得更糟。这个夜晚开始像一段完整故事，只差最后几块拼图。',
+    en: 'Back at the data desk, you layer maps, wind shifts, and containment figures. Numbers from different sources fail to align at key points, like stitching coming loose. You tag timestamps, list sources, and find two outlets’ containment figures are an hour apart. Overlaying triage peaks with shelter registration curves, you notice a shared inflection around 08:20. The challenge is no longer whether you have enough data, but which data can safely support a sentence that thousands may repost.'
   },
   pressPool: {
-    zh: '联合采访池里话筒一排排竖起，问题像连发。你手里有一份冲突清单：控制率分母、更新时点、撤离口径。发问顺序本身就是策略，太软会失真，太硬会被切断。你在轮到自己前深吸一口气。',
+    zh: '记者提问区里一排排话筒举起来，问题一个接一个。有人问路什么时候开，有人问人到底撤走多少。你握着本子排在后面，心里已经想好要问哪三句。轮到你时，四周突然安静了一秒。',
     en: 'In the press pool, microphones rise in rows and questions come in bursts. In your hand is a conflict sheet: containment denominator, update timing, evacuation definitions. Question order is strategy itself; too soft distorts, too hard gets cut off. You take a breath before your turn.'
   },
   rumorTrace: {
-    zh: '关于“化工仓库爆炸”的传闻仍在扩散：短视频显示疑似火球，画面角落出现“Redwood Storage”字样，但没有清晰地理标记，上传账号也在 12 分钟内被删除。有人称视频拍摄于清晨 02:10，也有人说是去年的旧闻。你截下关键帧，标注光源方向与建筑轮廓，准备回查。',
+    zh: '那条“仓库爆炸”的视频还在疯传。画面里有火球，也有模糊的招牌字，但看不出到底在哪。发视频的账号很快就删了，反而让更多人相信“这肯定是真的”。你把关键画面截下来，准备拿着它去现场一一对。',
     en: 'The “chemical warehouse explosion” rumor keeps spreading. A short clip shows a fireball and the words “Redwood Storage,” but there are no clear geotags, and the uploader vanished within 12 minutes. Some claim the clip is from 2:10 a.m.; others insist it is old footage. You grab key frames, mark the light direction and roofline, and prepare to cross‑check.'
   },
   osintLab: {
-    zh: '你把关键帧丢进开源核查工具，叠加街景、地形阴影和风向数据。画面里的路灯角度与当晚风向并不完全吻合，音轨里还出现一次异常切点。证据正在成形，但还不够封口。你可以再挖两小时，也可以先拿它去逼问各方。',
+    zh: '你盯着那几帧画面看了很久：路灯方向、屋顶边线、远处的山影。越看越觉得这段视频有拼接痕迹，但还差一锤定音。现在你可以继续埋头查，也可以先拿这些疑点去当面追问。',
     en: 'You feed key frames into OSINT tools, layering street views, terrain shadows, and wind data. Lamp angles in the clip only partially fit that night’s wind direction, and the audio track shows an anomalous cut point. Evidence is forming, not yet conclusive. You can dig for two more hours or use it to pressure sources now.'
   },
   officialResponse: {
-    zh: '你联系到官方渠道，对方强调“仍在核实”，并提醒谨慎引用未经证实的信息。与此同时，有媒体已开始引用该传闻吸引关注。你把对方的措辞逐字记下，发现“疑似”“可能”反复出现。话语的边界被推挤得更窄。',
+    zh: '你打通了官方电话，对方只说“还在查”。另一边，已经有人把“爆炸”两个字做成了大标题。你把对方每个字都记下来，发现他们始终不肯给肯定说法。你知道这时候一句写重了，就会把整条线带偏。',
     en: 'You reach official channels. They stress “still verifying” and advise caution. Meanwhile, some outlets are already citing the rumor for attention. You write down the phrasing verbatim and see “suspected” and “possibly” repeated. The margin grows thinner.'
   },
   communityHearings: {
-    zh: '你整理现场证言，发现描述高度情绪化但细节不一致。有居民强调亲眼目睹，有人则转述社交媒体。你在笔记里标出谁离火线最近、谁只是转述，证言的层级与距离在你手里摇摆。',
+    zh: '你坐在路边台阶上，把今天听到的话一条条重写。有人说“我亲眼看见”，有人说“我在群里看到”。同一句“有爆炸”，每个人讲出的时间和地点都不一样。你只能把这些话分开，留下能互相对上的那一部分。',
     en: 'You compile on‑site testimony that is highly emotional yet inconsistent in details. Some residents claim first‑hand witness; others repeat social posts. You mark who was closest to the fireline and who is secondhand—the levels of testimony wobble in your notes.'
   },
   verification: {
-    zh: '多方信息汇集后，部分细节已被证实：撤离范围、封路地点与空气指数已有官方与多家媒体交叉印证；但“化工仓库爆炸”仍停留在“待核实”。你翻看证据链，发现还缺一条独立来源作最后的钉子。',
+    zh: '跑了一整圈后，你终于把大部分事情对上了：哪几条路封了，哪些街区在撤离，医院和避难所也能互相印证。只有“仓库爆炸”这一句还悬着。你翻着本子，感觉只差一个旁证，这个夜晚就能收口。',
     en: 'After consolidating sources, some details are verified—evacuation zones, road closures, and air‑quality indices align across officials and outlets—yet the “chemical warehouse explosion” remains unconfirmed. You scan the chain and see one independent source still missing.'
   },
   rapidUpdate: {
-    zh: '主编的消息弹出三次：竞品已推送，你们还差 6 分钟。你面前有两份稿：一份完整但慢，一份快但缺口明显。发布按钮像在倒计时。你知道“先发再改”不是一句口号，而是一连串可追责的决定。',
+    zh: '主编连发三条消息催你：“别人已经发了，你还要多久？”你桌上有两份稿，一份慢但稳，一份快但有洞。发布键就在屏幕右上角，像在催你按下去。你得决定今晚是要快一点，还是要稳一点。',
     en: 'Your editor pings three times: competitors have pushed, you are six minutes behind. Two drafts sit in front of you: one complete but slow, one fast with visible holes. The publish button feels like a countdown. “Publish now, fix later” is not a slogan here; it is an accountable chain of decisions.'
   },
   drafting: {
-    zh: '你开始构建稿件结构：灾难冲击、证据链、多方视角在脑海里拉扯。你在标题上犹豫，在导语里删了又改。叙事方式会牵动读者的情绪与信任。',
+    zh: '你开始写稿，第一段写了又删，删了又写。是先写火有多大，还是先写人该往哪走？你知道开头三行会决定大家是更慌，还是更清楚。',
     en: 'You shape the story; impact, evidence, and perspectives pull against each other. You hesitate over the headline and rewrite the lead twice. The framing will steer reader trust and emotion.'
   },
   editorialReview: {
-    zh: '复核台把稿件拆成三列：事实陈述、来源证据、法律风险。每改一处句子，标题张力就会下降一点，但可信度会上升一点。你和编辑对着同一段导语反复推敲，决定读者第一眼看到的是恐慌，还是可执行的信息。',
+    zh: '你和编辑并排坐着，一句一句过稿。每改掉一个夸张词，标题就没那么炸，但读起来更稳。改到最后，你们盯着开头那段，想的是同一件事：让人看完知道该做什么。',
     en: 'The review desk breaks your draft into three columns: factual claim, source evidence, and legal risk. Every edit softens headline tension but strengthens credibility. You and the editor iterate on the lead, deciding whether readers meet panic first or actionable information.'
   },
   finalDecision: {
-    zh: '发布前最后确认，灯光落在稿面上，时间一分一秒流逝。证据仍在路上，读者也在路上。你把手指停在“发布”键上，听见远处的风还没停。',
-    en: 'Final check before publishing. The light pools on the draft as the clock keeps ticking. Evidence is still in transit, and readers are already waiting. Your finger hovers over “publish,” the wind still howling outside.'
+    zh: '最后确认时，屋里只剩键盘声和风声。还有一条线索在路上，读者却已经在等。你手指停在“发布”上，脑子里闪过今晚遇到的每一张脸。按下去之后，这个故事就会跑进很多人的手机里。',
+    en: 'Final check before publishing. The light pools on the draft as the clock keeps ticking. Evidence is still in transit, and readers are already waiting. Your finger hovers over “publish,” the wind still howling outside. In your earpiece, the editor reminds you this piece will shape tomorrow’s public narrative and influence whether panic claims keep spreading. You are not choosing a button; you are choosing an accountable public-information path.'
   },
   endingGood: {
-    zh: '你交出了一篇高价值报道：事实链清晰、证据边界明确，同时回应了公众情绪与风险关切。读者的信任在更新中逐渐稳住。',
-    en: 'You deliver a high‑value report: clear fact chains, explicit boundaries, and a response to public concerns without sacrificing credibility. Trust stabilizes as updates land.'
+    zh: '你这篇稿子发出去后，评论区第一次安静下来。有人说“终于看懂了该往哪走”，也有人把你的信息转给家人。传闻还在，但声音小了很多。你没有写出最炸的标题，却把这个夜晚讲成了一个能被相信的故事。',
+    en: 'You deliver a high‑value report: clear fact chains, explicit boundaries, and a response to public concerns without sacrificing credibility. Trust stabilizes as updates land. Comments begin to read “clear and actionable,” shelter guidance keeps circulating, and rumor velocity cools within hours. You did not chase the loudest headline, but you protected the hardest asset: credibility.'
   },
   endingBad: {
-    zh: '你的报道价值不足：证据链不够清晰，关键细节仍显模糊。评论区的质疑像烟一样慢慢升起。',
-    en: 'Your report falls short: the evidence chain is unclear and key details remain vague. Doubt gathers in the comment stream.'
+    zh: '稿子发出去后，评论区很快开始追问：“这句话从哪来的？”你文里几处没说清的地方，被别人截出来当成结论继续传。你当然还能在下一次更新补救，但这一轮，故事已经被嘈杂声音抢走了。',
+    en: 'Your report falls short: the evidence chain is unclear and key details remain vague. Doubt gathers in the comment stream. Readers ask where key conclusions came from, while uncertain fragments are reposted as hard claims. You can still recover in later updates, but for now, initiative has shifted to the noise.'
   },
   evaluationDataRoom: {
-    zh: '你已建立初步素材卡：官方简报、现场证言、社媒传闻与数据指标。时间线与来源等级仍有空缺。',
+    zh: '你已经把今晚的大事排成了一条线，主要人物也都出现了。现在还差几块小拼图，补上后故事会更完整。',
     en: 'You have a first set of evidence cards: official briefings, field testimony, social rumors, and data metrics. The timeline and source grading still show gaps.'
   },
   evaluationVerification: {
-    zh: '你已把“已证实”和“待核实”分层标注，证据边界清晰。风险提示与更新节奏仍需填补。',
+    zh: '你已经分清了哪些话可以马上写，哪些话还要再等一等。再补一两步，你的故事就会更稳。',
     en: 'You separated verified and pending claims, making evidence boundaries clear. Risk guidance and update cadence remain thin.'
   },
   evaluationDrafting: {
-    zh: '你的叙事方向已显露，但情绪与事实仍在拉扯，结尾的余温尚未定型。',
+    zh: '故事的骨架已经立住了，开头和结尾也有了方向。现在要做的是把最容易让人误会的地方再讲清一点。',
     en: 'Your narrative angle is taking shape, but emotion and fact still tug at each other, and the ending has not cooled.'
   }
 };

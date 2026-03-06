@@ -14,6 +14,7 @@ import { followupQuestions as baseFollowupQuestions } from '../data/followupQues
 
 const LANGUAGE_STORAGE_KEY = 'newsgame-lang';
 const OVERRIDES_STORAGE_KEY = 'newsgame-overrides';
+const SCENE_EDITOR_FILE = 'data/sceneCopyEditor.json';
 
 function loadOverrides() {
     try {
@@ -21,6 +22,65 @@ function loadOverrides() {
     } catch {
         return {};
     }
+}
+
+async function loadSceneCopyEditor() {
+    try {
+        const res = await fetch(SCENE_EDITOR_FILE, { cache: 'no-store' });
+        if (!res.ok) return [];
+        const payload = await res.json();
+        return Array.isArray(payload) ? payload : [];
+    } catch {
+        return [];
+    }
+}
+
+function buildSceneOverridesFromEditor(baseScenes, editorRows) {
+    const stripChoiceDeltaSuffix = (value) => {
+        if (typeof value !== 'string') return value;
+        return value
+            .replace(/\s*[（(]\s*[+\-]\d+\s*[）)]\s*$/, '')
+            .trim();
+    };
+
+    const sceneOverrides = {};
+    (editorRows || []).forEach((row) => {
+        if (!row || !row.sceneId) return;
+        const sceneId = row.sceneId;
+        const baseScene = (baseScenes && baseScenes[sceneId]) || {};
+        const nextScene = {};
+
+        if (typeof row.title === 'string') {
+            nextScene.title = { zh: row.title };
+        }
+        if (typeof row.text === 'string') {
+            nextScene.text = { zh: row.text };
+        }
+        if (Array.isArray(row.choices)) {
+            const baseChoices = Array.isArray(baseScene.choices) ? baseScene.choices : [];
+            nextScene.choices = baseChoices.map((baseChoice, index) => {
+                const overrideText = row.choices[index];
+                if (typeof overrideText !== 'string') {
+                    return {
+                        ...baseChoice,
+                        text: baseChoice.text ? { ...baseChoice.text } : baseChoice.text
+                    };
+                }
+                return {
+                    ...baseChoice,
+                    text: {
+                        ...(baseChoice.text || {}),
+                        zh: stripChoiceDeltaSuffix(overrideText)
+                    }
+                };
+            });
+        }
+
+        if (Object.keys(nextScene).length > 0) {
+            sceneOverrides[sceneId] = nextScene;
+        }
+    });
+    return sceneOverrides;
 }
 
 function mergeScenes(baseScenes, overrideScenes = {}) {
@@ -88,9 +148,14 @@ function mergeFollowupQuestions(baseQuestions, overrideQuestions = {}) {
     return merged;
 }
 
-function prepareOverrides() {
+async function prepareOverrides() {
+    const editorRows = await loadSceneCopyEditor();
+    const fileOverrides = {
+        scenes: buildSceneOverridesFromEditor(scenes, editorRows)
+    };
     const overrides = loadOverrides();
-    const mergedScenes = mergeScenes(scenes, overrides.scenes || {});
+    const mergedScenesFromFile = mergeScenes(scenes, fileOverrides.scenes || {});
+    const mergedScenes = mergeScenes(mergedScenesFromFile, overrides.scenes || {});
     const mergedQuestions = mergeFollowupQuestions(baseFollowupQuestions, overrides.followupQuestions || {});
     setFollowupQuestions(mergedQuestions);
     setInterviewRoles(overrides.interviewRoles);
@@ -236,7 +301,7 @@ function init() {
 
         localStorage.removeItem('newsgame-ai-mask-seen');
         localStorage.removeItem('newsgame-tutorial-shop-hint-seen');
-        const mergedScenes = prepareOverrides();
+        const mergedScenes = await prepareOverrides();
         const aiConfigured = await isAiConfigured();
         const randomAiAssigned = Math.random() < 0.5;
         const aiAssigned = forcedVariant === 'NORMAL'
@@ -274,7 +339,7 @@ function init() {
         const restartGame = async () => {
             localStorage.removeItem('newsgame-ai-mask-seen');
             localStorage.removeItem('newsgame-tutorial-shop-hint-seen');
-            const mergedScenes = prepareOverrides();
+            const mergedScenes = await prepareOverrides();
             gameRouter.init(mergedScenes, 'tutorial_intro');
             newsBoard.restart(); // 重启新闻看板
             gameState.setPlayerName('');
