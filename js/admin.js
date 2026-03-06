@@ -161,6 +161,10 @@ function normalizeRemoteEntry(entry) {
         nonAiLogs: safeJsonParse(entry?.non_ai_logs_json, []),
         readingAssignment: readingAssignment || null,
         rewardInfo: rewardInfo && typeof rewardInfo === 'object' ? rewardInfo : null,
+        rewardCode: entry?.reward_code || '',
+        rewardContactMethod: entry?.reward_contact_method || '',
+        rewardLuckinPhone: entry?.reward_luckin_phone || '',
+        rewardStatus: entry?.reward_status || '',
         postSurvey: postSurvey && typeof postSurvey === 'object' ? postSurvey : {},
         preSurvey: {
             aiReliable: entry?.pre_ai_reliable ?? null,
@@ -461,6 +465,17 @@ function renderRows(stats = statsCache) {
         const preSurvey = entry.preSurvey || {};
         const postSurvey = entry.postSurvey || {};
         const rewardInfo = entry.rewardInfo || {};
+        const rewardCode = rewardInfo.redeemCode || entry.rewardCode || '-';
+        const rewardMethod = rewardInfo.contactMethod || entry.rewardContactMethod || '';
+        const rewardPhone = rewardInfo.luckinPhone || entry.rewardLuckinPhone || '';
+        const rewardChannelText = rewardMethod === 'phone'
+            ? (rewardPhone || '-')
+            : rewardMethod === 'wechat'
+                ? '微信'
+                : '-';
+        const rewardDisplay = rewardCode && rewardCode !== '-'
+            ? `${rewardCode} / ${rewardChannelText}`
+            : '-';
         const preLines = [];
         if (preSurvey.aiReliable) preLines.push(`AI可靠: ${preSurvey.aiReliable}`);
         if (preSurvey.aiCredible) preLines.push(`AI可信: ${preSurvey.aiCredible}`);
@@ -531,6 +546,7 @@ function renderRows(stats = statsCache) {
                 </div>
             </td>
             <td class="admin-choices">${choiceLines || '-'}</td>
+            <td>${rewardDisplay}</td>
             <td class="admin-pre-cell">${preSurveyHtml}</td>
         `;
         tbody.appendChild(tr);
