@@ -1649,6 +1649,19 @@ function avgLikert(values = []) {
     return Math.round((sum / valid.length) * 100) / 100;
 }
 
+function generateRedeemCode() {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let randomPart = '';
+    for (let i = 0; i < 8; i += 1) {
+        randomPart += alphabet[Math.floor(Math.random() * alphabet.length)];
+    }
+    const date = new Date();
+    const y = String(date.getFullYear()).slice(-2);
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `NG${y}${m}${d}-${randomPart}`;
+}
+
 function showPostTestSurveyModal() {
     return new Promise((resolve) => {
         const modal = document.getElementById('posttest-modal');
@@ -1776,6 +1789,69 @@ function showPostTestSurveyModal() {
     });
 }
 
+function showRewardModal(redeemCode) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('reward-modal');
+        const codeEl = document.getElementById('reward-code');
+        const submitBtn = document.getElementById('reward-submit-btn');
+        const phoneWrap = document.getElementById('reward-phone-wrap');
+        const wechatWrap = document.getElementById('reward-wechat-wrap');
+        const phoneInput = document.getElementById('reward-phone-input');
+        const methodInputs = Array.from(document.querySelectorAll('input[name="reward-contact-method"]'));
+        if (!modal || !codeEl || !submitBtn || !phoneWrap || !wechatWrap || !phoneInput || !methodInputs.length) {
+            resolve({
+                redeemCode,
+                contactMethod: 'wechat',
+                luckinPhone: '',
+                rewardStatus: 'pending_review'
+            });
+            return;
+        }
+
+        codeEl.textContent = redeemCode || '-';
+        methodInputs.forEach((input) => {
+            input.checked = input.value === 'wechat';
+        });
+        phoneInput.value = '';
+        phoneWrap.style.display = 'none';
+        wechatWrap.style.display = 'block';
+        modal.style.display = 'flex';
+
+        const refreshContactMode = () => {
+            const current = methodInputs.find((input) => input.checked)?.value || 'wechat';
+            if (current === 'phone') {
+                phoneWrap.style.display = 'block';
+                wechatWrap.style.display = 'none';
+            } else {
+                phoneWrap.style.display = 'none';
+                wechatWrap.style.display = 'block';
+            }
+        };
+
+        methodInputs.forEach((input) => {
+            input.onchange = refreshContactMode;
+        });
+
+        submitBtn.onclick = () => {
+            const contactMethod = methodInputs.find((input) => input.checked)?.value || 'wechat';
+            const luckinPhone = (phoneInput.value || '').trim();
+            if (contactMethod === 'phone') {
+                if (!/^1\d{10}$/.test(luckinPhone)) {
+                    window.alert('请填写有效的瑞幸绑定手机号（11位）。');
+                    return;
+                }
+            }
+            modal.style.display = 'none';
+            resolve({
+                redeemCode,
+                contactMethod,
+                luckinPhone: contactMethod === 'phone' ? luckinPhone : '',
+                rewardStatus: 'pending_review'
+            });
+        };
+    });
+}
+
 function buildStatsPayload() {
     const state = gameState.getState();
     const start = state.sessionStart || Date.now();
@@ -1807,6 +1883,7 @@ function buildStatsPayload() {
         preSurvey: state.preSurvey || {},
         postSurvey: state.postSurvey || {},
         readingAssignment: state.readingAssignment || null,
+        rewardInfo: state.rewardInfo || null,
         durationMs,
         timestamp: Date.now()
     };
@@ -1846,6 +1923,9 @@ async function finalizeStats() {
     statsFinalized = true;
     const postSurvey = await showPostTestSurveyModal();
     gameState.setPostSurvey(postSurvey || {});
+    const redeemCode = generateRedeemCode();
+    const rewardInfo = await showRewardModal(redeemCode);
+    gameState.setRewardInfo(rewardInfo || null);
     gameState.setTelemetryActive(false);
     updateStatsPanel();
     persistStats(buildStatsPayload());

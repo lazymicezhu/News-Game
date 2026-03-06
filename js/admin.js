@@ -122,6 +122,14 @@ function mapPostValue(field, value) {
     return raw;
 }
 
+function mapRewardStatus(value) {
+    const raw = String(value || '');
+    if (raw === 'pending_review') return '待审核';
+    if (raw === 'approved_sent') return '已发放';
+    if (raw === 'invalid_rejected') return '无效问卷';
+    return raw;
+}
+
 function getAdminToken() {
     const cached = localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || '';
     if (cached) return cached;
@@ -137,6 +145,7 @@ function normalizeRemoteEntry(entry) {
     const choices = safeJsonParse(entry?.choices_json, []);
     const readingAssignment = safeJsonParse(entry?.reading_assignment_json, null);
     const postSurvey = safeJsonParse(entry?.post_survey_json, {});
+    const rewardInfo = safeJsonParse(entry?.reward_info_json, null);
     return {
         id: entry?.id,
         name: entry?.name || '',
@@ -151,6 +160,7 @@ function normalizeRemoteEntry(entry) {
         aiLogs: safeJsonParse(entry?.ai_logs_json, []),
         nonAiLogs: safeJsonParse(entry?.non_ai_logs_json, []),
         readingAssignment: readingAssignment || null,
+        rewardInfo: rewardInfo && typeof rewardInfo === 'object' ? rewardInfo : null,
         postSurvey: postSurvey && typeof postSurvey === 'object' ? postSurvey : {},
         preSurvey: {
             aiReliable: entry?.pre_ai_reliable ?? null,
@@ -450,6 +460,7 @@ function renderRows(stats = statsCache) {
         const score = typeof entry.newsValue === 'number' ? entry.newsValue : 60;
         const preSurvey = entry.preSurvey || {};
         const postSurvey = entry.postSurvey || {};
+        const rewardInfo = entry.rewardInfo || {};
         const preLines = [];
         if (preSurvey.aiReliable) preLines.push(`AI可靠: ${preSurvey.aiReliable}`);
         if (preSurvey.aiCredible) preLines.push(`AI可信: ${preSurvey.aiCredible}`);
@@ -483,6 +494,12 @@ function renderRows(stats = statsCache) {
             if (postSurvey.openFeedback2) preLines.push(`后测-开放题2: ${String(postSurvey.openFeedback2).slice(0, 120)}`);
             if (postSurvey.openFeedback3) preLines.push(`后测-开放题3: ${String(postSurvey.openFeedback3).slice(0, 120)}`);
         }
+        if (rewardInfo.redeemCode) preLines.push(`兑换码: ${rewardInfo.redeemCode}`);
+        if (rewardInfo.contactMethod) {
+            preLines.push(`领取方式: ${rewardInfo.contactMethod === 'phone' ? '手机号发放（周五审核）' : '微信领取'}`);
+        }
+        if (rewardInfo.luckinPhone) preLines.push(`瑞幸手机号: ${rewardInfo.luckinPhone}`);
+        if (rewardInfo.rewardStatus) preLines.push(`发放状态: ${mapRewardStatus(rewardInfo.rewardStatus)}`);
         const preSurveyHtml = preLines.length
             ? preLines.map((line) => `<div class="admin-pre-log">${line}</div>`).join('')
             : '-';

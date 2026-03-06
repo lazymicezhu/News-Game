@@ -765,6 +765,30 @@ body {
     margin-bottom: 6px;
 }
 
+.intro-incentive {
+    border: 1px solid #bfdbfe;
+    background: #f8fbff;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+}
+
+.intro-incentive-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e40af;
+    margin-bottom: 6px;
+}
+
+.intro-incentive-image {
+    width: 100%;
+    max-width: 560px;
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
+    display: block;
+    margin-top: 6px;
+}
+
 .intro-label {
     display: block;
     font-size: 12px;
@@ -1076,6 +1100,37 @@ body {
     margin-top: 14px;
     display: flex;
     justify-content: flex-end;
+}
+
+.reward-code {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 22px;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.reward-wechat-wrap {
+    margin-top: 10px;
+}
+
+.reward-wechat-image {
+    width: 100%;
+    max-width: 360px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+}
+
+.reward-phone-wrap {
+    margin-top: 10px;
 }
 
 /* ===== 统计面板 ===== */

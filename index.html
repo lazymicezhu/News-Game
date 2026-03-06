@@ -15,6 +15,12 @@
                     <h2 class="intro-title">开场任务</h2>
                     <div class="intro-text">
                         <p>你将阅读一篇关于近期加州野火事件的新闻报道。请仔细阅读内容，并根据你的理解和感受回答后续问题。</p>
+                        <div class="intro-incentive">
+                            <div class="intro-incentive-title">参与激励</div>
+                            <p>有效问卷可获得 1 张瑞幸 32 元咖啡券。完成后系统会生成专属兑换码。</p>
+                            <p>你可添加微信发送兑换码领取；若不方便加微信，也可填写瑞幸绑定手机号，周五统一审核后发放（到账更慢）。</p>
+                            <img src="arts/luckin-coupon.png" alt="瑞幸咖啡券说明" class="intro-incentive-image" />
+                        </div>
                         <p>请注意：</p>
                         <ul>
                             <li>“阅读过程中尽量保持专注。”</li>
@@ -287,6 +293,33 @@
             </div>
             <div class="posttest-actions">
                 <button id="posttest-submit-btn" class="btn btn-primary">提交并完成</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reward-modal" class="posttest-modal" style="display:none;">
+        <div class="posttest-card">
+            <h2 class="posttest-title">兑换信息</h2>
+            <p class="posttest-note">问卷已完成。若审核为有效问卷，可领取 1 张瑞幸 32 元咖啡券。</p>
+            <div class="posttest-section">
+                <div class="intro-label">你的兑换码（请截图保存）</div>
+                <div id="reward-code" class="reward-code">-</div>
+                <div class="intro-label">领取方式</div>
+                <div class="intro-radio-group">
+                    <label class="intro-radio"><input type="radio" name="reward-contact-method" value="wechat" checked /> 添加微信发送兑换码领取（推荐）</label>
+                    <label class="intro-radio"><input type="radio" name="reward-contact-method" value="phone" /> 不加微信，填写瑞幸绑定手机号领取（周五审核后发放）</label>
+                </div>
+                <div id="reward-wechat-wrap" class="reward-wechat-wrap">
+                    <img src="arts/wechat-qr.png" alt="微信二维码" class="reward-wechat-image" />
+                </div>
+                <div id="reward-phone-wrap" class="reward-phone-wrap" style="display:none;">
+                    <div class="intro-label">瑞幸绑定手机号</div>
+                    <input id="reward-phone-input" class="intro-input" type="tel" placeholder="请输入手机号（11位）" />
+                    <div class="posttest-note">不添加微信时，默认周五统一审核后发放，到账会慢于微信领取。</div>
+                </div>
+            </div>
+            <div class="posttest-actions">
+                <button id="reward-submit-btn" class="btn btn-primary">确认并完成</button>
             </div>
         </div>
     </div>

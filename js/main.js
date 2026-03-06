@@ -696,6 +696,7 @@ function init() {
         gameState.setPreSurvey(preSurvey || {});
         gameState.setReadingAssignment(readingAssignmentData);
         gameState.setPostSurvey({});
+        gameState.setRewardInfo(null);
         gameState.setAiEnabled(effectiveAiEnabled);
         if (forcedVariant) {
             gameState.setPlayerName(forcedVariant);
@@ -726,6 +727,7 @@ function init() {
             gameState.setPreSurvey({});
             gameState.setPostSurvey({});
             gameState.setReadingAssignment(null);
+            gameState.setRewardInfo(null);
             setStatsVisibility(false);
             updateStatsPanel();
             if (introModal) introModal.style.display = 'flex';

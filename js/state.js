@@ -29,6 +29,7 @@ class GameState {
         this.preSurvey = {};
         this.postSurvey = {};
         this.readingAssignment = null;
+        this.rewardInfo = null;
         this.lastChoiceDelta = null;
         this.evidence = new Set();
         this.sceneChoiceOrders = {};
@@ -63,6 +64,7 @@ class GameState {
         this.preSurvey = {};
         this.postSurvey = {};
         this.readingAssignment = null;
+        this.rewardInfo = null;
         this.lastChoiceDelta = null;
         this.evidence = new Set();
         this.sceneChoiceOrders = {};
@@ -94,7 +96,8 @@ class GameState {
             wildfireFamiliarity: this.wildfireFamiliarity,
             preSurvey: { ...this.preSurvey },
             postSurvey: { ...this.postSurvey },
-            readingAssignment: this.readingAssignment ? { ...this.readingAssignment } : null
+            readingAssignment: this.readingAssignment ? { ...this.readingAssignment } : null,
+            rewardInfo: this.rewardInfo ? { ...this.rewardInfo } : null
         };
     }
 
@@ -182,6 +185,14 @@ class GameState {
             return;
         }
         this.readingAssignment = { ...data };
+    }
+
+    setRewardInfo(data) {
+        if (!data || typeof data !== 'object') {
+            this.rewardInfo = null;
+            return;
+        }
+        this.rewardInfo = { ...data };
     }
 
     incrementClick() {
