@@ -729,7 +729,9 @@ body {
 
 .intro-card {
     width: 100%;
-    max-width: 420px;
+    max-width: 560px;
+    max-height: 86vh;
+    overflow: auto;
     background: #ffffff;
     border-radius: 18px;
     padding: 24px;
@@ -781,6 +783,101 @@ body {
     font-size: 14px;
     margin-bottom: 12px;
     background: #ffffff;
+}
+
+.intro-step {
+    display: none;
+}
+
+.intro-step.is-active {
+    display: block;
+}
+
+.intro-survey-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #0f172a;
+}
+
+.intro-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.intro-actions .btn {
+    min-width: 120px;
+}
+
+.intro-checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+    margin-bottom: 12px;
+}
+
+.intro-radio-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+    margin-bottom: 12px;
+}
+
+.intro-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #334155;
+}
+
+.intro-radio {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #334155;
+}
+
+.intro-likert {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.intro-likert-scale {
+    display: flex;
+    gap: 10px;
+    margin: -8px 0 12px;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.intro-likert-scale span {
+    width: 20px;
+    text-align: center;
+}
+
+.intro-dot {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #94a3b8;
+    border-radius: 999px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.intro-dot:hover {
+    border-color: #3b82f6;
+}
+
+.intro-dot.is-selected {
+    border-color: #1d4ed8;
+    background: #2563eb;
+    box-shadow: inset 0 0 0 3px #ffffff;
 }
 
 /* ===== 教学关后过场 ===== */
@@ -1541,6 +1638,17 @@ body.admin-page.is-loading {
     white-space: normal;
 }
 
+.admin-pre-cell {
+    white-space: normal;
+}
+
+.admin-pre-log {
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.5;
+    margin-bottom: 4px;
+}
+
 .admin-table th:nth-child(1),
 .admin-table td:nth-child(1) {
     width: 40px;
@@ -1573,18 +1681,13 @@ body.admin-page.is-loading {
 
 .admin-table th:nth-child(6),
 .admin-table td:nth-child(6) {
-    width: 70px;
+    width: 220px;
+    white-space: normal;
 }
 
 .admin-table th:nth-child(7),
 .admin-table td:nth-child(7) {
     width: 60px;
-}
-
-.admin-table th:nth-child(8),
-.admin-table td:nth-child(8) {
-    width: 120px;
-    white-space: normal;
 }
 
 .admin-metrics {
@@ -1665,27 +1768,6 @@ td.admin-name-cell {
     border-color: #fecdd3;
 }
 
-.admin-heatmap-cell {
-    position: relative;
-}
-
-.admin-heatmap-btn {
-    font-size: 12px;
-    padding: 6px 10px;
-}
-
-.admin-note-input {
-    width: 100%;
-    min-width: 140px;
-    padding: 6px 8px;
-    border: 1px solid #e2e8f0;
-    border-radius: 0;
-    font-size: 12px;
-    background: #ffffff;
-    color: #0f172a;
-    box-sizing: border-box;
-}
-
 .admin-delete-btn {
     font-size: 16px;
     line-height: 1;
@@ -1699,30 +1781,6 @@ td.admin-name-cell {
     background: #ffe4e6;
     border-color: #fda4af;
     color: #9f1239;
-}
-
-.admin-heatmap-tooltip {
-    position: fixed;
-    top: 0;
-    left: 0;
-    margin-top: 0;
-    padding: 8px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 18px 30px rgba(15, 23, 42, 0.18);
-    z-index: 9999;
-    display: none;
-}
-
-.admin-heatmap-tooltip.is-visible {
-    display: block;
-}
-
-.admin-heatmap-tooltip canvas {
-    display: block;
-    border-radius: 10px;
-    background: #f1f5f9;
 }
 
 .stats-title {

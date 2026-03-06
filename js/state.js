@@ -26,6 +26,7 @@ class GameState {
         this.nonAiLogs = [];
         this.newsValue = 60;
         this.wildfireFamiliarity = '';
+        this.preSurvey = {};
         this.lastChoiceDelta = null;
         this.evidence = new Set();
         this.sceneChoiceOrders = {};
@@ -57,6 +58,7 @@ class GameState {
         this.nonAiLogs = [];
         this.newsValue = 60;
         this.wildfireFamiliarity = '';
+        this.preSurvey = {};
         this.lastChoiceDelta = null;
         this.evidence = new Set();
         this.sceneChoiceOrders = {};
@@ -85,7 +87,8 @@ class GameState {
             clickPoints: [...this.clickPoints],
             currentSceneImage: this.currentSceneImage,
             newsValue: this.newsValue,
-            wildfireFamiliarity: this.wildfireFamiliarity
+            wildfireFamiliarity: this.wildfireFamiliarity,
+            preSurvey: { ...this.preSurvey }
         };
     }
 
@@ -149,6 +152,14 @@ class GameState {
 
     setWildfireFamiliarity(value) {
         this.wildfireFamiliarity = value || '';
+    }
+
+    setPreSurvey(data) {
+        if (!data || typeof data !== 'object') {
+            this.preSurvey = {};
+            return;
+        }
+        this.preSurvey = { ...data };
     }
 
     incrementClick() {

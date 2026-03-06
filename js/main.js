@@ -171,7 +171,7 @@ function applyStaticText() {
     const loadingEl = document.querySelector('#app .loading');
     const introTitle = document.querySelector('.intro-title');
     const introText = document.querySelector('.intro-text');
-    const introLabel = document.querySelector('.intro-label');
+    const introNameLabel = document.querySelector('label[for="player-name-input"]');
     const introInput = document.getElementById('player-name-input');
     const introFamiliarityLabel = document.querySelector('label[for="intro-familiarity"]');
     const introFamiliaritySelect = document.getElementById('intro-familiarity');
@@ -196,7 +196,7 @@ function applyStaticText() {
     if (loadingEl) loadingEl.textContent = t('loading');
     if (introTitle) introTitle.textContent = t('introTitle');
     if (introText) introText.textContent = t('introBody');
-    if (introLabel) introLabel.textContent = t('introNameLabel');
+    if (introNameLabel) introNameLabel.textContent = t('introNameLabel');
     if (introInput) introInput.placeholder = t('introNamePlaceholder');
     if (introFamiliarityLabel) introFamiliarityLabel.textContent = t('introFamiliarityLabel');
     if (introFamiliarityYes) introFamiliarityYes.textContent = t('introFamiliarityYes');
@@ -289,13 +289,95 @@ function init() {
 
     const introModal = document.getElementById('intro-modal');
     const introInput = document.getElementById('player-name-input');
+    const introStepName = document.getElementById('intro-step-name');
+    const introStepSurvey = document.getElementById('intro-step-survey');
+    const introNextBtn = document.getElementById('intro-next-btn');
+    const introBackBtn = document.getElementById('intro-back-btn');
     const introBtn = document.getElementById('intro-start-btn');
-    const introFamiliaritySelect = document.getElementById('intro-familiarity');
+    const introLikertGroups = Array.from(document.querySelectorAll('.intro-likert'));
 
-        const startGame = async (playerName, forcedVariant, familiarity) => {
+    const showIntroStep = (step) => {
+        if (introStepName) introStepName.classList.toggle('is-active', step === 'name');
+        if (introStepSurvey) introStepSurvey.classList.toggle('is-active', step === 'survey');
+    };
+
+    const getRadioValue = (name) => {
+        const target = document.querySelector(`input[name="${name}"]:checked`);
+        return target ? target.value : '';
+    };
+
+    const getLikertValue = (field) => {
+        const selected = document.querySelector(`.intro-likert[data-field="${field}"] .intro-dot.is-selected`);
+        return selected ? Number(selected.dataset.value) : null;
+    };
+
+    const clearSurveyForm = () => {
+        Array.from(document.querySelectorAll('input[name="intro-familiarity"], input[name="pre-news-frequency"], input[name="pre-game-frequency"]'))
+            .forEach((input) => { input.checked = false; });
+        Array.from(document.querySelectorAll('input[name="pre-news-source"]'))
+            .forEach((input) => { input.checked = false; });
+        introLikertGroups.forEach((group) => {
+            group.querySelectorAll('.intro-dot').forEach((dot) => dot.classList.remove('is-selected'));
+        });
+    };
+
+    introLikertGroups.forEach((group) => {
+        group.addEventListener('click', (event) => {
+            const target = event.target.closest('.intro-dot');
+            if (!target) return;
+            group.querySelectorAll('.intro-dot').forEach((dot) => dot.classList.remove('is-selected'));
+            target.classList.add('is-selected');
+        });
+    });
+
+    const collectPreSurvey = () => {
+        const newsSourceInputs = Array.from(document.querySelectorAll('input[name="pre-news-source"]:checked'));
+        return {
+            wildfireFamiliarity: getRadioValue('intro-familiarity'),
+            aiReliable: getLikertValue('aiReliable'),
+            aiCredible: getLikertValue('aiCredible'),
+            aiUncertain: getLikertValue('aiUncertain'),
+            newsFrequency: getRadioValue('pre-news-frequency'),
+            newsSources: newsSourceInputs.map((input) => input.value),
+            gameFrequency: getRadioValue('pre-game-frequency'),
+            storyGameFamiliarity: getLikertValue('storyGameFamiliarity')
+        };
+    };
+
+    const validateSurvey = () => {
+        const data = collectPreSurvey();
+        if (!data.wildfireFamiliarity) {
+            window.alert('请先选择是否了解加州山火事件。');
+            return null;
+        }
+        if (!data.aiReliable || !data.aiCredible || !data.aiUncertain) {
+            window.alert('请完成三道 AI 可信度打分题。');
+            return null;
+        }
+        if (!data.newsFrequency) {
+            window.alert('请选择你的新闻阅读频率。');
+            return null;
+        }
+        if (!data.newsSources.length) {
+            window.alert('请至少选择一种新闻获取方式。');
+            return null;
+        }
+        if (!data.gameFrequency) {
+            window.alert('请选择你的电子游戏频率。');
+            return null;
+        }
+        if (!data.storyGameFamiliarity) {
+            window.alert('请完成“交互式故事或模拟类游戏熟悉度”打分。');
+            return null;
+        }
+        return data;
+    };
+
+    const startGame = async (playerName, forcedVariant, preSurvey) => {
         if (introBtn) {
             introBtn.disabled = true;
         }
+        if (introNextBtn) introNextBtn.disabled = true;
         if (introModal) introModal.style.display = 'none';
         setStatsVisibility(false);
 
@@ -317,11 +399,12 @@ function init() {
         if (playerName) {
             gameState.setPlayerName(playerName);
         }
-        if (familiarity) {
-            gameState.setWildfireFamiliarity(familiarity);
+        if (preSurvey?.wildfireFamiliarity) {
+            gameState.setWildfireFamiliarity(preSurvey.wildfireFamiliarity);
         } else {
             gameState.setWildfireFamiliarity('');
         }
+        gameState.setPreSurvey(preSurvey || {});
         gameState.setAiEnabled(effectiveAiEnabled);
         if (forcedVariant) {
             gameState.setPlayerName(forcedVariant);
@@ -348,12 +431,15 @@ function init() {
             gameState.setTelemetryActive(false);
             gameState.setLastMousePos(null);
             gameState.setWildfireFamiliarity('');
+            gameState.setPreSurvey({});
             setStatsVisibility(false);
             updateStatsPanel();
             if (introModal) introModal.style.display = 'flex';
             if (introInput) introInput.value = '';
-            if (introFamiliaritySelect) introFamiliaritySelect.value = 'no';
+            clearSurveyForm();
+            showIntroStep('name');
             if (introBtn) introBtn.disabled = false;
+            if (introNextBtn) introNextBtn.disabled = false;
         };
 
         // 绑定重新开始按钮
@@ -386,6 +472,24 @@ function init() {
         });
     };
 
+    if (introNextBtn) {
+        introNextBtn.addEventListener('click', () => {
+            const rawName = introInput ? introInput.value.trim() : '';
+            if (!rawName) {
+                if (introInput) introInput.focus();
+                return;
+            }
+            showIntroStep('survey');
+        });
+    }
+
+    if (introBackBtn) {
+        introBackBtn.addEventListener('click', () => {
+            showIntroStep('name');
+            if (introInput) introInput.focus();
+        });
+    }
+
     if (introBtn) {
         introBtn.addEventListener('click', () => {
             const rawName = introInput ? introInput.value.trim() : '';
@@ -400,14 +504,18 @@ function init() {
             if (upper === 'AI') forcedVariant = 'AI';
             if (upper === 'NORMAL') forcedVariant = 'NORMAL';
             const name = forcedVariant ? '' : rawName;
-            const familiarity = introFamiliaritySelect?.value || '';
-            startGame(name, forcedVariant, familiarity);
+            const surveyData = validateSurvey();
+            if (!surveyData) return;
+            startGame(name, forcedVariant, surveyData);
         });
     }
     if (introInput) {
         introInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
+                if (introStepName?.classList.contains('is-active')) {
+                    introNextBtn?.click();
+                }
             }
         });
     }

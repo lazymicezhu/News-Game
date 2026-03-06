@@ -1649,7 +1649,6 @@ function buildStatsPayload() {
         aiInteractions: state.aiInteractions || 0,
         aiLogs: state.aiLogs || [],
         clickPoints: state.clickPoints || [],
-        sceneImage: state.currentSceneImage || '',
         nonAiLogs: state.nonAiLogs || [],
         choices: state.decisions.map((entry) => {
             return {
@@ -1659,6 +1658,7 @@ function buildStatsPayload() {
         }),
         newsValue: typeof state.newsValue === 'number' ? state.newsValue : 60,
         wildfireFamiliarity: state.wildfireFamiliarity || '',
+        preSurvey: state.preSurvey || {},
         durationMs,
         timestamp: Date.now()
     };
@@ -1696,40 +1696,8 @@ function persistStats(payload) {
     });
 }
 
-function captureSnapshot() {
-    if (typeof window.html2canvas !== 'function') {
-        return Promise.resolve('');
-    }
-    const target = document.documentElement;
-    return window.html2canvas(target, {
-        useCORS: true,
-        backgroundColor: null,
-        scale: 1
-    }).then((canvas) => {
-        return canvas.toDataURL('image/png');
-    }).catch(() => '');
-}
-
-function captureSnapshotWithTimeout(timeoutMs = 2000) {
-    return Promise.race([
-        captureSnapshot(),
-        new Promise((resolve) => {
-            window.setTimeout(() => resolve(''), timeoutMs);
-        })
-    ]).catch(() => '');
-}
-
 function finalizeStats() {
     gameState.setTelemetryActive(false);
     updateStatsPanel();
-    const basePayload = buildStatsPayload();
-    captureSnapshotWithTimeout().then((snapshot) => {
-        const payload = snapshot ? {
-            ...basePayload,
-            pageSnapshot: snapshot
-        } : basePayload;
-        persistStats(payload);
-    }).catch(() => {
-        persistStats(basePayload);
-    });
+    persistStats(buildStatsPayload());
 }

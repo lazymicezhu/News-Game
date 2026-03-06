@@ -16,14 +16,92 @@
                     <p class="intro-text">
                         你是一名采访记者，需要在信息不确定的情况下持续追踪山火事件，并在核实与时效之间做出取舍。
                     </p>
-                    <label class="intro-label" for="player-name-input">你的名字</label>
-                    <input id="player-name-input" class="intro-input" type="text" placeholder="请输入姓名" />
-                    <label class="intro-label" for="intro-familiarity">是否了解加州山火事件</label>
-                    <select id="intro-familiarity" class="intro-select">
-                        <option value="no" selected>不了解</option>
-                        <option value="yes">了解</option>
-                    </select>
-                    <button id="intro-start-btn" class="btn btn-primary">开始报道</button>
+                    <div id="intro-step-name" class="intro-step is-active">
+                        <label class="intro-label" for="player-name-input">你的名字</label>
+                        <input id="player-name-input" class="intro-input" type="text" placeholder="请输入姓名" />
+                        <div class="intro-actions">
+                            <button id="intro-next-btn" class="btn btn-primary">下一步</button>
+                        </div>
+                    </div>
+                    <div id="intro-step-survey" class="intro-step">
+                        <div class="intro-survey-title">前测问卷</div>
+
+                        <div class="intro-label">是否了解加州山火事件</div>
+                        <div class="intro-radio-group">
+                            <label class="intro-radio"><input type="radio" name="intro-familiarity" value="yes" /> 了解</label>
+                            <label class="intro-radio"><input type="radio" name="intro-familiarity" value="no" /> 不了解</label>
+                        </div>
+
+                        <div class="intro-label">我相信人工智能可以提供可靠的信息（1=非常不同意，5=非常同意）</div>
+                        <div class="intro-likert" data-field="aiReliable" role="radiogroup" aria-label="AI reliable">
+                            <button type="button" class="intro-dot" data-value="1" aria-label="1分"></button>
+                            <button type="button" class="intro-dot" data-value="2" aria-label="2分"></button>
+                            <button type="button" class="intro-dot" data-value="3" aria-label="3分"></button>
+                            <button type="button" class="intro-dot" data-value="4" aria-label="4分"></button>
+                            <button type="button" class="intro-dot" data-value="5" aria-label="5分"></button>
+                        </div>
+                        <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+
+                        <div class="intro-label">我觉得人工智能生成的内容通常是可信的（1=非常不同意，5=非常同意）</div>
+                        <div class="intro-likert" data-field="aiCredible" role="radiogroup" aria-label="AI credible">
+                            <button type="button" class="intro-dot" data-value="1" aria-label="1分"></button>
+                            <button type="button" class="intro-dot" data-value="2" aria-label="2分"></button>
+                            <button type="button" class="intro-dot" data-value="3" aria-label="3分"></button>
+                            <button type="button" class="intro-dot" data-value="4" aria-label="4分"></button>
+                            <button type="button" class="intro-dot" data-value="5" aria-label="5分"></button>
+                        </div>
+                        <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+
+                        <div class="intro-label">当我知道信息来自AI时，我会感到不确定或怀疑（1=非常不同意，5=非常同意）</div>
+                        <div class="intro-likert" data-field="aiUncertain" role="radiogroup" aria-label="AI uncertain">
+                            <button type="button" class="intro-dot" data-value="1" aria-label="1分"></button>
+                            <button type="button" class="intro-dot" data-value="2" aria-label="2分"></button>
+                            <button type="button" class="intro-dot" data-value="3" aria-label="3分"></button>
+                            <button type="button" class="intro-dot" data-value="4" aria-label="4分"></button>
+                            <button type="button" class="intro-dot" data-value="5" aria-label="5分"></button>
+                        </div>
+                        <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+
+                        <div class="intro-label">你通常多久会阅读新闻？</div>
+                        <div class="intro-radio-group">
+                            <label class="intro-radio"><input type="radio" name="pre-news-frequency" value="daily_multi" /> 每天多次</label>
+                            <label class="intro-radio"><input type="radio" name="pre-news-frequency" value="daily_once" /> 每天一次</label>
+                            <label class="intro-radio"><input type="radio" name="pre-news-frequency" value="weekly_multi" /> 每周几次</label>
+                            <label class="intro-radio"><input type="radio" name="pre-news-frequency" value="monthly_multi" /> 每月几次</label>
+                            <label class="intro-radio"><input type="radio" name="pre-news-frequency" value="rarely_never" /> 很少或从不</label>
+                        </div>
+
+                        <div class="intro-label">你主要通过哪种方式获取新闻？（可多选）</div>
+                        <div class="intro-checkbox-group">
+                            <label class="intro-check"><input type="checkbox" name="pre-news-source" value="web_app" /> 网站/APP</label>
+                            <label class="intro-check"><input type="checkbox" name="pre-news-source" value="social_media" /> 社交媒体</label>
+                            <label class="intro-check"><input type="checkbox" name="pre-news-source" value="tv_radio" /> 电视/广播</label>
+                            <label class="intro-check"><input type="checkbox" name="pre-news-source" value="print_media" /> 报纸/杂志</label>
+                        </div>
+
+                        <div class="intro-label">你通常多久玩一次电子游戏？</div>
+                        <div class="intro-radio-group">
+                            <label class="intro-radio"><input type="radio" name="pre-game-frequency" value="daily" /> 每天</label>
+                            <label class="intro-radio"><input type="radio" name="pre-game-frequency" value="weekly_multi" /> 每周几次</label>
+                            <label class="intro-radio"><input type="radio" name="pre-game-frequency" value="monthly_multi" /> 每月几次</label>
+                            <label class="intro-radio"><input type="radio" name="pre-game-frequency" value="rarely_never" /> 很少或从不</label>
+                        </div>
+
+                        <div class="intro-label">你熟悉交互式故事或模拟类游戏吗？（1=完全不熟悉，5=非常熟悉）</div>
+                        <div class="intro-likert" data-field="storyGameFamiliarity" role="radiogroup" aria-label="story game familiarity">
+                            <button type="button" class="intro-dot" data-value="1" aria-label="1分"></button>
+                            <button type="button" class="intro-dot" data-value="2" aria-label="2分"></button>
+                            <button type="button" class="intro-dot" data-value="3" aria-label="3分"></button>
+                            <button type="button" class="intro-dot" data-value="4" aria-label="4分"></button>
+                            <button type="button" class="intro-dot" data-value="5" aria-label="5分"></button>
+                        </div>
+                        <div class="intro-likert-scale"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+
+                        <div class="intro-actions">
+                            <button id="intro-back-btn" class="btn btn-secondary">上一步</button>
+                            <button id="intro-start-btn" class="btn btn-primary">开始报道</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <header id="header">

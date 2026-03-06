@@ -79,6 +79,7 @@ function getAdminToken() {
 
 function normalizeRemoteEntry(entry) {
     const createdAt = entry?.created_at ? new Date(entry.created_at).getTime() : Date.now();
+    const preNewsSources = safeJsonParse(entry?.pre_news_sources_json, []);
     return {
         id: entry?.id,
         name: entry?.name || '',
@@ -92,9 +93,15 @@ function normalizeRemoteEntry(entry) {
         choices: safeJsonParse(entry?.choices_json, []),
         aiLogs: safeJsonParse(entry?.ai_logs_json, []),
         nonAiLogs: safeJsonParse(entry?.non_ai_logs_json, []),
-        clickPoints: safeJsonParse(entry?.click_points_json, []),
-        sceneImage: entry?.scene_image || '',
-        pageSnapshot: entry?.page_snapshot || '',
+        preSurvey: {
+            aiReliable: entry?.pre_ai_reliable ?? null,
+            aiCredible: entry?.pre_ai_credible ?? null,
+            aiUncertain: entry?.pre_ai_uncertain ?? null,
+            newsFrequency: entry?.pre_news_frequency || '',
+            newsSources: Array.isArray(preNewsSources) ? preNewsSources : [],
+            gameFrequency: entry?.pre_game_frequency || '',
+            storyGameFamiliarity: entry?.pre_story_game_familiarity ?? null
+        },
         timestamp: Number.isNaN(createdAt) ? Date.now() : createdAt
     };
 }
@@ -124,18 +131,6 @@ async function fetchRemoteStats() {
     } catch {
         return { ok: false, error: 'network', list: [] };
     }
-}
-
-function loadNotes() {
-    try {
-        return JSON.parse(localStorage.getItem('newsgame-admin-notes') || '{}');
-    } catch {
-        return {};
-    }
-}
-
-function saveNotes(notes) {
-    localStorage.setItem('newsgame-admin-notes', JSON.stringify(notes));
 }
 
 function saveStats(list) {
@@ -343,9 +338,14 @@ function renderRows(stats = statsCache) {
     const tbody = document.getElementById('admin-rows');
     if (!tbody) return;
     tbody.innerHTML = '';
-
-    const notes = loadNotes();
-    stats.forEach((entry, index) => {
+    const rows = (Array.isArray(stats) ? stats : [])
+        .map((entry, sourceIndex) => ({ ...entry, __sourceIndex: sourceIndex }))
+        .sort((a, b) => {
+            const aKey = typeof a.id === 'number' ? a.id : Number(a.timestamp || 0);
+            const bKey = typeof b.id === 'number' ? b.id : Number(b.timestamp || 0);
+            return aKey - bKey;
+        });
+    rows.forEach((entry, index) => {
         const tr = document.createElement('tr');
         const choices = Array.isArray(entry.choices) ? entry.choices : [];
         const logs = Array.isArray(entry.aiLogs) ? entry.aiLogs : [];
@@ -387,14 +387,29 @@ function renderRows(stats = statsCache) {
             `;
         }).join('');
         const score = typeof entry.newsValue === 'number' ? entry.newsValue : 60;
+        const preSurvey = entry.preSurvey || {};
+        const preLines = [];
+        if (preSurvey.aiReliable) preLines.push(`AI可靠: ${preSurvey.aiReliable}`);
+        if (preSurvey.aiCredible) preLines.push(`AI可信: ${preSurvey.aiCredible}`);
+        if (preSurvey.aiUncertain) preLines.push(`AI不确定: ${preSurvey.aiUncertain}`);
+        if (preSurvey.newsFrequency) preLines.push(`看新闻: ${preSurvey.newsFrequency}`);
+        if (Array.isArray(preSurvey.newsSources) && preSurvey.newsSources.length) {
+            preLines.push(`新闻渠道: ${preSurvey.newsSources.join(',')}`);
+        }
+        if (preSurvey.gameFrequency) preLines.push(`玩游戏: ${preSurvey.gameFrequency}`);
+        if (preSurvey.storyGameFamiliarity) preLines.push(`叙事游戏熟悉度: ${preSurvey.storyGameFamiliarity}`);
+        const preSurveyHtml = preLines.length
+            ? preLines.map((line) => `<div class="admin-pre-log">${line}</div>`).join('')
+            : '-';
         const familiarity = entry.wildfireFamiliarity === 'yes'
             ? '了解'
             : entry.wildfireFamiliarity === 'no'
                 ? '不了解'
                 : '';
         const variantTag = entry.aiEnabled ? 'AI版' : '非AI';
+        const serial = entry.id ?? (index + 1);
         tr.innerHTML = `
-            <td>${index + 1}</td>
+            <td>${serial}</td>
             <td class="admin-name-cell">
                 <span class="admin-name-cell-content">
                     ${entry.name && entry.name !== 'AI' && entry.name !== 'NORMAL' ? entry.name : '-'} (${score})
@@ -418,45 +433,12 @@ function renderRows(stats = statsCache) {
                 </div>
             </td>
             <td class="admin-choices">${choiceLines || '-'}</td>
-            <td>
-                <div class="admin-heatmap-cell">
-                    <button class="btn btn-secondary admin-heatmap-btn" data-heatmap="1">查看热图</button>
-                    <div class="admin-heatmap-tooltip">
-                        <canvas width="360" height="202"></canvas>
-                        <div class="admin-heatmap-empty">暂无点击数据</div>
-                    </div>
-                </div>
-            </td>
+            <td class="admin-pre-cell">${preSurveyHtml}</td>
             <td>
                 <button class="btn btn-secondary admin-delete-btn" data-index="${index}" aria-label="删除">×</button>
             </td>
-            <td>
-                <input class="admin-note-input" data-index="${index}" type="text" value="${notes[index] || ''}" />
-            </td>
         `;
         tbody.appendChild(tr);
-
-        const btn = tr.querySelector('.admin-heatmap-btn');
-        const tooltip = tr.querySelector('.admin-heatmap-tooltip');
-        if (btn && tooltip) {
-            const showTooltip = (event) => {
-                renderRowHeatmap(entry, tooltip);
-                positionTooltip(event, tooltip);
-                tooltip.classList.add('is-visible');
-            };
-            btn.addEventListener('mouseenter', showTooltip);
-            btn.addEventListener('mousemove', (event) => {
-                if (tooltip.classList.contains('is-visible')) {
-                    positionTooltip(event, tooltip);
-                }
-            });
-            btn.addEventListener('mouseleave', () => {
-                tooltip.classList.remove('is-visible');
-            });
-            tooltip.addEventListener('mouseleave', () => {
-                tooltip.classList.remove('is-visible');
-            });
-        }
 
         const deleteBtn = tr.querySelector('.admin-delete-btn');
         if (deleteBtn) {
@@ -469,99 +451,18 @@ function renderRows(stats = statsCache) {
                 const index = parseInt(deleteBtn.dataset.index, 10);
                 if (Number.isNaN(index)) return;
                 const list = loadStats();
-                list.splice(index, 1);
+                const sourceIndex = rows[index]?.__sourceIndex;
+                if (Number.isInteger(sourceIndex)) {
+                    list.splice(sourceIndex, 1);
+                } else {
+                    list.splice(index, 1);
+                }
                 saveStats(list);
-                const noteList = loadNotes();
-                const nextNotes = {};
-                Object.keys(noteList).forEach((key) => {
-                    const idx = parseInt(key, 10);
-                    if (Number.isNaN(idx) || idx === index) return;
-                    nextNotes[idx > index ? idx - 1 : idx] = noteList[key];
-                });
-                saveNotes(nextNotes);
                 renderRows();
-            });
-        }
-
-        const noteInput = tr.querySelector('.admin-note-input');
-        if (noteInput) {
-            noteInput.addEventListener('input', () => {
-                const idx = parseInt(noteInput.dataset.index, 10);
-                if (Number.isNaN(idx)) return;
-                const nextNotes = loadNotes();
-                nextNotes[idx] = noteInput.value;
-                saveNotes(nextNotes);
             });
         }
     });
     renderSummary(stats);
-}
-
-function drawHeatPoint(ctx, x, y, radius) {
-    const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-    gradient.addColorStop(0, 'rgba(239, 68, 68, 0.55)');
-    gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fill();
-}
-
-function renderRowHeatmap(entry, tooltip) {
-    const canvas = tooltip.querySelector('canvas');
-    const empty = tooltip.querySelector('.admin-heatmap-empty');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const points = Array.isArray(entry.clickPoints) ? entry.clickPoints : [];
-    const background = entry.pageSnapshot || entry.sceneImage || '';
-
-    if (!points.length) {
-        if (empty) empty.style.display = 'flex';
-        return;
-    }
-    if (empty) empty.style.display = 'none';
-
-    const drawPoints = () => {
-        const radius = 18;
-        points.forEach((pt) => {
-            const x = pt.x * canvas.width;
-            const y = pt.y * canvas.height;
-            drawHeatPoint(ctx, x, y, radius);
-        });
-    };
-
-    if (background) {
-        const img = new Image();
-        img.onload = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            drawPoints();
-        };
-        img.onerror = () => {
-            drawPoints();
-        };
-        img.src = background;
-    } else {
-        drawPoints();
-    }
-}
-
-function positionTooltip(event, tooltip) {
-    const padding = 12;
-    const width = tooltip.offsetWidth || 360;
-    const height = tooltip.offsetHeight || 220;
-    let x = event.clientX + padding;
-    let y = event.clientY + padding;
-
-    if (x + width > window.innerWidth) {
-        x = event.clientX - width - padding;
-    }
-    if (y + height > window.innerHeight) {
-        y = event.clientY - height - padding;
-    }
-    tooltip.style.left = `${Math.max(padding, x)}px`;
-    tooltip.style.top = `${Math.max(padding, y)}px`;
 }
 
 function bindActions() {

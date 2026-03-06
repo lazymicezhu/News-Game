@@ -24,3 +24,7 @@ Original prompt: 你觉得我这个游戏还有什么可以改进的
 
 - 2026-03-06: 将统计数据链路切到阿里云 FC：`js/ui.js` 新增远端提交（失败回退 localStorage），`js/admin.js` 新增远端拉取与 token 输入缓存（失败回退本地），并对线上数据禁用前端删除/清空。
 - 2026-03-06: 尝试按 develop-web-game 流程运行 Playwright 手动巡检脚本，当前环境因 Chromium 启动权限（MachPort Rendezvous / EPERM）失败，未完成可视化回归。
+
+- 2026-03-06: 开场信息采集改为两步：先姓名，再前测问卷（AI可信度三题、新闻习惯、新闻渠道多选、游戏频率、交互式游戏熟悉度、山火熟悉度）；`GameState` 新增 `preSurvey`，并在结局提交 payload 中上报。
+
+- 2026-03-06: 前测问卷交互改版：分值题改为5点量表圆点点击；单选题改为radio选项；多选题保留checkbox；移除所有预填默认值并补充必填校验。
