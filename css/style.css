@@ -1117,6 +1117,15 @@ body {
     margin-bottom: 12px;
 }
 
+.reward-coupon-image {
+    width: 100%;
+    max-width: 560px;
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
+    display: block;
+    margin: 8px 0 12px;
+}
+
 .reward-wechat-wrap {
     margin-top: 10px;
 }
