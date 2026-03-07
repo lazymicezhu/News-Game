@@ -107,7 +107,7 @@ class GameRouter {
                 let nextSceneId = choice.next;
                 if (nextSceneId === 'ending_final') {
                     const score = typeof gameState.newsValue === 'number' ? gameState.newsValue : 60;
-                    nextSceneId = score >= 90 ? 'ending_good' : 'ending_bad';
+                    nextSceneId = score >= 85 ? 'ending_good' : 'ending_bad';
                 }
                 if (nextSceneId === 'intro' && currentSceneId && currentSceneId.startsWith('tutorial_')) {
                     gameState.resetNewsValue();

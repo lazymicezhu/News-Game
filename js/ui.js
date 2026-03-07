@@ -586,7 +586,7 @@ function renderEndingReview(score) {
         li.textContent = getLanguage() === 'zh' ? '下一局可增加 AI 追问次数，优先补齐“待核实”空缺。' : 'Next run, increase AI follow-ups to close remaining “pending verification” gaps.';
         improveList.appendChild(li);
     }
-    if (score < 90) {
+    if (score < 85) {
         const li = document.createElement('li');
         li.textContent = getLanguage() === 'zh' ? '冲刺信任结局时，优先选择 +2 且可追溯来源的分支。' : 'To reach the trusted ending, prioritize +2 branches with traceable sources.';
         improveList.appendChild(li);
@@ -1524,6 +1524,7 @@ export function showError(message) {
  */
 export function showFooter() {
     const footer = document.getElementById('footer');
+    if (!footer) return;
     footer.style.display = 'block';
 }
 
@@ -1532,6 +1533,7 @@ export function showFooter() {
  */
 export function hideFooter() {
     const footer = document.getElementById('footer');
+    if (!footer) return;
     footer.style.display = 'none';
 }
 

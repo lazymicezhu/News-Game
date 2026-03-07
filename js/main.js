@@ -167,7 +167,6 @@ async function prepareOverrides() {
 
 function applyStaticText() {
     const titleEl = document.querySelector('.game-title');
-    const restartBtn = document.getElementById('restart-btn');
     const boardTitle = document.querySelector('.news-board-title');
     const boardSub = document.querySelector('.news-board-sub');
     const languageLabel = document.querySelector('label[for=\"language-select\"]');
@@ -188,7 +187,6 @@ function applyStaticText() {
 
     document.title = t('gameTitle');
     if (titleEl) titleEl.textContent = t('gameTitle');
-    if (restartBtn) restartBtn.textContent = t('restart');
     if (boardTitle) boardTitle.textContent = t('liveBoardTitle');
     if (boardSub) boardSub.textContent = t('liveBoardSub');
     if (languageLabel) languageLabel.textContent = t('languageLabel');
@@ -711,51 +709,8 @@ function init() {
         // 初始化新闻看板
         newsBoard.init();
 
-        const restartGame = async () => {
-            localStorage.removeItem('newsgame-ai-mask-seen');
-            localStorage.removeItem('newsgame-tutorial-shop-hint-seen');
-            resetStatsFinalization();
-            const mergedScenes = await prepareOverrides();
-            gameRouter.init(mergedScenes, 'tutorial_intro');
-            newsBoard.restart(); // 重启新闻看板
-            gameState.setPlayerName('');
-            gameState.setAiEnabled(false);
-            gameState.setAiConfigured(false);
-            gameState.setTelemetryActive(false);
-            gameState.setLastMousePos(null);
-            gameState.setWildfireFamiliarity('');
-            gameState.setPreSurvey({});
-            gameState.setPostSurvey({});
-            gameState.setReadingAssignment(null);
-            gameState.setRewardInfo(null);
-            setStatsVisibility(false);
-            updateStatsPanel();
-            if (introModal) introModal.style.display = 'flex';
-            if (introInput) introInput.value = '';
-            clearSurveyForm();
-            showIntroStep('name');
-            if (introBtn) introBtn.disabled = false;
-            if (introNextBtn) introNextBtn.disabled = false;
-        };
-
-        // 绑定重新开始按钮
-        const restartBtn = document.getElementById('restart-btn');
-        if (restartBtn) {
-            restartBtn.addEventListener('click', () => {
-                restartGame();
-            });
-        }
-
         // 添加键盘快捷键支持（可选）
         document.addEventListener('keydown', (e) => {
-            // 按 R 键重新开始
-            if (e.key === 'r' || e.key === 'R') {
-                const footer = document.getElementById('footer');
-                if (footer.style.display !== 'none') {
-                    restartGame();
-                }
-            }
-
             // 按数字键选择选项
             const num = parseInt(e.key);
             if (num >= 1 && num <= 9) {
