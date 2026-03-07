@@ -466,14 +466,17 @@ export function renderScene(scene, onChoice) {
         scoreDiv.textContent = `${t('statsScore')}：${score} / 100`;
         sceneDiv.appendChild(scoreDiv);
         sceneDiv.appendChild(renderEndingReview(score));
-        const surveyBtn = document.createElement('button');
-        surveyBtn.className = 'btn btn-primary';
-        surveyBtn.textContent = '进入后测问卷';
-        surveyBtn.style.marginTop = '12px';
-        surveyBtn.onclick = () => {
-            finalizeStats();
-        };
-        sceneDiv.appendChild(surveyBtn);
+        const shouldShowSurveyBtn = gameState.isTelemetryActive();
+        if (shouldShowSurveyBtn) {
+            const surveyBtn = document.createElement('button');
+            surveyBtn.className = 'btn btn-primary';
+            surveyBtn.textContent = '进入后测问卷';
+            surveyBtn.style.marginTop = '12px';
+            surveyBtn.onclick = () => {
+                finalizeStats();
+            };
+            sceneDiv.appendChild(surveyBtn);
+        }
         showFooter();
     }
 
@@ -588,7 +591,7 @@ function renderEndingReview(score) {
     }
     if (score < 85) {
         const li = document.createElement('li');
-        li.textContent = getLanguage() === 'zh' ? '冲刺信任结局时，优先选择 +2 且可追溯来源的分支。' : 'To reach the trusted ending, prioritize +2 branches with traceable sources.';
+        li.textContent = getLanguage() === 'zh' ? '冲刺信任结局时，优先选择 +3 且可追溯来源的分支。' : 'To reach the trusted ending, prioritize +3 branches with traceable sources.';
         improveList.appendChild(li);
     }
     improveSection.appendChild(improveTitle);
@@ -1175,7 +1178,7 @@ function getEvidenceChoice() {
     return {
         text: { zh: '立即结案：发布澄清', en: 'Close the case now: publish the clarification' },
         next: 'tutorial_ending',
-        effect: { newsValueDelta: 2 }
+        effect: { newsValueDelta: 3 }
     };
 }
 

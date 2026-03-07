@@ -91,9 +91,9 @@ class GameRouter {
                 gameState.applyEffect(choice.effect);
                 if (typeof choice.effect.newsValueDelta === 'number') {
                     finalChoiceDelta = choice.effect.newsValueDelta;
-                    // 非 AI 版本补偿：高质量选择（+2 及以上）额外 +1，保证不依赖 AI 也能达成信任结局。
-                    if (!gameState.getState().aiEnabled && finalChoiceDelta >= 2) {
-                        gameState.applyEffect({ newsValueDelta: 1 });
+                    // 非 AI 版本补偿：高质量选择（+3 及以上）额外 +2，保证不依赖 AI 也能达成信任结局。
+                    if (!gameState.getState().aiEnabled && finalChoiceDelta >= 3) {
+                        gameState.applyEffect({ newsValueDelta: 2 });
                         finalChoiceDelta += 1;
                     }
                 }
