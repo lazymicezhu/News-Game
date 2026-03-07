@@ -466,8 +466,15 @@ export function renderScene(scene, onChoice) {
         scoreDiv.textContent = `${t('statsScore')}：${score} / 100`;
         sceneDiv.appendChild(scoreDiv);
         sceneDiv.appendChild(renderEndingReview(score));
+        const surveyBtn = document.createElement('button');
+        surveyBtn.className = 'btn btn-primary';
+        surveyBtn.textContent = '进入后测问卷';
+        surveyBtn.style.marginTop = '12px';
+        surveyBtn.onclick = () => {
+            finalizeStats();
+        };
+        sceneDiv.appendChild(surveyBtn);
         showFooter();
-        finalizeStats();
     }
 
     currentChoiceHandler = onChoice;
@@ -1775,6 +1782,14 @@ function showPostTestSurveyModal() {
         clearForm();
         bindLikert();
         modal.style.display = 'flex';
+        const card = modal.querySelector('.posttest-card');
+        if (card) card.scrollTop = 0;
+        modal.scrollTop = 0;
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        const titleEl = modal.querySelector('.posttest-title');
+        if (titleEl && typeof titleEl.scrollIntoView === 'function') {
+            titleEl.scrollIntoView({ block: 'start' });
+        }
 
         submitBtn.onclick = () => {
             const data = collect();
