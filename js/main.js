@@ -61,14 +61,10 @@ function buildSceneOverridesFromEditor(baseScenes, editorRows) {
         }
         if (Array.isArray(row.choices)) {
             const baseChoices = Array.isArray(baseScene.choices) ? baseScene.choices : [];
-            nextScene.choices = baseChoices.map((baseChoice, index) => {
-                const overrideText = row.choices[index];
-                if (typeof overrideText !== 'string') {
-                    return {
-                        ...baseChoice,
-                        text: baseChoice.text ? { ...baseChoice.text } : baseChoice.text
-                    };
-                }
+            nextScene.choices = row.choices
+                .filter((overrideText) => typeof overrideText === 'string' && overrideText.trim())
+                .map((overrideText, index) => {
+                    const baseChoice = baseChoices[index] || {};
                 return {
                     ...baseChoice,
                     text: {
