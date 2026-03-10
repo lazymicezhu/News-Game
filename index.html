@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>灰烬中的城镇</title>
     <base href="/">
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search || '');
+            const queryVariant = String(params.get('variant') || '').toLowerCase();
+            const path = String(window.location.pathname || '/').toLowerCase();
+            let variant = 'p1';
+            if (queryVariant === 'p2' || path === '/p2' || path.startsWith('/p2/')) {
+                variant = 'p2';
+            } else if (queryVariant === 'p1' || path === '/p1' || path.startsWith('/p1/')) {
+                variant = 'p1';
+            } else {
+                try {
+                    const stored = String(sessionStorage.getItem('newsgame-study-variant') || '').toLowerCase();
+                    if (stored === 'p2' || stored === 'p1') variant = stored;
+                } catch {}
+            }
+            window.__NEWSGAME_STUDY_VARIANT__ = variant;
+            document.documentElement.dataset.studyVariant = variant;
+            try {
+                sessionStorage.setItem('newsgame-study-variant', variant);
+            } catch {}
+        })();
+    </script>
+    <style>
+        html[data-study-variant="p2"] #intro-incentive {
+            display: none !important;
+        }
+    </style>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>

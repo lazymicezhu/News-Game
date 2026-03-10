@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting...</title>
     <script>
+        sessionStorage.setItem('newsgame-study-variant', 'p2');
         const url = new URL('/', window.location.origin);
         url.searchParams.set('variant', 'p2');
         window.location.replace(url.toString());

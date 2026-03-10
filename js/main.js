@@ -18,18 +18,30 @@ const OVERRIDES_STORAGE_KEY = 'newsgame-overrides';
 const SCENE_EDITOR_FILE = 'data/sceneCopyEditor.json';
 const STATS_STORAGE_KEY = 'newsgame-stats';
 const BALANCE_THRESHOLD = 4;
+const STUDY_VARIANT_STORAGE_KEY = 'newsgame-study-variant';
 const STUDY_VARIANTS = {
     p1: { key: 'p1', incentiveEnabled: true },
     p2: { key: 'p2', incentiveEnabled: false }
 };
 
 function getStudyVariantFromLocation() {
+    const presetVariant = String(window.__NEWSGAME_STUDY_VARIANT__ || '').toLowerCase();
+    if (presetVariant === 'p2') return STUDY_VARIANTS.p2;
+    if (presetVariant === 'p1') return STUDY_VARIANTS.p1;
     const path = String(window.location.pathname || '/').toLowerCase();
     const params = new URLSearchParams(window.location.search || '');
     const queryVariant = String(params.get('variant') || '').toLowerCase();
     if (queryVariant === 'p2') return STUDY_VARIANTS.p2;
     if (queryVariant === 'p1') return STUDY_VARIANTS.p1;
     if (path === '/p2' || path.startsWith('/p2/')) return STUDY_VARIANTS.p2;
+    if (path === '/p1' || path.startsWith('/p1/')) return STUDY_VARIANTS.p1;
+    try {
+        const storedVariant = String(window.sessionStorage.getItem(STUDY_VARIANT_STORAGE_KEY) || '').toLowerCase();
+        if (storedVariant === 'p2') return STUDY_VARIANTS.p2;
+        if (storedVariant === 'p1') return STUDY_VARIANTS.p1;
+    } catch {
+        // ignore storage failures
+    }
     return STUDY_VARIANTS.p1;
 }
 
@@ -43,6 +55,12 @@ function applyStudyVariant(studyVariant) {
     const incentiveBlock = document.getElementById('intro-incentive');
     if (incentiveBlock) {
         incentiveBlock.style.display = studyVariant.incentiveEnabled ? '' : 'none';
+    }
+
+    try {
+        window.sessionStorage.setItem(STUDY_VARIANT_STORAGE_KEY, studyVariant.key);
+    } catch {
+        // ignore storage failures
     }
 }
 
