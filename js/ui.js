@@ -1917,6 +1917,17 @@ function saveStatsToLocal(payload) {
     localStorage.setItem(key, JSON.stringify(list));
 }
 
+function updateLatestLocalStats(payload) {
+    const key = 'newsgame-stats';
+    const list = JSON.parse(localStorage.getItem(key) || '[]');
+    if (!Array.isArray(list) || !list.length) {
+        localStorage.setItem(key, JSON.stringify([payload]));
+        return;
+    }
+    list[list.length - 1] = payload;
+    localStorage.setItem(key, JSON.stringify(list));
+}
+
 async function saveStatsToRemote(payload) {
     try {
         const response = await fetch(REMOTE_STATS_ENDPOINT, {
@@ -1944,14 +1955,24 @@ async function finalizeStats() {
     statsFinalized = true;
     const postSurvey = await showPostTestSurveyModal();
     gameState.setPostSurvey(postSurvey || {});
+    let redeemCode = '';
     if (gameState.getStudyVariant() === 'p1') {
-        const redeemCode = generateRedeemCode();
-        const rewardInfo = await showRewardModal(redeemCode);
-        gameState.setRewardInfo(rewardInfo || null);
+        redeemCode = generateRedeemCode();
+        gameState.setRewardInfo({
+            redeemCode,
+            contactMethod: '',
+            luckinPhone: '',
+            rewardStatus: 'pending_review'
+        });
     } else {
         gameState.setRewardInfo(null);
     }
     gameState.setTelemetryActive(false);
     updateStatsPanel();
     persistStats(buildStatsPayload());
+    if (redeemCode) {
+        const rewardInfo = await showRewardModal(redeemCode);
+        gameState.setRewardInfo(rewardInfo || null);
+        updateLatestLocalStats(buildStatsPayload());
+    }
 }
