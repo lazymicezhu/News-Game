@@ -1904,6 +1904,7 @@ function buildStatsPayload() {
         postSurvey: state.postSurvey || {},
         readingAssignment: state.readingAssignment || null,
         rewardInfo: state.rewardInfo || null,
+        studyVariant: state.studyVariant || 'p1',
         durationMs,
         timestamp: Date.now()
     };
@@ -1943,9 +1944,13 @@ async function finalizeStats() {
     statsFinalized = true;
     const postSurvey = await showPostTestSurveyModal();
     gameState.setPostSurvey(postSurvey || {});
-    const redeemCode = generateRedeemCode();
-    const rewardInfo = await showRewardModal(redeemCode);
-    gameState.setRewardInfo(rewardInfo || null);
+    if (gameState.getStudyVariant() === 'p1') {
+        const redeemCode = generateRedeemCode();
+        const rewardInfo = await showRewardModal(redeemCode);
+        gameState.setRewardInfo(rewardInfo || null);
+    } else {
+        gameState.setRewardInfo(null);
+    }
     gameState.setTelemetryActive(false);
     updateStatsPanel();
     persistStats(buildStatsPayload());

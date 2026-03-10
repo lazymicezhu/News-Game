@@ -18,6 +18,33 @@ const OVERRIDES_STORAGE_KEY = 'newsgame-overrides';
 const SCENE_EDITOR_FILE = 'data/sceneCopyEditor.json';
 const STATS_STORAGE_KEY = 'newsgame-stats';
 const BALANCE_THRESHOLD = 4;
+const STUDY_VARIANTS = {
+    p1: { key: 'p1', incentiveEnabled: true },
+    p2: { key: 'p2', incentiveEnabled: false }
+};
+
+function getStudyVariantFromLocation() {
+    const path = String(window.location.pathname || '/').toLowerCase();
+    const params = new URLSearchParams(window.location.search || '');
+    const queryVariant = String(params.get('variant') || '').toLowerCase();
+    if (queryVariant === 'p2') return STUDY_VARIANTS.p2;
+    if (queryVariant === 'p1') return STUDY_VARIANTS.p1;
+    if (path === '/p2' || path.startsWith('/p2/')) return STUDY_VARIANTS.p2;
+    return STUDY_VARIANTS.p1;
+}
+
+function applyStudyVariant(studyVariant) {
+    const body = document.body;
+    if (body) {
+        body.dataset.studyVariant = studyVariant.key;
+        body.dataset.incentiveEnabled = studyVariant.incentiveEnabled ? 'true' : 'false';
+    }
+
+    const incentiveBlock = document.getElementById('intro-incentive');
+    if (incentiveBlock) {
+        incentiveBlock.style.display = studyVariant.incentiveEnabled ? '' : 'none';
+    }
+}
 
 function loadOverrides() {
     try {
@@ -552,6 +579,9 @@ function showReadingModal(article) {
  * 初始化应用
  */
 function init() {
+    const studyVariant = getStudyVariantFromLocation();
+    gameState.setStudyVariant(studyVariant.key);
+    applyStudyVariant(studyVariant);
     setupLanguage();
     setupTelemetry();
     updateStatsPanel();
@@ -691,6 +721,7 @@ function init() {
         gameState.setReadingAssignment(readingAssignmentData);
         gameState.setPostSurvey({});
         gameState.setRewardInfo(null);
+        gameState.setStudyVariant(studyVariant.key);
         gameState.setAiEnabled(effectiveAiEnabled);
         if (forcedVariant) {
             gameState.setPlayerName(forcedVariant);
@@ -744,17 +775,6 @@ function init() {
             startGame(name, forcedVariant, surveyData);
         });
     }
-    if (introInput) {
-        introInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                if (introStepName?.classList.contains('is-active')) {
-                    introNextBtn?.click();
-                }
-            }
-        });
-    }
-
     console.log('🎮 Newsgame 已启动');
     console.log('💡 提示: 在结束场景按 R 键可快速重新开始');
 }

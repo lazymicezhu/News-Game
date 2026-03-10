@@ -30,6 +30,7 @@ class GameState {
         this.postSurvey = {};
         this.readingAssignment = null;
         this.rewardInfo = null;
+        this.studyVariant = 'p1';
         this.lastChoiceDelta = null;
         this.evidence = new Set();
         this.sceneChoiceOrders = {};
@@ -65,6 +66,7 @@ class GameState {
         this.postSurvey = {};
         this.readingAssignment = null;
         this.rewardInfo = null;
+        this.studyVariant = 'p1';
         this.lastChoiceDelta = null;
         this.evidence = new Set();
         this.sceneChoiceOrders = {};
@@ -97,7 +99,8 @@ class GameState {
             preSurvey: { ...this.preSurvey },
             postSurvey: { ...this.postSurvey },
             readingAssignment: this.readingAssignment ? { ...this.readingAssignment } : null,
-            rewardInfo: this.rewardInfo ? { ...this.rewardInfo } : null
+            rewardInfo: this.rewardInfo ? { ...this.rewardInfo } : null,
+            studyVariant: this.studyVariant
         };
     }
 
@@ -193,6 +196,14 @@ class GameState {
             return;
         }
         this.rewardInfo = { ...data };
+    }
+
+    setStudyVariant(variant) {
+        this.studyVariant = variant || 'p1';
+    }
+
+    getStudyVariant() {
+        return this.studyVariant || 'p1';
     }
 
     incrementClick() {

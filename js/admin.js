@@ -165,6 +165,7 @@ function normalizeRemoteEntry(entry) {
         rewardContactMethod: entry?.reward_contact_method || '',
         rewardLuckinPhone: entry?.reward_luckin_phone || '',
         rewardStatus: entry?.reward_status || '',
+        studyVariant: entry?.study_variant || 'p1',
         postSurvey: postSurvey && typeof postSurvey === 'object' ? postSurvey : {},
         preSurvey: {
             aiReliable: entry?.pre_ai_reliable ?? null,
@@ -465,6 +466,7 @@ function renderRows(stats = statsCache) {
         const preSurvey = entry.preSurvey || {};
         const postSurvey = entry.postSurvey || {};
         const rewardInfo = entry.rewardInfo || {};
+        const studyVariant = entry.studyVariant || 'p1';
         const rewardCode = rewardInfo.redeemCode || entry.rewardCode || '-';
         const rewardMethod = rewardInfo.contactMethod || entry.rewardContactMethod || '';
         const rewardPhone = rewardInfo.luckinPhone || entry.rewardLuckinPhone || '';
@@ -488,6 +490,7 @@ function renderRows(stats = statsCache) {
         }
         if (preSurvey.gameFrequency) preLines.push(`玩游戏: ${preSurvey.gameFrequency}`);
         if (preSurvey.storyGameFamiliarity) preLines.push(`叙事游戏熟悉度: ${preSurvey.storyGameFamiliarity}`);
+        preLines.push(`入口版本: ${studyVariant}`);
         const postFilled = Object.keys(postSurvey).length > 0;
         preLines.push(`后测: ${postFilled ? '已填写' : '未填写'}`);
         if (postFilled) {
