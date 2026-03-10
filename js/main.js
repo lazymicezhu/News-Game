@@ -705,18 +705,6 @@ function init() {
         // 初始化新闻看板
         newsBoard.init();
 
-        // 添加键盘快捷键支持（可选）
-        document.addEventListener('keydown', (e) => {
-            // 按数字键选择选项
-            const num = parseInt(e.key);
-            if (num >= 1 && num <= 9) {
-                const buttons = Array.from(document.querySelectorAll('#app .choices .btn'));
-                const button = buttons[num - 1];
-                if (button) {
-                    button.click();
-                }
-            }
-        });
     };
 
     if (introNextBtn) {
@@ -769,7 +757,6 @@ function init() {
 
     console.log('🎮 Newsgame 已启动');
     console.log('💡 提示: 在结束场景按 R 键可快速重新开始');
-    console.log('💡 提示: 可以使用数字键 1-9 快速选择选项');
 }
 
 // 页面加载完成后初始化

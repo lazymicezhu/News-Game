@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "validate:survey": "node scripts/validate-questionnaire.mjs"
+  },
   "dependencies": {
     "playwright": "^1.58.2"
   }
