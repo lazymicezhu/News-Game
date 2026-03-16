@@ -23,6 +23,12 @@ const STUDY_VARIANTS = {
     p1: { key: 'p1', incentiveEnabled: true },
     p2: { key: 'p2', incentiveEnabled: false }
 };
+const FORCED_COMBO_MAP = {
+    '1': { articleType: 'ai_news', aiEnabled: true, code: '1' },
+    '2': { articleType: 'ai_news', aiEnabled: false, code: '2' },
+    '3': { articleType: 'human_news', aiEnabled: true, code: '3' },
+    '4': { articleType: 'human_news', aiEnabled: false, code: '4' }
+};
 
 function getStudyVariantFromLocation() {
     const presetVariant = String(window.__NEWSGAME_STUDY_VARIANT__ || '').toLowerCase();
@@ -405,7 +411,29 @@ function pickArticleByType(articleType) {
     return matched[Math.floor(Math.random() * matched.length)];
 }
 
+function getForcedComboFromLocation() {
+    const params = new URLSearchParams(window.location.search || '');
+    const rawCode = String(
+        params.get('condition') ||
+        params.get('combo') ||
+        params.get('group') ||
+        ''
+    ).trim();
+    return FORCED_COMBO_MAP[rawCode] || null;
+}
+
 function decideExperimentAssignment({ forcedVariant, aiConfigured }) {
+    const forcedCombo = getForcedComboFromLocation();
+    if (forcedCombo) {
+        return {
+            aiEnabled: forcedCombo.aiEnabled,
+            article: pickArticleByType(forcedCombo.articleType),
+            articleType: forcedCombo.articleType,
+            mode: 'forced_combo',
+            comboCode: forcedCombo.code
+        };
+    }
+
     const history = loadHistoricalStats();
     const { combos, validCount } = countComboStats(history);
 
@@ -720,7 +748,8 @@ function init() {
                 readingMs,
                 articleType,
                 assignmentKey,
-                assignmentMode: assignment.mode || ''
+                assignmentMode: assignment.mode || '',
+                comboCode: assignment.comboCode || ''
             };
         }
 

@@ -3,13 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
-    <script>
-        sessionStorage.setItem('newsgame-study-variant', 'p2');
-        const url = new URL('/', window.location.origin);
-        url.searchParams.set('variant', 'p2');
-        window.location.replace(url.toString());
-    </script>
+    <title>实验版本选择</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg-start: #f3ede2;
+            --bg-end: #d9e7ee;
+            --card-bg: rgba(255, 252, 246, 0.94);
+            --border: rgba(50, 62, 72, 0.12);
+            --text: #21313a;
+            --muted: #5f7078;
+            --accent: #bf5a36;
+            --accent-dark: #944329;
+            --input-bg: #fffdf8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top, rgba(255, 255, 255, 0.72), transparent 42%),
+                linear-gradient(135deg, var(--bg-start), var(--bg-end));
+        }
+
+        .panel {
+            width: min(100%, 560px);
+            padding: 32px 28px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            background: var(--card-bg);
+            box-shadow: 0 24px 70px rgba(49, 64, 74, 0.16);
+            backdrop-filter: blur(14px);
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: clamp(28px, 4vw, 36px);
+        }
+
+        p {
+            margin: 0;
+            line-height: 1.7;
+            color: var(--muted);
+        }
+
+        .label {
+            display: block;
+            margin: 24px 0 10px;
+            font-weight: 600;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(50, 62, 72, 0.18);
+            background: var(--input-bg);
+            font-size: 18px;
+        }
+
+        button {
+            border: 0;
+            border-radius: 14px;
+            padding: 0 22px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        }
+
+        button:hover {
+            filter: brightness(1.03);
+        }
+
+        .error {
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .error {
+            min-height: 20px;
+            color: #b93d2c;
+        }
+
+        @media (max-width: 560px) {
+            .panel {
+                padding: 24px 20px;
+            }
+
+            .row {
+                flex-direction: column;
+            }
+
+            button {
+                min-height: 52px;
+            }
+        }
+    </style>
 </head>
-<body></body>
+<body>
+    <form class="panel" id="variant-form">
+        <h1>选择实验版本</h1>
+        <p>请输入实验编号后进入正式页面。</p>
+
+        <label class="label" for="variant-code">请输入 1-4</label>
+        <div class="row">
+            <input id="variant-code" name="variant-code" type="text" inputmode="numeric" maxlength="1" autocomplete="off" placeholder="例如：1" />
+            <button type="submit">进入实验</button>
+        </div>
+        <div class="error" id="error-text" aria-live="polite"></div>
+    </form>
+
+    <script>
+        (function () {
+            const form = document.getElementById('variant-form');
+            const input = document.getElementById('variant-code');
+            const errorText = document.getElementById('error-text');
+            const validCodes = new Set(['1', '2', '3', '4']);
+
+            try {
+                sessionStorage.setItem('newsgame-study-variant', 'p2');
+            } catch {}
+
+            if (!form || !input || !errorText) return;
+
+            input.addEventListener('input', () => {
+                input.value = input.value.replace(/[^\d]/g, '').slice(0, 1);
+                errorText.textContent = '';
+            });
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const code = String(input.value || '').trim();
+                if (!validCodes.has(code)) {
+                    errorText.textContent = '请输入 1、2、3 或 4。';
+                    input.focus();
+                    input.select();
+                    return;
+                }
+
+                const url = new URL('/', window.location.origin);
+                url.searchParams.set('variant', 'p2');
+                url.searchParams.set('condition', code);
+                window.location.replace(url.toString());
+            });
+
+            input.focus();
+        })();
+    </script>
+</body>
 </html>
