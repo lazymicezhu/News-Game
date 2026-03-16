@@ -411,6 +411,10 @@ function pickArticleByType(articleType) {
     return matched[Math.floor(Math.random() * matched.length)];
 }
 
+function getForcedComboByCode(code) {
+    return FORCED_COMBO_MAP[String(code || '').trim()] || null;
+}
+
 function getForcedComboFromLocation() {
     const params = new URLSearchParams(window.location.search || '');
     const rawCode = String(
@@ -419,11 +423,11 @@ function getForcedComboFromLocation() {
         params.get('group') ||
         ''
     ).trim();
-    return FORCED_COMBO_MAP[rawCode] || null;
+    return getForcedComboByCode(rawCode);
 }
 
-function decideExperimentAssignment({ forcedVariant, aiConfigured }) {
-    const forcedCombo = getForcedComboFromLocation();
+function decideExperimentAssignment({ forcedVariant, forcedComboCode, aiConfigured }) {
+    const forcedCombo = getForcedComboByCode(forcedComboCode) || getForcedComboFromLocation();
     if (forcedCombo) {
         return {
             aiEnabled: forcedCombo.aiEnabled,
@@ -633,6 +637,7 @@ function init() {
     updateStatsPanel();
 
     const introModal = document.getElementById('intro-modal');
+    const experimentCodeInput = document.getElementById('experiment-code-input');
     const introInput = document.getElementById('player-name-input');
     const introStepName = document.getElementById('intro-step-name');
     const introStepSurvey = document.getElementById('intro-step-survey');
@@ -718,7 +723,13 @@ function init() {
         return data;
     };
 
-    const startGame = async (playerName, forcedVariant, preSurvey) => {
+    if (experimentCodeInput) {
+        experimentCodeInput.addEventListener('input', () => {
+            experimentCodeInput.value = experimentCodeInput.value.replace(/[^\d]/g, '').slice(0, 1);
+        });
+    }
+
+    const startGame = async (playerName, forcedVariant, forcedComboCode, preSurvey) => {
         if (introBtn) {
             introBtn.disabled = true;
         }
@@ -731,7 +742,7 @@ function init() {
         resetStatsFinalization();
         const mergedScenes = await prepareOverrides();
         const aiConfigured = await isAiConfigured();
-        const assignment = decideExperimentAssignment({ forcedVariant, aiConfigured });
+        const assignment = decideExperimentAssignment({ forcedVariant, forcedComboCode, aiConfigured });
         const effectiveAiEnabled = !!assignment.aiEnabled;
         gameState.setAiEnabled(effectiveAiEnabled);
 
@@ -787,7 +798,13 @@ function init() {
 
     if (introNextBtn) {
         introNextBtn.addEventListener('click', () => {
+            const experimentCode = experimentCodeInput ? experimentCodeInput.value.trim() : '';
             const rawName = introInput ? introInput.value.trim() : '';
+            if (!getForcedComboByCode(experimentCode)) {
+                if (experimentCodeInput) experimentCodeInput.focus();
+                window.alert('请输入有效的实验编号。');
+                return;
+            }
             if (!rawName) {
                 if (introInput) introInput.focus();
                 return;
@@ -805,7 +822,15 @@ function init() {
 
     if (introBtn) {
         introBtn.addEventListener('click', () => {
+            const experimentCode = experimentCodeInput ? experimentCodeInput.value.trim() : '';
             const rawName = introInput ? introInput.value.trim() : '';
+            if (!getForcedComboByCode(experimentCode)) {
+                if (experimentCodeInput) {
+                    experimentCodeInput.focus();
+                }
+                window.alert('请输入有效的实验编号。');
+                return;
+            }
             if (!rawName) {
                 if (introInput) {
                     introInput.focus();
@@ -819,7 +844,7 @@ function init() {
             const name = forcedVariant ? '' : rawName;
             const surveyData = validateSurvey();
             if (!surveyData) return;
-            startGame(name, forcedVariant, surveyData);
+            startGame(name, forcedVariant, experimentCode, surveyData);
         });
     }
     console.log('🎮 Newsgame 已启动');
