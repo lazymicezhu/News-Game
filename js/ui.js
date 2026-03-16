@@ -466,16 +466,8 @@ export function renderScene(scene, onChoice) {
         scoreDiv.textContent = `${t('statsScore')}：${score} / 100`;
         sceneDiv.appendChild(scoreDiv);
         sceneDiv.appendChild(renderEndingReview(score));
-        const shouldShowSurveyBtn = gameState.isTelemetryActive();
-        if (shouldShowSurveyBtn) {
-            const surveyBtn = document.createElement('button');
-            surveyBtn.className = 'btn btn-primary';
-            surveyBtn.textContent = '进入后测问卷';
-            surveyBtn.style.marginTop = '12px';
-            surveyBtn.onclick = () => {
-                finalizeStats();
-            };
-            sceneDiv.appendChild(surveyBtn);
+        if (gameState.isTelemetryActive()) {
+            finalizeStats().catch(() => null);
         }
         showFooter();
     }
