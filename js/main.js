@@ -58,11 +58,6 @@ function applyStudyVariant(studyVariant) {
         body.dataset.incentiveEnabled = studyVariant.incentiveEnabled ? 'true' : 'false';
     }
 
-    const incentiveBlock = document.getElementById('intro-incentive');
-    if (incentiveBlock) {
-        incentiveBlock.style.display = studyVariant.incentiveEnabled ? '' : 'none';
-    }
-
     try {
         window.sessionStorage.setItem(STUDY_VARIANT_STORAGE_KEY, studyVariant.key);
     } catch {
@@ -640,88 +635,7 @@ function init() {
     const experimentCodeInput = document.getElementById('experiment-code-input');
     const introInput = document.getElementById('player-name-input');
     const introStepName = document.getElementById('intro-step-name');
-    const introStepSurvey = document.getElementById('intro-step-survey');
-    const introNextBtn = document.getElementById('intro-next-btn');
-    const introBackBtn = document.getElementById('intro-back-btn');
     const introBtn = document.getElementById('intro-start-btn');
-    const introLikertGroups = Array.from(document.querySelectorAll('.intro-likert'));
-
-    const showIntroStep = (step) => {
-        if (introStepName) introStepName.classList.toggle('is-active', step === 'name');
-        if (introStepSurvey) introStepSurvey.classList.toggle('is-active', step === 'survey');
-    };
-
-    const getRadioValue = (name) => {
-        const target = document.querySelector(`input[name="${name}"]:checked`);
-        return target ? target.value : '';
-    };
-
-    const getLikertValue = (field) => {
-        const selected = document.querySelector(`.intro-likert[data-field="${field}"] .intro-dot.is-selected`);
-        return selected ? Number(selected.dataset.value) : null;
-    };
-
-    const clearSurveyForm = () => {
-        Array.from(document.querySelectorAll('input[name="intro-familiarity"], input[name="pre-news-frequency"], input[name="pre-game-frequency"]'))
-            .forEach((input) => { input.checked = false; });
-        Array.from(document.querySelectorAll('input[name="pre-news-source"]'))
-            .forEach((input) => { input.checked = false; });
-        introLikertGroups.forEach((group) => {
-            group.querySelectorAll('.intro-dot').forEach((dot) => dot.classList.remove('is-selected'));
-        });
-    };
-
-    introLikertGroups.forEach((group) => {
-        group.addEventListener('click', (event) => {
-            const target = event.target.closest('.intro-dot');
-            if (!target) return;
-            group.querySelectorAll('.intro-dot').forEach((dot) => dot.classList.remove('is-selected'));
-            target.classList.add('is-selected');
-        });
-    });
-
-    const collectPreSurvey = () => {
-        const newsSourceInputs = Array.from(document.querySelectorAll('input[name="pre-news-source"]:checked'));
-        return {
-            wildfireFamiliarity: getRadioValue('intro-familiarity'),
-            aiReliable: getLikertValue('aiReliable'),
-            aiCredible: getLikertValue('aiCredible'),
-            aiUncertain: getLikertValue('aiUncertain'),
-            newsFrequency: getRadioValue('pre-news-frequency'),
-            newsSources: newsSourceInputs.map((input) => input.value),
-            gameFrequency: getRadioValue('pre-game-frequency'),
-            storyGameFamiliarity: getLikertValue('storyGameFamiliarity')
-        };
-    };
-
-    const validateSurvey = () => {
-        const data = collectPreSurvey();
-        if (!data.wildfireFamiliarity) {
-            window.alert('请先选择是否了解加州山火事件。');
-            return null;
-        }
-        if (!data.aiReliable || !data.aiCredible || !data.aiUncertain) {
-            window.alert('请完成三道 AI 可信度打分题。');
-            return null;
-        }
-        if (!data.newsFrequency) {
-            window.alert('请选择你的新闻阅读频率。');
-            return null;
-        }
-        if (!data.newsSources.length) {
-            window.alert('请至少选择一种新闻获取方式。');
-            return null;
-        }
-        if (!data.gameFrequency) {
-            window.alert('请选择你的电子游戏频率。');
-            return null;
-        }
-        if (!data.storyGameFamiliarity) {
-            window.alert('请完成“交互式故事或模拟类游戏熟悉度”打分。');
-            return null;
-        }
-        return data;
-    };
 
     if (experimentCodeInput) {
         experimentCodeInput.addEventListener('input', () => {
@@ -729,11 +643,10 @@ function init() {
         });
     }
 
-    const startGame = async (playerName, forcedVariant, forcedComboCode, preSurvey) => {
+    const startGame = async (playerName, forcedVariant, forcedComboCode) => {
         if (introBtn) {
             introBtn.disabled = true;
         }
-        if (introNextBtn) introNextBtn.disabled = true;
         if (introModal) introModal.style.display = 'none';
         setStatsVisibility(false);
 
@@ -770,12 +683,8 @@ function init() {
         if (playerName) {
             gameState.setPlayerName(playerName);
         }
-        if (preSurvey?.wildfireFamiliarity) {
-            gameState.setWildfireFamiliarity(preSurvey.wildfireFamiliarity);
-        } else {
-            gameState.setWildfireFamiliarity('');
-        }
-        gameState.setPreSurvey(preSurvey || {});
+        gameState.setWildfireFamiliarity('');
+        gameState.setPreSurvey({});
         gameState.setReadingAssignment(readingAssignmentData);
         gameState.setPostSurvey({});
         gameState.setRewardInfo(null);
@@ -795,30 +704,6 @@ function init() {
         newsBoard.init();
 
     };
-
-    if (introNextBtn) {
-        introNextBtn.addEventListener('click', () => {
-            const experimentCode = experimentCodeInput ? experimentCodeInput.value.trim() : '';
-            const rawName = introInput ? introInput.value.trim() : '';
-            if (!getForcedComboByCode(experimentCode)) {
-                if (experimentCodeInput) experimentCodeInput.focus();
-                window.alert('请输入有效的实验编号。');
-                return;
-            }
-            if (!rawName) {
-                if (introInput) introInput.focus();
-                return;
-            }
-            showIntroStep('survey');
-        });
-    }
-
-    if (introBackBtn) {
-        introBackBtn.addEventListener('click', () => {
-            showIntroStep('name');
-            if (introInput) introInput.focus();
-        });
-    }
 
     if (introBtn) {
         introBtn.addEventListener('click', () => {
@@ -842,9 +727,7 @@ function init() {
             if (upper === 'AI') forcedVariant = 'AI';
             if (upper === 'NORMAL') forcedVariant = 'NORMAL';
             const name = forcedVariant ? '' : rawName;
-            const surveyData = validateSurvey();
-            if (!surveyData) return;
-            startGame(name, forcedVariant, experimentCode, surveyData);
+            startGame(name, forcedVariant, experimentCode);
         });
     }
     console.log('🎮 Newsgame 已启动');
